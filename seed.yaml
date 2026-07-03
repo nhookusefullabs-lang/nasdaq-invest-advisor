@@ -1,0 +1,95 @@
+goal: >-
+  yfinance로 1회 수집한 6개월치 나스닥100 정적 JSON을 읽어, RSI·MACD 2단계 신호로 종목을
+  추천하고(신호 부족 시 있는 만큼+배너), 상세필터 4종·3개월 실현수익률 시뮬레이션·균등비중
+  포트폴리오를 4개 화면으로 보여주는 백엔드 없는 React 정적 SPA를 만든다.
+
+constraints:
+  - React + Vite + Tailwind CSS, 백엔드 없는 정적 SPA (라우팅 라이브러리 없이 App state로 4화면 전환)
+  - 데이터는 yfinance Python 스크립트로 나스닥100 6개월 OHLCV를 1회 수집 → public/data/nasdaq100.json (런타임 백엔드/API 호출 없음)
+  - JSON 스키마 고정 = {generatedAt, tickers:[{ticker, name, sector, series:[{date, high, low, close, volume}]}]}
+  - 지표는 클라이언트 계산 = RSI(Wilder,14) | MACD(12/26/9) | SMA20 이격도 | 거래량(최근5일 vs 직전20일); 지표는 6개월 전체로 계산, 시뮬·표시는 최근 63거래일
+  - 스코어링 = 이격도 min(disparity,15)/15*60 + 거래량 min(volTrend,50)/50*30 + 주도섹터가산 10
+  - 1단계 신호 = RSI>=50 AND EMA12>EMA26 AND 골든크로스 최근5일; 완화 폴백 = 골든크로스 5→10일 → 그래도 부족하면 RSI>=50만
+  - 주도섹터 = 상위 3개 섹터(구성종목 3개월 수익률 균등평균, 구성 1종목 섹터는 제외)
+  - 3개월 앵커 = 최근 63거래일 중 첫 거래일 종가
+  - 데이터 신뢰도 낮은 종목(거래일 부족·결측)은 추천·필터에서 제외하고 사유를 수집 로그에 기록
+  - 포트폴리오는 균등 비중 1종만 (위험성향 3유형은 이번 범위 밖)
+  - 선택 상태는 localStorage 유지 (스키마 버전 키 포함, 현재 데이터에 없는 티커는 복원 시 자동 제거)
+  - 모든 결과 화면에 "데이터 기준일: YYYY-MM-DD"와 투자 면책 문구 필수
+  - 로그인/회원 없음, 실시간 시세 갱신 없음, 자동매매 없음
+  - 배포 = GitHub Pages (vite base = repo명); 첫 바이브코딩 프로젝트로 화면 4개 규모의 최소 범위 유지
+
+acceptance_criteria:
+  - 홈 화면에서 티커/종목명 검색과 상세필터 4종(이격도·거래량·주도섹터·과열/과매도)이 나스닥100 정적 데이터로 동작하며, 첫 진입 시 필터는 모두 꺼짐(전체 표시) 상태다
+  - 추천 화면이 RSI·MACD 2단계 신호로 상위 5~10개를 점수·한줄이유와 함께 보여주고, 신호 통과가 부족하면 완화 폴백을 적용하며 그래도 5개 미만이면 있는 만큼만 + "매수 신호가 충분치 않습니다" 배너를 표시한다
+  - 시뮬레이션 화면이 선택 종목의 최근 63거래일 첫 거래일 종가 기준 3개월 실현 수익률과 최고/최저 변동폭을 보여준다
+  - 포트폴리오 화면이 선택 종목 3~5개를 균등 비중으로 묶어 종합 수익률과 "평균 개별 변동성(상관관계 미반영)"을 보여준다
+  - 검색 조건과 선택 종목이 localStorage로 새로고침 후에도 유지되며, 데이터 재수집으로 사라진 티커는 복원 시 자동 제거된다
+  - 추천·시뮬레이션·포트폴리오 화면 모두에 "데이터 기준일: YYYY-MM-DD"와 투자 면책 문구가 표시된다
+
+ontology_schema:
+  name: NasdaqAdvisor
+  description: 나스닥100 기술적 분석 종목추천 도메인 모델 (정적 데이터 기반)
+  fields:
+    - name: tickers
+      type: array
+      description: 나스닥100 종목 리스트 (ticker, name, sector, series[priceBar])
+    - name: priceBar
+      type: object
+      description: 일별 시계열 원소 {date, high, low, close, volume}
+    - name: indicatorSet
+      type: object
+      description: 종목별 계산 지표 {rsi14, ema12, ema26, macd, signal, sma20, disparity, volTrend, goldenCross, volatility}
+    - name: recommendation
+      type: object
+      description: 추천 항목 {ticker, score(0-100), reasons, signalPassed(boolean), relaxationApplied(boolean)}
+    - name: filterState
+      type: object
+      description: 상세필터 4종 상태 {disparityMin, volumeTrendMin, leadingSectorOnly, rsiState(overheated|oversold|off)}
+    - name: simulation
+      type: object
+      description: 3개월 실현 결과 {ticker, buyPrice, currentPrice, returnPct, periodHigh, periodLow}
+    - name: portfolio
+      type: object
+      description: 균등비중 포트폴리오 {selectedTickers[3-5], equalWeightReturnPct, avgIndividualVolatility}
+    - name: uiState
+      type: object
+      description: localStorage 영속 상태 {currentScreen, selectedTickers, filterState, schemaVersion, dataAsOfDate}
+
+evaluation_principles:
+  - name: indicator_correctness
+    description: 지표·스코어링·시뮬레이션이 명세된 공식·상수대로 결정적으로 계산된다
+    weight: 1.0
+  - name: flow_completeness
+    description: 검색→추천→시뮬→포트폴리오 4화면이 상태 전달과 함께 끊김 없이 연결된다
+    weight: 0.9
+  - name: edge_case_handling
+    description: 빈 결과·데이터 부족 종목·localStorage 복원 등 확정된 엣지케이스를 명세대로 처리한다
+    weight: 0.8
+  - name: transparency
+    description: 데이터 기준일·면책 문구·"평균 개별 변동성" 라벨로 사용자 오해를 방지한다
+    weight: 0.7
+  - name: scope_discipline
+    description: 균등비중 1종·나스닥100 등 MVP 범위를 유지하고 과확장하지 않는다
+    weight: 0.6
+
+exit_conditions:
+  - name: all_criteria_met
+    description: 모든 acceptance_criteria가 충족된다
+    criteria: 6개 acceptance_criteria 100% 통과
+  - name: data_pipeline_valid
+    description: 수집 스크립트가 스키마에 맞는 nasdaq100.json을 생성한다
+    criteria: 생성된 JSON이 고정 스키마 검증을 통과하고 앱이 정상 로드
+  - name: demo_ready
+    description: 로컬과 GitHub Pages에서 4화면 데모가 가능하다
+    criteria: npm run dev 및 빌드 배포본에서 전체 흐름 수동 데모 통과
+
+metadata:
+  version: 1
+  project_type: greenfield
+  context_references:
+    - path: PRD_Nasdaq3.md
+      role: reference
+      summary: 확정 PRD v3 (스택·지표·스코어링 상수 원본)
+  ambiguity_score: 0.12
+  interview_tracks_resolved: 8
