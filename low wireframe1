@@ -1,0 +1,5227 @@
+{
+  "version": "2.14",
+  "children": [
+    {
+      "type": "frame",
+      "id": "fYWGA",
+      "x": 247,
+      "y": 1,
+      "name": "1. 홈/검색 화면",
+      "clip": true,
+      "width": 1440,
+      "height": 900,
+      "fill": "$bg-page",
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "h6x0vV",
+          "type": "ref",
+          "ref": "t7SDvz",
+          "name": "Top Bar Instance"
+        },
+        {
+          "type": "frame",
+          "id": "o0sWk",
+          "name": "Search Section",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            24,
+            32,
+            0,
+            32
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "VE2iF",
+              "name": "Search Bar",
+              "width": "fill_container",
+              "height": 44,
+              "fill": "$bg-input",
+              "cornerRadius": 6,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "padding": [
+                0,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "hroCw",
+                  "name": "Search Icon",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "search",
+                  "library": "lucide",
+                  "fill": "$text-secondary"
+                },
+                {
+                  "type": "text",
+                  "id": "r0rbU",
+                  "name": "Search Placeholder",
+                  "fill": "$text-secondary",
+                  "content": "티커 또는 종목명 검색...",
+                  "fontFamily": "$font-main",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "dyo5S",
+          "name": "Filter Section",
+          "width": "fill_container",
+          "fill": "$bg-section",
+          "gap": 16,
+          "padding": [
+            16,
+            32
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "lX4WJ",
+              "name": "이평선 이격도 Filter",
+              "width": "fill_container",
+              "fill": "$bg-page",
+              "cornerRadius": 6,
+              "layout": "vertical",
+              "gap": 8,
+              "padding": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ziLRg",
+                  "name": "F1 Header",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "lIZUT",
+                      "name": "F1 Label",
+                      "fill": "$text-primary",
+                      "content": "이평선 이격도",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "kNi6l",
+                      "name": "Spacer",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "H5I9w",
+                      "name": "F1 Toggle",
+                      "width": 36,
+                      "height": 20,
+                      "fill": "$bg-card",
+                      "cornerRadius": 10,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "g6GxH",
+                          "x": 0,
+                          "y": 0,
+                          "name": "Knob",
+                          "fill": "$text-white",
+                          "width": 16,
+                          "height": 16
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "iNIlt",
+                  "name": "F1 Input",
+                  "width": "fill_container",
+                  "height": 32,
+                  "fill": "$bg-input",
+                  "cornerRadius": 4,
+                  "gap": 4,
+                  "padding": [
+                    0,
+                    8
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "s1RKG",
+                      "name": "F1 Value",
+                      "fill": "$text-secondary",
+                      "content": "5% 이상",
+                      "fontFamily": "$font-main",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "oMXYe",
+              "name": "거래량 증가 Filter",
+              "width": "fill_container",
+              "fill": "$bg-page",
+              "cornerRadius": 6,
+              "layout": "vertical",
+              "gap": 8,
+              "padding": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "LVxYj",
+                  "name": "F2 Header",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "W9OqtK",
+                      "name": "F2 Label",
+                      "fill": "$text-primary",
+                      "content": "거래량 증가",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "l1uah7",
+                      "name": "Spacer",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "fN79I",
+                      "name": "F2 Toggle",
+                      "width": 36,
+                      "height": 20,
+                      "fill": "$bg-card",
+                      "cornerRadius": 10,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "RAhYv",
+                          "x": 0,
+                          "y": 0,
+                          "name": "Knob",
+                          "fill": "$text-white",
+                          "width": 16,
+                          "height": 16
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "NOBLb",
+                  "name": "F2 Input",
+                  "width": "fill_container",
+                  "height": 32,
+                  "fill": "$bg-input",
+                  "cornerRadius": 4,
+                  "gap": 4,
+                  "padding": [
+                    0,
+                    8
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "j97wXB",
+                      "name": "F2 Value",
+                      "fill": "$text-secondary",
+                      "content": "50% 이상",
+                      "fontFamily": "$font-main",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "yYXFs",
+              "name": "주도 섹터 Filter",
+              "width": "fill_container",
+              "fill": "$bg-page",
+              "cornerRadius": 6,
+              "layout": "vertical",
+              "gap": 8,
+              "padding": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Q9VXKE",
+                  "name": "F3 Header",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "TR0JM",
+                      "name": "F3 Label",
+                      "fill": "$text-primary",
+                      "content": "주도 섹터",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "K9r0X",
+                      "name": "Spacer",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "u8SJsV",
+                      "name": "F3 Toggle",
+                      "width": 36,
+                      "height": 20,
+                      "fill": "$bg-card",
+                      "cornerRadius": 10,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "w2oIP4",
+                          "x": 0,
+                          "y": 0,
+                          "name": "Knob",
+                          "fill": "$text-white",
+                          "width": 16,
+                          "height": 16
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "mv1gT",
+                  "name": "F3 Desc",
+                  "fill": "$text-secondary",
+                  "content": "주도 섹터 종목만 표시",
+                  "fontFamily": "$font-main",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "yk9vQ",
+              "name": "과열/과매도 Filter",
+              "width": "fill_container",
+              "fill": "$bg-page",
+              "cornerRadius": 6,
+              "layout": "vertical",
+              "gap": 8,
+              "padding": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "S2MzC1",
+                  "name": "F4 Header",
+                  "width": "fill_container",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "NtSah",
+                      "name": "F4 Label",
+                      "fill": "$text-primary",
+                      "content": "과열/과매도",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "JXLKp",
+                      "name": "Spacer",
+                      "width": "fill_container",
+                      "height": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "o8wBy",
+                  "name": "F4 Radio Group",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "yvusa",
+                      "name": "Radio 과열",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "O4RCE",
+                          "name": "Radio Circle",
+                          "fill": "$bg-page",
+                          "width": 14,
+                          "height": 14,
+                          "stroke": "$border",
+                          "strokeWidth": 1
+                        },
+                        {
+                          "type": "text",
+                          "id": "A8LgM",
+                          "name": "Radio Label",
+                          "fill": "$text-primary",
+                          "content": "과열",
+                          "fontFamily": "$font-main",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "EYQLG",
+                      "name": "Radio 과매도",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "v5R5O",
+                          "name": "Radio Circle",
+                          "fill": "$bg-page",
+                          "width": 14,
+                          "height": 14,
+                          "stroke": "$border",
+                          "strokeWidth": 1
+                        },
+                        {
+                          "type": "text",
+                          "id": "pfxgl",
+                          "name": "Radio Label",
+                          "fill": "$text-primary",
+                          "content": "과매도",
+                          "fontFamily": "$font-main",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ByMzK",
+                      "name": "Radio 전체",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "fbaVp",
+                          "name": "Radio Circle",
+                          "fill": "$text-secondary",
+                          "width": 14,
+                          "height": 14,
+                          "stroke": "$border",
+                          "strokeWidth": 1
+                        },
+                        {
+                          "type": "text",
+                          "id": "kYrGM",
+                          "name": "Radio Label",
+                          "fill": "$text-primary",
+                          "content": "전체",
+                          "fontFamily": "$font-main",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "oaSV5",
+          "name": "Table Section",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "padding": [
+            0,
+            32
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "OYKeP",
+              "name": "Table Header",
+              "width": "fill_container",
+              "height": 40,
+              "fill": "$bg-section",
+              "padding": [
+                0,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "r4uu8z",
+                  "name": "H_체크",
+                  "fill": "$text-secondary",
+                  "content": "체크",
+                  "fontFamily": "$font-main",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "fHqdG",
+                  "name": "H_티커",
+                  "fill": "$text-secondary",
+                  "content": "티커",
+                  "fontFamily": "$font-main",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "zYIua",
+                  "name": "H_종목명",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "종목명",
+                  "fontFamily": "$font-main",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "RCAVN",
+                  "name": "H_섹터",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "섹터",
+                  "fontFamily": "$font-main",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "wWDPo",
+                  "name": "H_현재가",
+                  "fill": "$text-secondary",
+                  "content": "현재가",
+                  "fontFamily": "$font-main",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "heRTy",
+                  "name": "H_RSI",
+                  "fill": "$text-secondary",
+                  "content": "RSI",
+                  "fontFamily": "$font-main",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "wxcNO",
+                  "name": "H_이격도(%)",
+                  "fill": "$text-secondary",
+                  "content": "이격도(%)",
+                  "fontFamily": "$font-main",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Tl9sw",
+              "name": "Row_AAPL",
+              "width": "fill_container",
+              "height": 44,
+              "stroke": "$border",
+              "strokeWidth": {
+                "bottom": 1
+              },
+              "padding": [
+                0,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "pXzfV",
+                  "name": "CB",
+                  "width": 40,
+                  "height": 44,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 3,
+                      "id": "uexHZ",
+                      "name": "Checkbox",
+                      "fill": "$bg-page",
+                      "width": 16,
+                      "height": 16,
+                      "stroke": "$border",
+                      "strokeWidth": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "iotC3",
+                  "name": "Ticker",
+                  "fill": "$text-primary",
+                  "content": "AAPL",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "KQEnH",
+                  "name": "Name",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "애플",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "fQsX2",
+                  "name": "Sector",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "기술",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "ZcsBU",
+                  "name": "Price",
+                  "fill": "$text-primary",
+                  "content": "$189.25",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "Z13pCX",
+                  "name": "RSI",
+                  "fill": "$text-primary",
+                  "content": "58",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "KYdxz",
+                  "name": "Gap",
+                  "fill": "$accent",
+                  "content": "+3.2%",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Y9ntMl",
+              "name": "Row_MSFT",
+              "width": "fill_container",
+              "height": 44,
+              "stroke": "$border",
+              "strokeWidth": {
+                "bottom": 1
+              },
+              "padding": [
+                0,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "A6iEa",
+                  "name": "CB",
+                  "width": 40,
+                  "height": 44,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 3,
+                      "id": "CQAln",
+                      "name": "Checkbox",
+                      "fill": "$bg-page",
+                      "width": 16,
+                      "height": 16,
+                      "stroke": "$border",
+                      "strokeWidth": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "X16o3c",
+                  "name": "Ticker",
+                  "fill": "$text-primary",
+                  "content": "MSFT",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "tD1y1",
+                  "name": "Name",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "마이크로소프트",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "l9beHE",
+                  "name": "Sector",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "기술",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "gGVPB",
+                  "name": "Price",
+                  "fill": "$text-primary",
+                  "content": "$412.50",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "ptdIZ",
+                  "name": "RSI",
+                  "fill": "$text-primary",
+                  "content": "62",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "aqA1i",
+                  "name": "Gap",
+                  "fill": "$accent",
+                  "content": "+1.8%",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "n3nLY",
+              "name": "Row_NVDA",
+              "width": "fill_container",
+              "height": 44,
+              "stroke": "$border",
+              "strokeWidth": {
+                "bottom": 1
+              },
+              "padding": [
+                0,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "sepf7",
+                  "name": "CB",
+                  "width": 40,
+                  "height": 44,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 3,
+                      "id": "eFDqW",
+                      "name": "Checkbox",
+                      "fill": "$bg-page",
+                      "width": 16,
+                      "height": 16,
+                      "stroke": "$border",
+                      "strokeWidth": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "dcLPO",
+                  "name": "Ticker",
+                  "fill": "$text-primary",
+                  "content": "NVDA",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "vf3hS",
+                  "name": "Name",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "엔비디아",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "FlfsX",
+                  "name": "Sector",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "반도체",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "J1PUvr",
+                  "name": "Price",
+                  "fill": "$text-primary",
+                  "content": "$875.30",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "kCPYh",
+                  "name": "RSI",
+                  "fill": "$text-primary",
+                  "content": "71",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "Q2PM4",
+                  "name": "Gap",
+                  "fill": "$accent",
+                  "content": "+5.1%",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "I3LEz4",
+              "name": "Row_AMZN",
+              "width": "fill_container",
+              "height": 44,
+              "stroke": "$border",
+              "strokeWidth": {
+                "bottom": 1
+              },
+              "padding": [
+                0,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "OwPf9",
+                  "name": "CB",
+                  "width": 40,
+                  "height": 44,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 3,
+                      "id": "ydyda",
+                      "name": "Checkbox",
+                      "fill": "$bg-page",
+                      "width": 16,
+                      "height": 16,
+                      "stroke": "$border",
+                      "strokeWidth": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "r3Vwcm",
+                  "name": "Ticker",
+                  "fill": "$text-primary",
+                  "content": "AMZN",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "tnPut",
+                  "name": "Name",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "아마존",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "uq3oq",
+                  "name": "Sector",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "소비재",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "dv6P7",
+                  "name": "Price",
+                  "fill": "$text-primary",
+                  "content": "$185.60",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "imunR",
+                  "name": "RSI",
+                  "fill": "$text-primary",
+                  "content": "45",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "thmGP",
+                  "name": "Gap",
+                  "fill": "$text-secondary",
+                  "content": "-1.2%",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "s66TWE",
+              "name": "Row_GOOGL",
+              "width": "fill_container",
+              "height": 44,
+              "stroke": "$border",
+              "strokeWidth": {
+                "bottom": 1
+              },
+              "padding": [
+                0,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "w3UTe",
+                  "name": "CB",
+                  "width": 40,
+                  "height": 44,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 3,
+                      "id": "bRZ8n",
+                      "name": "Checkbox",
+                      "fill": "$bg-page",
+                      "width": 16,
+                      "height": 16,
+                      "stroke": "$border",
+                      "strokeWidth": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "RinA7",
+                  "name": "Ticker",
+                  "fill": "$text-primary",
+                  "content": "GOOGL",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "P6GfA",
+                  "name": "Name",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "알파벳",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "EuUrx",
+                  "name": "Sector",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "기술",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "ApyjU",
+                  "name": "Price",
+                  "fill": "$text-primary",
+                  "content": "$176.80",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "c7fYcz",
+                  "name": "RSI",
+                  "fill": "$text-primary",
+                  "content": "52",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "m16YF6",
+                  "name": "Gap",
+                  "fill": "$accent",
+                  "content": "+0.5%",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "M27sKh",
+              "name": "Row_META",
+              "width": "fill_container",
+              "height": 44,
+              "stroke": "$border",
+              "strokeWidth": {
+                "bottom": 1
+              },
+              "padding": [
+                0,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "DjCIl",
+                  "name": "CB",
+                  "width": 40,
+                  "height": 44,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 3,
+                      "id": "KAwsu",
+                      "name": "Checkbox",
+                      "fill": "$bg-page",
+                      "width": 16,
+                      "height": 16,
+                      "stroke": "$border",
+                      "strokeWidth": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "L4MrC",
+                  "name": "Ticker",
+                  "fill": "$text-primary",
+                  "content": "META",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "egMDA",
+                  "name": "Name",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "메타",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "HcJSe",
+                  "name": "Sector",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "기술",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "BTupf",
+                  "name": "Price",
+                  "fill": "$text-primary",
+                  "content": "$505.40",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "Rt4xU",
+                  "name": "RSI",
+                  "fill": "$text-primary",
+                  "content": "66",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "DvTDx",
+                  "name": "Gap",
+                  "fill": "$accent",
+                  "content": "+2.9%",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "FFSXy",
+              "name": "Row_TSLA",
+              "width": "fill_container",
+              "height": 44,
+              "stroke": "$border",
+              "strokeWidth": {
+                "bottom": 1
+              },
+              "padding": [
+                0,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "UfmzO",
+                  "name": "CB",
+                  "width": 40,
+                  "height": 44,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 3,
+                      "id": "r9LexT",
+                      "name": "Checkbox",
+                      "fill": "$bg-page",
+                      "width": 16,
+                      "height": 16,
+                      "stroke": "$border",
+                      "strokeWidth": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "tJCTc",
+                  "name": "Ticker",
+                  "fill": "$text-primary",
+                  "content": "TSLA",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "I2EtNL",
+                  "name": "Name",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "테슬라",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "S1KxS",
+                  "name": "Sector",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "자동차",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "tKjbG",
+                  "name": "Price",
+                  "fill": "$text-primary",
+                  "content": "$248.90",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "V4cta",
+                  "name": "RSI",
+                  "fill": "$text-primary",
+                  "content": "38",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "c2Dcdg",
+                  "name": "Gap",
+                  "fill": "$text-secondary",
+                  "content": "-3.8%",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "I8makE",
+              "name": "Row_JPM",
+              "width": "fill_container",
+              "height": 44,
+              "stroke": "$border",
+              "strokeWidth": {
+                "bottom": 1
+              },
+              "padding": [
+                0,
+                12
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Pk0zl",
+                  "name": "CB",
+                  "width": 40,
+                  "height": 44,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 3,
+                      "id": "GrZ7C",
+                      "name": "Checkbox",
+                      "fill": "$bg-page",
+                      "width": 16,
+                      "height": 16,
+                      "stroke": "$border",
+                      "strokeWidth": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "QpdUp",
+                  "name": "Ticker",
+                  "fill": "$text-primary",
+                  "content": "JPM",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "EsZc1",
+                  "name": "Name",
+                  "fill": "$text-primary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "JP모건",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "GqyqH",
+                  "name": "Sector",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "금융",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "x6GamF",
+                  "name": "Price",
+                  "fill": "$text-primary",
+                  "content": "$198.30",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "JJ4xc",
+                  "name": "RSI",
+                  "fill": "$text-primary",
+                  "content": "55",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "D3U8Xb",
+                  "name": "Gap",
+                  "fill": "$accent",
+                  "content": "+1.1%",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "YpgXe",
+          "name": "Bottom Bar",
+          "width": "fill_container",
+          "height": 64,
+          "stroke": "$border",
+          "strokeWidth": {
+            "top": 1
+          },
+          "padding": [
+            0,
+            32
+          ],
+          "justifyContent": "end",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "VOBs2",
+              "name": "CTA Button",
+              "fill": "$bg-button",
+              "cornerRadius": 6,
+              "gap": 8,
+              "padding": [
+                12,
+                24
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "y2BQir",
+                  "name": "CTA Label",
+                  "fill": "$text-white",
+                  "content": "추천 결과 보기 →",
+                  "fontFamily": "$font-main",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "LCfSp",
+      "x": 1520,
+      "y": 0,
+      "name": "2. 추천 결과 화면",
+      "clip": true,
+      "width": 1440,
+      "height": 1160,
+      "fill": "$bg-page",
+      "layout": "vertical",
+      "children": [
+        {
+          "id": "UFWPn",
+          "type": "ref",
+          "ref": "t7SDvz",
+          "name": "Top Bar Instance 2",
+          "descendants": {
+            "qO6XD": {
+              "fill": "$text-secondary",
+              "fontWeight": "400"
+            },
+            "t9UOmq": {
+              "fill": "$text-primary",
+              "fontWeight": "600"
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "GXkdA",
+          "name": "Header Section",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 6,
+          "padding": [
+            24,
+            32,
+            8,
+            32
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "ioMGF",
+              "name": "Page Title",
+              "fill": "$text-primary",
+              "content": "추천 종목",
+              "fontFamily": "$font-main",
+              "fontSize": 24,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "H9KQxm",
+              "name": "Page Subtitle",
+              "fill": "$text-secondary",
+              "content": "2단계 추세추종 로직 기반",
+              "fontFamily": "$font-main",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "BeVzj",
+          "name": "Warning Banner",
+          "width": "fill_container",
+          "fill": "#FFF8E1",
+          "gap": 8,
+          "padding": [
+            10,
+            32
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "icon",
+              "id": "L6TgZ",
+              "name": "Warning Icon",
+              "width": 16,
+              "height": 16,
+              "icon": "triangle-alert",
+              "library": "lucide",
+              "fill": "#B58A00"
+            },
+            {
+              "type": "text",
+              "id": "T1HCbR",
+              "name": "Warning Text",
+              "fill": "#7A5C00",
+              "content": "조건 완화 적용됨 — 일부 필터 기준이 완화되어 더 많은 종목이 포함되었습니다.",
+              "fontFamily": "$font-main",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ecrXE",
+          "name": "Stock List",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 10,
+          "padding": [
+            8,
+            32,
+            0,
+            32
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "YQ6FF",
+              "name": "Card_NVDA",
+              "width": "fill_container",
+              "fill": "$bg-page",
+              "cornerRadius": 6,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "eiNzb",
+                  "name": "Card Top",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "prLyg",
+                      "name": "CB Wrap",
+                      "width": 20,
+                      "height": 20,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 3,
+                          "id": "sYZCI",
+                          "x": 2,
+                          "y": 2,
+                          "name": "Checkbox",
+                          "fill": "$bg-page",
+                          "width": 16,
+                          "height": 16,
+                          "stroke": "$border",
+                          "strokeWidth": 1
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "Ox0VI",
+                      "name": "Ticker",
+                      "fill": "$text-primary",
+                      "content": "NVDA",
+                      "fontFamily": "$font-main",
+                      "fontSize": 15,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "DGs8n",
+                      "name": "Stock Name",
+                      "fill": "$text-secondary",
+                      "content": "엔비디아",
+                      "fontFamily": "$font-main",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "C4Yszq",
+                      "name": "Spacer",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "DjbzV",
+                      "name": "Score Badge",
+                      "fill": "$bg-button",
+                      "cornerRadius": 4,
+                      "padding": [
+                        4,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "f8qhSZ",
+                          "name": "Score",
+                          "fill": "$text-white",
+                          "content": "92/100",
+                          "fontFamily": "$font-main",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "x1btFY",
+                  "name": "Reason",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "RSI 68, MACD 골든크로스, 주도 섹터 소속",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "r3b7kG",
+                  "name": "Indicators",
+                  "width": "fill_container",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ml8h6",
+                      "name": "Ind_RSI",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "x2tVdz",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "RSI",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "QdTFm",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "68",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "JpARV",
+                      "name": "Ind_MACD",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "d24Hn8",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "MACD",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "jC1Yk",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "골든크로스",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "m61iBL",
+                      "name": "Ind_이격도",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "opqgP",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "이격도",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "rFoJz",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "+5.1%",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "S39DI",
+                      "name": "Ind_거래량",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "kekQE",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "거래량",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "fmL7S",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "+120%",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "daiqU",
+              "name": "Card_MSFT",
+              "width": "fill_container",
+              "fill": "$bg-page",
+              "cornerRadius": 6,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Tx13v",
+                  "name": "Card Top",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ySJVA",
+                      "name": "CB Wrap",
+                      "width": 20,
+                      "height": 20,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 3,
+                          "id": "H3Ze7G",
+                          "x": 2,
+                          "y": 2,
+                          "name": "Checkbox",
+                          "fill": "$bg-page",
+                          "width": 16,
+                          "height": 16,
+                          "stroke": "$border",
+                          "strokeWidth": 1
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "EpOIp",
+                      "name": "Ticker",
+                      "fill": "$text-primary",
+                      "content": "MSFT",
+                      "fontFamily": "$font-main",
+                      "fontSize": 15,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Fe1NJ",
+                      "name": "Stock Name",
+                      "fill": "$text-secondary",
+                      "content": "마이크로소프트",
+                      "fontFamily": "$font-main",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "R4Lli",
+                      "name": "Spacer",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "TKNhb",
+                      "name": "Score Badge",
+                      "fill": "$bg-button",
+                      "cornerRadius": 4,
+                      "padding": [
+                        4,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Zbmtg",
+                          "name": "Score",
+                          "fill": "$text-white",
+                          "content": "87/100",
+                          "fontFamily": "$font-main",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "wMBXE",
+                  "name": "Reason",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "RSI 62, 이격도 양호, 거래량 급증",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "vMEUO",
+                  "name": "Indicators",
+                  "width": "fill_container",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "FR7xD",
+                      "name": "Ind_RSI",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "hPOnm",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "RSI",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "MyezT",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "62",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "scAXv",
+                      "name": "Ind_MACD",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "TFSKw",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "MACD",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "CKN1f",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "상승세",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "yFM9I",
+                      "name": "Ind_이격도",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Z0HtLP",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "이격도",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "wHPxl",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "+1.8%",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "QXhVM",
+                      "name": "Ind_거래량",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "zto6O",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "거래량",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "LffPN",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "+85%",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "mNjdV",
+              "name": "Card_META",
+              "width": "fill_container",
+              "fill": "$bg-page",
+              "cornerRadius": 6,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "wwTEA",
+                  "name": "Card Top",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "NZ4Fq",
+                      "name": "CB Wrap",
+                      "width": 20,
+                      "height": 20,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 3,
+                          "id": "P8Qdk6",
+                          "x": 2,
+                          "y": 2,
+                          "name": "Checkbox",
+                          "fill": "$bg-page",
+                          "width": 16,
+                          "height": 16,
+                          "stroke": "$border",
+                          "strokeWidth": 1
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "b0L1gM",
+                      "name": "Ticker",
+                      "fill": "$text-primary",
+                      "content": "META",
+                      "fontFamily": "$font-main",
+                      "fontSize": 15,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "rAaBw",
+                      "name": "Stock Name",
+                      "fill": "$text-secondary",
+                      "content": "메타",
+                      "fontFamily": "$font-main",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "PAqKg",
+                      "name": "Spacer",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "C0YO8",
+                      "name": "Score Badge",
+                      "fill": "$bg-button",
+                      "cornerRadius": 4,
+                      "padding": [
+                        4,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "K9Zn8",
+                          "name": "Score",
+                          "fill": "$text-white",
+                          "content": "82/100",
+                          "fontFamily": "$font-main",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "rS4Bi",
+                  "name": "Reason",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "RSI 66, MACD 상승 전환, 기술 섹터",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "pchxt",
+                  "name": "Indicators",
+                  "width": "fill_container",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "y39iQs",
+                      "name": "Ind_RSI",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "fzrCt",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "RSI",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "kczOX",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "66",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "lXPsG",
+                      "name": "Ind_MACD",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "YPr6x",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "MACD",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "xP0zJ",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "상승 전환",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "oHmWJ",
+                      "name": "Ind_이격도",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "F8UOS",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "이격도",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "vtcr7",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "+2.9%",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ojOxP",
+                      "name": "Ind_거래량",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Su8yM",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "거래량",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "OkUhl",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "+60%",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "StHsR",
+              "name": "Card_AAPL",
+              "width": "fill_container",
+              "fill": "$bg-page",
+              "cornerRadius": 6,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "v0TYMW",
+                  "name": "Card Top",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "ugf50",
+                      "name": "CB Wrap",
+                      "width": 20,
+                      "height": 20,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 3,
+                          "id": "ikyX7",
+                          "x": 2,
+                          "y": 2,
+                          "name": "Checkbox",
+                          "fill": "$bg-page",
+                          "width": 16,
+                          "height": 16,
+                          "stroke": "$border",
+                          "strokeWidth": 1
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "ciODN",
+                      "name": "Ticker",
+                      "fill": "$text-primary",
+                      "content": "AAPL",
+                      "fontFamily": "$font-main",
+                      "fontSize": 15,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "nTJXW",
+                      "name": "Stock Name",
+                      "fill": "$text-secondary",
+                      "content": "애플",
+                      "fontFamily": "$font-main",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "w8EpP",
+                      "name": "Spacer",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "d1ONeM",
+                      "name": "Score Badge",
+                      "fill": "$bg-button",
+                      "cornerRadius": 4,
+                      "padding": [
+                        4,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Whz09",
+                          "name": "Score",
+                          "fill": "$text-white",
+                          "content": "78/100",
+                          "fontFamily": "$font-main",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "yjvLQ",
+                  "name": "Reason",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "RSI 58, 안정적 추세, 대형주 선호",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "kvCgu",
+                  "name": "Indicators",
+                  "width": "fill_container",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "uwfAk",
+                      "name": "Ind_RSI",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "xnGdj",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "RSI",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "cPSmp",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "58",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Yf8Uz",
+                      "name": "Ind_MACD",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "J6Mt9",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "MACD",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "u4vGlC",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "보합",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "F7G6Vp",
+                      "name": "Ind_이격도",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "A1JZWJ",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "이격도",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "txx4V",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "+3.2%",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ejAhE",
+                      "name": "Ind_거래량",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "FZ0TU",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "거래량",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "L97cU",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "+30%",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "J2Kdw",
+              "name": "Card_GOOGL",
+              "width": "fill_container",
+              "fill": "$bg-page",
+              "cornerRadius": 6,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ofEFy",
+                  "name": "Card Top",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "dp5J3",
+                      "name": "CB Wrap",
+                      "width": 20,
+                      "height": 20,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 3,
+                          "id": "wTtiq",
+                          "x": 2,
+                          "y": 2,
+                          "name": "Checkbox",
+                          "fill": "$bg-page",
+                          "width": 16,
+                          "height": 16,
+                          "stroke": "$border",
+                          "strokeWidth": 1
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "d2Ef7Z",
+                      "name": "Ticker",
+                      "fill": "$text-primary",
+                      "content": "GOOGL",
+                      "fontFamily": "$font-main",
+                      "fontSize": 15,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "eBTSl",
+                      "name": "Stock Name",
+                      "fill": "$text-secondary",
+                      "content": "알파벳",
+                      "fontFamily": "$font-main",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Vxzgs",
+                      "name": "Spacer",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "IaZGP",
+                      "name": "Score Badge",
+                      "fill": "$bg-button",
+                      "cornerRadius": 4,
+                      "padding": [
+                        4,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "C7RYTU",
+                          "name": "Score",
+                          "fill": "$text-white",
+                          "content": "74/100",
+                          "fontFamily": "$font-main",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "lpE89",
+                  "name": "Reason",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "RSI 52, 이격도 중립, 섹터 강세",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "UhV0U",
+                  "name": "Indicators",
+                  "width": "fill_container",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "xEhu5",
+                      "name": "Ind_RSI",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "dMfgi",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "RSI",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Q3A8yi",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "52",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "tmc8n",
+                      "name": "Ind_MACD",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "mipJN",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "MACD",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "MJgok",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "보합",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "O1NSP",
+                      "name": "Ind_이격도",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "wYoUt",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "이격도",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "RNnDD",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "+0.5%",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "i0S4Oy",
+                      "name": "Ind_거래량",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "iH78d",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "거래량",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "H14djZ",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "+45%",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "z0L7P",
+              "name": "Card_AMD",
+              "width": "fill_container",
+              "fill": "$bg-page",
+              "cornerRadius": 6,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "DNsem",
+                  "name": "Card Top",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "tGK4b",
+                      "name": "CB Wrap",
+                      "width": 20,
+                      "height": 20,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 3,
+                          "id": "ShHUz",
+                          "x": 2,
+                          "y": 2,
+                          "name": "Checkbox",
+                          "fill": "$bg-page",
+                          "width": 16,
+                          "height": 16,
+                          "stroke": "$border",
+                          "strokeWidth": 1
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "wqg5k",
+                      "name": "Ticker",
+                      "fill": "$text-primary",
+                      "content": "AMD",
+                      "fontFamily": "$font-main",
+                      "fontSize": 15,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "xRjU5",
+                      "name": "Stock Name",
+                      "fill": "$text-secondary",
+                      "content": "AMD",
+                      "fontFamily": "$font-main",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "GcSRx",
+                      "name": "Spacer",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "iJOWe",
+                      "name": "Score Badge",
+                      "fill": "$bg-button",
+                      "cornerRadius": 4,
+                      "padding": [
+                        4,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ZFDFk",
+                          "name": "Score",
+                          "fill": "$text-white",
+                          "content": "71/100",
+                          "fontFamily": "$font-main",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "JxNQH",
+                  "name": "Reason",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "RSI 61, 반도체 섹터 강세, 거래량 증가",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "Cd9Hc",
+                  "name": "Indicators",
+                  "width": "fill_container",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "oIh5D",
+                      "name": "Ind_RSI",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "YmBgT",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "RSI",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "O2fDV4",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "61",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "HFT80",
+                      "name": "Ind_MACD",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "n796x4",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "MACD",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "IOQrl",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "골든크로스",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "JsbOH",
+                      "name": "Ind_이격도",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "SS6Fn",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "이격도",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Fs2a4",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "+4.2%",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ixK9y",
+                      "name": "Ind_거래량",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "u2TYS",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "거래량",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "eAyRS",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "+95%",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Aq9MQ",
+              "name": "Card_CRM",
+              "width": "fill_container",
+              "fill": "$bg-page",
+              "cornerRadius": 6,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "ZjqUx",
+                  "name": "Card Top",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "EN3p8",
+                      "name": "CB Wrap",
+                      "width": 20,
+                      "height": 20,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 3,
+                          "id": "pZRFY",
+                          "x": 2,
+                          "y": 2,
+                          "name": "Checkbox",
+                          "fill": "$bg-page",
+                          "width": 16,
+                          "height": 16,
+                          "stroke": "$border",
+                          "strokeWidth": 1
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "rFtsb",
+                      "name": "Ticker",
+                      "fill": "$text-primary",
+                      "content": "CRM",
+                      "fontFamily": "$font-main",
+                      "fontSize": 15,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "E4m9E",
+                      "name": "Stock Name",
+                      "fill": "$text-secondary",
+                      "content": "세일즈포스",
+                      "fontFamily": "$font-main",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "sfbqx",
+                      "name": "Spacer",
+                      "width": "fill_container",
+                      "height": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qMHBW",
+                      "name": "Score Badge",
+                      "fill": "$bg-button",
+                      "cornerRadius": 4,
+                      "padding": [
+                        4,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "JOLZz",
+                          "name": "Score",
+                          "fill": "$text-white",
+                          "content": "68/100",
+                          "fontFamily": "$font-main",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "wLo6g",
+                  "name": "Reason",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "RSI 49, 조건 완화 적용, 섹터 중립",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "YLlGm",
+                  "name": "Indicators",
+                  "width": "fill_container",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "LUKeS",
+                      "name": "Ind_RSI",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "GS4oK",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "RSI",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "MHVuC",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "49",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "doZdN",
+                      "name": "Ind_MACD",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "iu8mb",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "MACD",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "qfO8V",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "보합",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "R47JR6",
+                      "name": "Ind_이격도",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "fpiEl",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "이격도",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "pDGr7",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "-0.3%",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "r2eMte",
+                      "name": "Ind_거래량",
+                      "gap": 4,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "uNz66",
+                          "name": "Ind Label",
+                          "fill": "$text-secondary",
+                          "content": "거래량",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "qJgXu",
+                          "name": "Ind Value",
+                          "fill": "$text-primary",
+                          "content": "+20%",
+                          "fontFamily": "$font-main",
+                          "fontSize": 11,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "chiXC",
+          "name": "Action Bar",
+          "width": "fill_container",
+          "stroke": "$border",
+          "strokeWidth": {
+            "top": 1
+          },
+          "gap": 16,
+          "padding": [
+            12,
+            32
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "o2tYXK",
+              "name": "Selection Count",
+              "fill": "$text-primary",
+              "content": "3개 선택됨",
+              "fontFamily": "$font-main",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "aA4VO",
+              "name": "Spacer",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "peVn9",
+              "name": "Sim Button",
+              "fill": "$bg-page",
+              "cornerRadius": 6,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "padding": [
+                10,
+                20
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "EwRxj",
+                  "name": "Sim Label",
+                  "fill": "$text-primary",
+                  "content": "시뮬레이션 보기 →",
+                  "fontFamily": "$font-main",
+                  "fontSize": 14,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "u3enV",
+              "name": "Port Button",
+              "fill": "$bg-button",
+              "cornerRadius": 6,
+              "padding": [
+                10,
+                20
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "hzG8P",
+                  "name": "Port Label",
+                  "fill": "$text-white",
+                  "content": "포트폴리오 구성 →",
+                  "fontFamily": "$font-main",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "DLhwH",
+          "name": "Footer",
+          "width": "fill_container",
+          "fill": "$bg-section",
+          "padding": [
+            12,
+            32
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "xdWqc",
+              "name": "Disclaimer",
+              "fill": "$text-secondary",
+              "content": "투자 참고용이며 투자 손실 책임은 본인에게 있습니다.",
+              "fontFamily": "$font-main",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "tkk0m",
+              "name": "Spacer",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "text",
+              "id": "SuaYM",
+              "name": "Data Date",
+              "fill": "$text-secondary",
+              "content": "데이터 기준일: 2026-07-04",
+              "fontFamily": "$font-main",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "s2AOT7",
+      "x": 3040,
+      "y": 0,
+      "name": "3. 시뮬레이션 화면",
+      "clip": true,
+      "width": 1440,
+      "height": 1000,
+      "fill": "$bg-page",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "xUo0I",
+          "name": "Top Bar",
+          "width": 1440,
+          "height": 56,
+          "fill": "$bg-section",
+          "padding": [
+            0,
+            40
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "AFy8H",
+              "name": "App Title",
+              "fill": "$text-primary",
+              "content": "나스닥 종목추천",
+              "fontFamily": "$font-main",
+              "fontSize": 18,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "gwerB",
+              "name": "Nav Items",
+              "gap": 32,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "P68JD",
+                  "name": "홈/검색",
+                  "fill": "$text-secondary",
+                  "content": "홈/검색",
+                  "fontFamily": "$font-main",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "ebZDQ",
+                  "name": "추천결과",
+                  "fill": "$text-secondary",
+                  "content": "추천결과",
+                  "fontFamily": "$font-main",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "qCnjE",
+                  "name": "시뮬레이션",
+                  "fill": "$text-primary",
+                  "content": "시뮬레이션",
+                  "fontFamily": "$font-main",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "i3weIk",
+                  "name": "포트폴리오",
+                  "fill": "$text-secondary",
+                  "content": "포트폴리오",
+                  "fontFamily": "$font-main",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "z9HXOK",
+          "name": "Main Content",
+          "width": 1440,
+          "height": 944,
+          "fill": "$bg-page",
+          "layout": "vertical",
+          "gap": 32,
+          "padding": [
+            40,
+            80
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "lkkpi",
+              "name": "Title Section",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "vD8PX",
+                  "name": "Page Title",
+                  "fill": "$text-primary",
+                  "content": "3개월 시뮬레이션",
+                  "fontFamily": "$font-main",
+                  "fontSize": 28,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "VlLYD",
+                  "name": "Page Subtitle",
+                  "fill": "$text-secondary",
+                  "content": "과거 3개월 실현 수익률 (미래 보장 아님)",
+                  "fontFamily": "$font-main",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "YuiWK",
+              "name": "Summary Cards",
+              "width": "fill_container",
+              "gap": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "w6hTj",
+                  "name": "선택 종목 수 Card",
+                  "width": "fill_container",
+                  "fill": "$bg-section",
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 20,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "WupIV",
+                      "name": "선택 종목 수 Label",
+                      "fill": "$text-secondary",
+                      "content": "선택 종목 수",
+                      "fontFamily": "$font-main",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ufjXk",
+                      "name": "선택 종목 수 Value",
+                      "fill": "$text-primary",
+                      "content": "3개",
+                      "fontFamily": "$font-main",
+                      "fontSize": 24,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Kl9Hl",
+                  "name": "평균 수익률 Card",
+                  "width": "fill_container",
+                  "fill": "$bg-section",
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 20,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "yhExc",
+                      "name": "평균 수익률 Label",
+                      "fill": "$text-secondary",
+                      "content": "평균 수익률",
+                      "fontFamily": "$font-main",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "OMxSn",
+                      "name": "평균 수익률 Value",
+                      "fill": "$text-primary",
+                      "content": "+12.4%",
+                      "fontFamily": "$font-main",
+                      "fontSize": 24,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "fJx5f",
+                  "name": "최고 수익률 Card",
+                  "width": "fill_container",
+                  "fill": "$bg-section",
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 20,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "TjDf3",
+                      "name": "최고 수익률 Label",
+                      "fill": "$text-secondary",
+                      "content": "최고 수익률",
+                      "fontFamily": "$font-main",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "TEwUk",
+                      "name": "최고 수익률 Value",
+                      "fill": "$text-primary",
+                      "content": "+21.7%",
+                      "fontFamily": "$font-main",
+                      "fontSize": 24,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Q06gg",
+                  "name": "최저 수익률 Card",
+                  "width": "fill_container",
+                  "fill": "$bg-section",
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 20,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "m2J8tX",
+                      "name": "최저 수익률 Label",
+                      "fill": "$text-secondary",
+                      "content": "최저 수익률",
+                      "fontFamily": "$font-main",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "leqAb",
+                      "name": "최저 수익률 Value",
+                      "fill": "$text-primary",
+                      "content": "-3.2%",
+                      "fontFamily": "$font-main",
+                      "fontSize": 24,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Pv0GG",
+              "name": "Chart Section",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "H7QyTr",
+                  "name": "Chart Title",
+                  "fill": "$text-primary",
+                  "content": "가격 추이 (최근 63거래일)",
+                  "fontFamily": "$font-main",
+                  "fontSize": 16,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "ddFgt",
+                  "name": "Chart Placeholder",
+                  "width": "fill_container",
+                  "height": 200,
+                  "fill": "$bg-section",
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "v1zVVG",
+                      "name": "Chart Label",
+                      "fill": "$text-secondary",
+                      "content": "[ 가격 차트 영역 ]",
+                      "fontFamily": "$font-main",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "EdA9t",
+              "name": "Stock Detail Table",
+              "width": "fill_container",
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "YWEFk",
+                  "name": "Table Title",
+                  "fill": "$text-primary",
+                  "content": "종목별 시뮬레이션 결과",
+                  "fontFamily": "$font-main",
+                  "fontSize": 16,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "aoyQM",
+                  "name": "Table Header",
+                  "width": "fill_container",
+                  "fill": "$bg-section",
+                  "padding": [
+                    12,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "BtigM",
+                      "name": "Header 티커",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 80,
+                      "content": "티커",
+                      "fontFamily": "$font-main",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "UxGGl",
+                      "name": "Header 종목명",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 160,
+                      "content": "종목명",
+                      "fontFamily": "$font-main",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "HR1PA",
+                      "name": "Header 매수가(3개월전)",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 140,
+                      "content": "매수가(3개월전)",
+                      "fontFamily": "$font-main",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "T72dm",
+                      "name": "Header 현재가",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 120,
+                      "content": "현재가",
+                      "fontFamily": "$font-main",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Cs6VQ",
+                      "name": "Header 수익률",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "수익률",
+                      "fontFamily": "$font-main",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Gx5fY",
+                      "name": "Header 최고가",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "최고가",
+                      "fontFamily": "$font-main",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "DHYnN",
+                      "name": "Header 최저가",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "최저가",
+                      "fontFamily": "$font-main",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "izdyJ",
+                      "name": "Header 변동폭",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "변동폭",
+                      "fontFamily": "$font-main",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "swf61",
+                  "name": "Row AAPL",
+                  "width": "fill_container",
+                  "stroke": "$border",
+                  "strokeWidth": {
+                    "bottom": 1
+                  },
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "CbB85",
+                      "name": "AAPL 티커",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 80,
+                      "content": "AAPL",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "PzLKC",
+                      "name": "AAPL 종목명",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 160,
+                      "content": "Apple Inc.",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "QcPMh",
+                      "name": "AAPL 매수가(3개월전)",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 140,
+                      "content": "$178.20",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "MX8G0",
+                      "name": "AAPL 현재가",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 120,
+                      "content": "$199.50",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "WfyvE",
+                      "name": "AAPL 수익률",
+                      "fill": "#5CB85C",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "+11.9%",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Fi3QM",
+                      "name": "AAPL 최고가",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "$205.30",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "sCOFC",
+                      "name": "AAPL 최저가",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "$172.10",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "P2RVyq",
+                      "name": "AAPL 변동폭",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "18.7%",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "IYmoP",
+                  "name": "Row NVDA",
+                  "width": "fill_container",
+                  "stroke": "$border",
+                  "strokeWidth": {
+                    "bottom": 1
+                  },
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "J3sxWX",
+                      "name": "NVDA 티커",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 80,
+                      "content": "NVDA",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "yj1rS",
+                      "name": "NVDA 종목명",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 160,
+                      "content": "NVIDIA Corp.",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "VIjH5",
+                      "name": "NVDA 매수가(3개월전)",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 140,
+                      "content": "$820.00",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ogqb1",
+                      "name": "NVDA 현재가",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 120,
+                      "content": "$998.40",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "r9HoWp",
+                      "name": "NVDA 수익률",
+                      "fill": "#5CB85C",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "+21.7%",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "fNMwj",
+                      "name": "NVDA 최고가",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "$1,050",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "i4RTqH",
+                      "name": "NVDA 최저가",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "$790.00",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "TgnMC",
+                      "name": "NVDA 변동폭",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "32.9%",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "b72Vfe",
+                  "name": "Row MSFT",
+                  "width": "fill_container",
+                  "stroke": "$border",
+                  "strokeWidth": {
+                    "bottom": 1
+                  },
+                  "padding": [
+                    14,
+                    16
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "W64Sg",
+                      "name": "MSFT 티커",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 80,
+                      "content": "MSFT",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "I8gJ1E",
+                      "name": "MSFT 종목명",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 160,
+                      "content": "Microsoft Corp.",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "ErTqR",
+                      "name": "MSFT 매수가(3개월전)",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 140,
+                      "content": "$415.60",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "pTqBp",
+                      "name": "MSFT 현재가",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 120,
+                      "content": "$402.30",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "nprS8",
+                      "name": "MSFT 수익률",
+                      "fill": "#D9534F",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "-3.2%",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "D4zQc",
+                      "name": "MSFT 최고가",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "$430.10",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Ghy6n",
+                      "name": "MSFT 최저가",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "$390.20",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "M0DfZL",
+                      "name": "MSFT 변동폭",
+                      "fill": "$text-primary",
+                      "textGrowth": "fixed-width",
+                      "width": 100,
+                      "content": "10.2%",
+                      "fontFamily": "$font-main",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "uKTxm",
+              "name": "Footer",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "padding": [
+                20,
+                0,
+                0,
+                0
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "s92PM",
+                  "name": "Disclaimer",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "투자 참고용이며 투자 손실 책임은 본인에게 있습니다",
+                  "textAlign": "center",
+                  "fontFamily": "$font-main",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "KNXIm",
+                  "name": "Data Date",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "데이터 기준일: 2026-07-04",
+                  "textAlign": "center",
+                  "fontFamily": "$font-main",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "GKnno",
+              "name": "Button Row",
+              "width": "fill_container",
+              "gap": 16,
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "L6nAi",
+                  "name": "Back Button",
+                  "fill": "$bg-section",
+                  "cornerRadius": 6,
+                  "padding": [
+                    12,
+                    24
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "mkFHT",
+                      "name": "Back Label",
+                      "fill": "$text-primary",
+                      "content": "← 추천결과",
+                      "fontFamily": "$font-main",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "BQ84a",
+                  "name": "Next Button",
+                  "fill": "$bg-button",
+                  "cornerRadius": 6,
+                  "padding": [
+                    12,
+                    24
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "TYJd4",
+                      "name": "Next Label",
+                      "fill": "$text-white",
+                      "content": "포트폴리오 구성 →",
+                      "fontFamily": "$font-main",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "hT8ww",
+      "x": 4560,
+      "y": 0,
+      "name": "4. 포트폴리오 화면",
+      "clip": true,
+      "width": 1440,
+      "height": 1000,
+      "fill": "$bg-page",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "slSf8",
+          "name": "Top Bar",
+          "width": 1440,
+          "height": 56,
+          "fill": "$bg-section",
+          "padding": [
+            0,
+            40
+          ],
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "HRURr",
+              "name": "App Title",
+              "fill": "$text-primary",
+              "content": "나스닥 종목추천",
+              "fontFamily": "$font-main",
+              "fontSize": 18,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "wf0Bd",
+              "name": "Nav Items",
+              "gap": 32,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "UIf9H",
+                  "name": "홈/검색",
+                  "fill": "$text-secondary",
+                  "content": "홈/검색",
+                  "fontFamily": "$font-main",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "S1LijD",
+                  "name": "추천결과",
+                  "fill": "$text-secondary",
+                  "content": "추천결과",
+                  "fontFamily": "$font-main",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "P6jZ0S",
+                  "name": "시뮬레이션",
+                  "fill": "$text-secondary",
+                  "content": "시뮬레이션",
+                  "fontFamily": "$font-main",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "vrnli",
+                  "name": "포트폴리오",
+                  "fill": "$text-primary",
+                  "content": "포트폴리오",
+                  "fontFamily": "$font-main",
+                  "fontSize": 14,
+                  "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "G34FD4",
+          "name": "Main Content",
+          "width": 1440,
+          "height": 944,
+          "fill": "$bg-page",
+          "layout": "vertical",
+          "gap": 32,
+          "padding": [
+            40,
+            80
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "oXQH2",
+              "name": "Title Section",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "wDu0z",
+                  "name": "Page Title",
+                  "fill": "$text-primary",
+                  "content": "포트폴리오 구성",
+                  "fontFamily": "$font-main",
+                  "fontSize": 28,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "QmZiT",
+                  "name": "Page Subtitle",
+                  "fill": "$text-secondary",
+                  "content": "균등 비중 포트폴리오 · 선택 종목 3개",
+                  "fontFamily": "$font-main",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "O5sQB",
+              "name": "Portfolio Summary",
+              "width": "fill_container",
+              "gap": 20,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "k12gr",
+                  "name": "종합 수익률 Card",
+                  "width": "fill_container",
+                  "fill": "$bg-section",
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 24,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "mQIZx",
+                      "name": "종합 수익률 Label",
+                      "fill": "$text-secondary",
+                      "content": "종합 수익률",
+                      "fontFamily": "$font-main",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "V0cPd",
+                      "name": "종합 수익률 Value",
+                      "fill": "$text-primary",
+                      "content": "+10.1%",
+                      "fontFamily": "$font-main",
+                      "fontSize": 28,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "XjLzi",
+                      "name": "종합 수익률 Sub",
+                      "fill": "$text-secondary",
+                      "content": "개별 수익률 단순 평균",
+                      "fontFamily": "$font-main",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Z2Dbcx",
+                  "name": "평균 개별 변동성 Card",
+                  "width": "fill_container",
+                  "fill": "$bg-section",
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 24,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "f93bq",
+                      "name": "평균 개별 변동성 Label",
+                      "fill": "$text-secondary",
+                      "content": "평균 개별 변동성",
+                      "fontFamily": "$font-main",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "qAkKl",
+                      "name": "평균 개별 변동성 Value",
+                      "fill": "$text-primary",
+                      "content": "20.6%",
+                      "fontFamily": "$font-main",
+                      "fontSize": 28,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "qcOok",
+                      "name": "평균 개별 변동성 Sub",
+                      "fill": "$text-secondary",
+                      "content": "상관관계 미반영",
+                      "fontFamily": "$font-main",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "bs9XL",
+                  "name": "균등 비중 Card",
+                  "width": "fill_container",
+                  "fill": "$bg-section",
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "padding": 24,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "X1JfLd",
+                      "name": "균등 비중 Label",
+                      "fill": "$text-secondary",
+                      "content": "균등 비중",
+                      "fontFamily": "$font-main",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "O6bIgl",
+                      "name": "균등 비중 Value",
+                      "fill": "$text-primary",
+                      "content": "33.3%",
+                      "fontFamily": "$font-main",
+                      "fontSize": 28,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "sBiDd",
+                      "name": "균등 비중 Sub",
+                      "fill": "$text-secondary",
+                      "content": "종목당 배분 비율",
+                      "fontFamily": "$font-main",
+                      "fontSize": 11,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "cL88Z",
+              "name": "Detail Section",
+              "width": "fill_container",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "dDCOv",
+                  "name": "Allocation Chart",
+                  "width": "fill_container",
+                  "fill": "$bg-section",
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "gap": 16,
+                  "padding": 24,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "C6UxKd",
+                      "name": "Pie Title",
+                      "fill": "$text-primary",
+                      "content": "비중 배분",
+                      "fontFamily": "$font-main",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "d18Rg4",
+                      "name": "Pie Placeholder",
+                      "width": "fill_container",
+                      "height": 200,
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "fz3mX",
+                          "name": "Pie Circle",
+                          "fill": "$bg-card",
+                          "width": 160,
+                          "height": 160,
+                          "stroke": "$border",
+                          "strokeWidth": 2
+                        },
+                        {
+                          "type": "text",
+                          "id": "rHa6q",
+                          "layoutPosition": "absolute",
+                          "x": 40,
+                          "y": 90,
+                          "name": "Pie Center Label",
+                          "fill": "$text-secondary",
+                          "content": "균등 33.3%",
+                          "fontFamily": "$font-main",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "MJ9Qs",
+                      "name": "Legend",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Y1b19o",
+                          "name": "Legend AAPL",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": 2,
+                              "id": "J8H70Z",
+                              "name": "AAPL Dot",
+                              "fill": "$bg-card",
+                              "width": 12,
+                              "height": 12
+                            },
+                            {
+                              "type": "text",
+                              "id": "VqLH5",
+                              "name": "AAPL Name",
+                              "fill": "$text-primary",
+                              "content": "AAPL",
+                              "fontFamily": "$font-main",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "ippiU",
+                              "name": "AAPL Pct",
+                              "fill": "$text-secondary",
+                              "content": "33.3%",
+                              "fontFamily": "$font-main",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "P1Jzxm",
+                          "name": "Legend NVDA",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": 2,
+                              "id": "Y0Ej1y",
+                              "name": "NVDA Dot",
+                              "fill": "$bg-card",
+                              "width": 12,
+                              "height": 12
+                            },
+                            {
+                              "type": "text",
+                              "id": "PywvM",
+                              "name": "NVDA Name",
+                              "fill": "$text-primary",
+                              "content": "NVDA",
+                              "fontFamily": "$font-main",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "WhCd8",
+                              "name": "NVDA Pct",
+                              "fill": "$text-secondary",
+                              "content": "33.3%",
+                              "fontFamily": "$font-main",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "W3PBT",
+                          "name": "Legend MSFT",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": 2,
+                              "id": "vO82G",
+                              "name": "MSFT Dot",
+                              "fill": "$bg-card",
+                              "width": 12,
+                              "height": 12
+                            },
+                            {
+                              "type": "text",
+                              "id": "y7Rke",
+                              "name": "MSFT Name",
+                              "fill": "$text-primary",
+                              "content": "MSFT",
+                              "fontFamily": "$font-main",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "ruwvx",
+                              "name": "MSFT Pct",
+                              "fill": "$text-secondary",
+                              "content": "33.3%",
+                              "fontFamily": "$font-main",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "j5q1Sv",
+                  "name": "Stock Breakdown",
+                  "width": "fill_container",
+                  "fill": "$bg-section",
+                  "cornerRadius": 8,
+                  "layout": "vertical",
+                  "gap": 16,
+                  "padding": 24,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "qFY4v",
+                      "name": "Breakdown Title",
+                      "fill": "$text-primary",
+                      "content": "종목별 상세",
+                      "fontFamily": "$font-main",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "siw8e",
+                      "name": "AAPL Card",
+                      "width": "fill_container",
+                      "fill": "$bg-page",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "KUUhP",
+                          "name": "AAPL Top",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "SmKw9",
+                              "name": "AAPL Ticker",
+                              "fill": "$text-primary",
+                              "content": "AAPL · Apple Inc.",
+                              "fontFamily": "$font-main",
+                              "fontSize": 15,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "F6XMWR",
+                              "name": "AAPL Return",
+                              "fill": "#5CB85C",
+                              "content": "+11.9%",
+                              "fontFamily": "$font-main",
+                              "fontSize": 15,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Y5KY7q",
+                          "name": "AAPL Bottom",
+                          "width": "fill_container",
+                          "gap": 24,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "OhWAt",
+                              "name": "AAPL Vol",
+                              "fill": "$text-secondary",
+                              "content": "변동성: 15.2%",
+                              "fontFamily": "$font-main",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "aVzJe",
+                              "name": "AAPL Sector",
+                              "fill": "$text-secondary",
+                              "content": "섹터: Technology",
+                              "fontFamily": "$font-main",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "BSAc5",
+                              "name": "AAPL Weight",
+                              "fill": "$text-secondary",
+                              "content": "비중: 33.3%",
+                              "fontFamily": "$font-main",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "fJoWT",
+                      "name": "NVDA Card",
+                      "width": "fill_container",
+                      "fill": "$bg-page",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "q6hkP",
+                          "name": "NVDA Top",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "xBkEk",
+                              "name": "NVDA Ticker",
+                              "fill": "$text-primary",
+                              "content": "NVDA · NVIDIA Corp.",
+                              "fontFamily": "$font-main",
+                              "fontSize": 15,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "RChqk",
+                              "name": "NVDA Return",
+                              "fill": "#5CB85C",
+                              "content": "+21.7%",
+                              "fontFamily": "$font-main",
+                              "fontSize": 15,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "T99lb",
+                          "name": "NVDA Bottom",
+                          "width": "fill_container",
+                          "gap": 24,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "n9JGl",
+                              "name": "NVDA Vol",
+                              "fill": "$text-secondary",
+                              "content": "변동성: 32.9%",
+                              "fontFamily": "$font-main",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Y72ui",
+                              "name": "NVDA Sector",
+                              "fill": "$text-secondary",
+                              "content": "섹터: Technology",
+                              "fontFamily": "$font-main",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "lhzXj",
+                              "name": "NVDA Weight",
+                              "fill": "$text-secondary",
+                              "content": "비중: 33.3%",
+                              "fontFamily": "$font-main",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "UsTlT",
+                      "name": "MSFT Card",
+                      "width": "fill_container",
+                      "fill": "$bg-page",
+                      "cornerRadius": 6,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 8,
+                      "padding": 16,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "FTZpK",
+                          "name": "MSFT Top",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "z9NMOL",
+                              "name": "MSFT Ticker",
+                              "fill": "$text-primary",
+                              "content": "MSFT · Microsoft Corp.",
+                              "fontFamily": "$font-main",
+                              "fontSize": 15,
+                              "fontWeight": "600"
+                            },
+                            {
+                              "type": "text",
+                              "id": "RYzyh",
+                              "name": "MSFT Return",
+                              "fill": "#D9534F",
+                              "content": "-3.2%",
+                              "fontFamily": "$font-main",
+                              "fontSize": 15,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "sMazl",
+                          "name": "MSFT Bottom",
+                          "width": "fill_container",
+                          "gap": 24,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "lx7dG",
+                              "name": "MSFT Vol",
+                              "fill": "$text-secondary",
+                              "content": "변동성: 13.8%",
+                              "fontFamily": "$font-main",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "JeNWA",
+                              "name": "MSFT Sector",
+                              "fill": "$text-secondary",
+                              "content": "섹터: Technology",
+                              "fontFamily": "$font-main",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            },
+                            {
+                              "type": "text",
+                              "id": "Dd7ux",
+                              "name": "MSFT Weight",
+                              "fill": "$text-secondary",
+                              "content": "비중: 33.3%",
+                              "fontFamily": "$font-main",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "KmutE",
+              "name": "Version Hint",
+              "width": "fill_container",
+              "fill": "#EEF4FF",
+              "cornerRadius": 6,
+              "gap": 8,
+              "padding": [
+                12,
+                20
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "SZGvy",
+                  "name": "Hint Icon",
+                  "fill": "$accent",
+                  "content": "ℹ",
+                  "fontFamily": "$font-main",
+                  "fontSize": 14,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "CXfeU",
+                  "name": "Hint Text",
+                  "fill": "$accent",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "안정형/공격형 등 위험성향별 구성은 다음 버전에서 제공됩니다",
+                  "fontFamily": "$font-main",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "JOycS",
+              "name": "Footer",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "padding": [
+                16,
+                0,
+                0,
+                0
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "k620h",
+                  "name": "Disclaimer",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "투자 참고용이며 투자 손실 책임은 본인에게 있습니다",
+                  "textAlign": "center",
+                  "fontFamily": "$font-main",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "aRVyZ",
+                  "name": "Data Date",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "데이터 기준일: 2026-07-04",
+                  "textAlign": "center",
+                  "fontFamily": "$font-main",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "p2QFPI",
+              "name": "Button Row",
+              "width": "fill_container",
+              "gap": 16,
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "IIsZa",
+                  "name": "Back Button",
+                  "fill": "$bg-section",
+                  "cornerRadius": 6,
+                  "padding": [
+                    12,
+                    24
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "RtERg",
+                      "name": "Back Label",
+                      "fill": "$text-primary",
+                      "content": "← 시뮬레이션",
+                      "fontFamily": "$font-main",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "t7SDvz",
+      "x": 247,
+      "y": -136,
+      "name": "Top Bar",
+      "reusable": true,
+      "width": 1440,
+      "height": 56,
+      "fill": "$bg-page",
+      "stroke": "$border",
+      "strokeWidth": {
+        "bottom": 1
+      },
+      "padding": [
+        0,
+        32
+      ],
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "text",
+          "id": "T7zUX",
+          "name": "App Title",
+          "fill": "$text-primary",
+          "content": "나스닥 종목추천",
+          "fontFamily": "$font-main",
+          "fontSize": 18,
+          "fontWeight": "700"
+        },
+        {
+          "type": "frame",
+          "id": "cr5tn",
+          "name": "Spacer",
+          "width": "fill_container",
+          "height": 1
+        },
+        {
+          "type": "frame",
+          "id": "V4JoX",
+          "name": "Nav Tabs",
+          "gap": 24,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "qO6XD",
+              "name": "홈/검색",
+              "fill": "$text-primary",
+              "content": "홈/검색",
+              "fontFamily": "$font-main",
+              "fontSize": 14,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "t9UOmq",
+              "name": "추천결과",
+              "fill": "$text-secondary",
+              "content": "추천결과",
+              "fontFamily": "$font-main",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "iaF2G",
+              "name": "시뮬레이션",
+              "fill": "$text-secondary",
+              "content": "시뮬레이션",
+              "fontFamily": "$font-main",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "HYM2W",
+              "name": "포트폴리오",
+              "fill": "$text-secondary",
+              "content": "포트폴리오",
+              "fontFamily": "$font-main",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "bg-page": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "bg-section": {
+      "type": "color",
+      "value": "#F5F5F5"
+    },
+    "bg-card": {
+      "type": "color",
+      "value": "#E8E8E8"
+    },
+    "bg-button": {
+      "type": "color",
+      "value": "#333333"
+    },
+    "bg-input": {
+      "type": "color",
+      "value": "#EEEEEE"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#222222"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#777777"
+    },
+    "text-white": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "border": {
+      "type": "color",
+      "value": "#CCCCCC"
+    },
+    "accent": {
+      "type": "color",
+      "value": "#4A90D9"
+    },
+    "font-main": {
+      "type": "string",
+      "value": "Inter"
+    }
+  },
+  "fileToken": "873f8855-f7f2-4d09-a270-0df77f6f3869"
+}
