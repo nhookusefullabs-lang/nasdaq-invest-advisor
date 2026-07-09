@@ -1,5 +1,6 @@
 import Disclaimer from '../components/Disclaimer.jsx'
 import TickerPicker from '../components/TickerPicker.jsx'
+import PriceSparkline from '../components/PriceSparkline.jsx'
 
 export default function Simulation({
   generatedAt,
@@ -43,11 +44,16 @@ export default function Simulation({
                   </button>
                 </div>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-gray-600">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-gray-600 mb-3">
                 <div>매수가({sim.anchorDate}): {sim.anchorClose.toFixed(2)}</div>
                 <div>현재가({sim.currentDate}): {sim.currentClose.toFixed(2)}</div>
                 <div>기간 최고가: {sim.periodHigh.toFixed(2)}</div>
                 <div>기간 최저가: {sim.periodLow.toFixed(2)}</div>
+              </div>
+              <div className="flex flex-wrap gap-4 pt-2 border-t border-gray-100">
+                <PriceSparkline label="1개월" points={t.chart.oneMonth} />
+                <PriceSparkline label="3개월" points={t.chart.threeMonth} />
+                <PriceSparkline label="6개월" points={t.chart.sixMonth} />
               </div>
             </div>
           )

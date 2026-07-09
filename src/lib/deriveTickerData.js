@@ -2,8 +2,12 @@ import { sma, ema, rsiWilder, macd, disparity, volumeTrend, goldenCrossWithin, d
 
 // 3개월 시뮬레이션·화면 표시 창 (PRD §4.3, §7): 최근 63거래일
 const SIM_WINDOW = 63
+// 시뮬레이션 화면의 1개월 미니 차트 창 (약 21거래일)
+const ONE_MONTH_WINDOW = 21
 // 지표(SMA20/RSI14/MACD 워밍업) 안정 계산을 위한 최소 거래일 (수집 스크립트와 동일 기준)
 const MIN_TRADING_DAYS = 110
+
+const toChartPoints = (bars) => bars.map((b) => ({ date: b.date, close: b.close }))
 
 /**
  * 원본 티커 레코드({ticker,name,sector,series}) → 지표·시뮬레이션이 포함된 파생 데이터.
@@ -83,6 +87,12 @@ export function deriveTickerData(raw) {
       returnPct,
       periodHigh,
       periodLow,
+    },
+    // 시뮬레이션 화면의 1/3/6개월 미니 차트용 종가 시계열. 6개월 창은 수집된 전체 기간을 그대로 사용한다.
+    chart: {
+      oneMonth: toChartPoints(series.slice(-ONE_MONTH_WINDOW)),
+      threeMonth: toChartPoints(window63),
+      sixMonth: toChartPoints(series),
     },
     // sectorAnalysis.computeLeadingSectors() 실행 후 채워짐
     isLeadingSector: false,

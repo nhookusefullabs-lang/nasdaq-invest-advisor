@@ -61,6 +61,10 @@ describe('App end-to-end flow (real nasdaq100.json)', () => {
     await user.click(screen.getByRole('button', { name: /선택 종목 시뮬레이션 보기/ }))
     await waitFor(() => expect(screen.getByText('과거 3개월 시뮬레이션')).toBeInTheDocument())
     expect(screen.getAllByText(/기간 최고가/).length).toBe(selectCount)
+    // each selected ticker shows 1/3/6-month price sparklines
+    expect(screen.getAllByText('1개월').length).toBe(selectCount)
+    expect(screen.getAllByText('3개월').length).toBe(selectCount)
+    expect(screen.getAllByText('6개월').length).toBe(selectCount)
 
     // 4. Go to Portfolio screen
     await user.click(screen.getByRole('button', { name: /포트폴리오 구성 보기/ }))
