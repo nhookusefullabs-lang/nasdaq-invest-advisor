@@ -3,12 +3,21 @@ import { loadNasdaq100 } from './lib/loadData.js'
 import { applyFilters } from './lib/filters.js'
 import { recommend } from './lib/recommend.js'
 import { loadPersistedState, savePersistedState, DEFAULT_UI_STATE } from './lib/persistence.js'
-import { DEFAULT_WEIGHT } from './lib/portfolio.js'
 import NavTabs from './components/NavTabs.jsx'
 import HomeSearch from './screens/HomeSearch.jsx'
 import Recommend from './screens/Recommend.jsx'
 import Simulation from './screens/Simulation.jsx'
 import Portfolio from './screens/Portfolio.jsx'
+
+const roundPct = (x) => Math.round(x * 10) / 10
+
+// 선택된 종목 전체를 100/n 균등 비중으로 재배분한다 (기본값 및 "균등 배분" 리셋에 사용)
+function equalSplit(tickers) {
+  const n = tickers.length
+  if (n === 0) return {}
+  const share = roundPct(100 / n)
+  return Object.fromEntries(tickers.map((t) => [t, share]))
+}
 
 export default function App() {
   const [dataset, setDataset] = useState(null)
@@ -50,20 +59,31 @@ export default function App() {
   const toggleSelectedTicker = (ticker) =>
     setUiState((s) => {
       const isSelected = s.selectedTickers.includes(ticker)
-      const { [ticker]: _removed, ...weightsWithoutTicker } = s.weights
-      return {
-        ...s,
-        selectedTickers: isSelected
-          ? s.selectedTickers.filter((t) => t !== ticker)
-          : [...s.selectedTickers, ticker],
-        weights: isSelected
-          ? weightsWithoutTicker
-          : { ...s.weights, [ticker]: DEFAULT_WEIGHT },
-      }
+      const selectedTickers = isSelected
+        ? s.selectedTickers.filter((t) => t !== ticker)
+        : [...s.selectedTickers, ticker]
+      return { ...s, selectedTickers, weights: equalSplit(selectedTickers) }
     })
 
-  const setTickerWeight = (ticker, weight) =>
-    setUiState((s) => ({ ...s, weights: { ...s.weights, [ticker]: weight } }))
+  // 한 종목의 비중을 조정하면 나머지 종목들이 남은 비중(100 - value)을 균등하게 나눠 가져
+  // 전체 합이 항상 100이 되도록 자동 재조정한다.
+  const adjustTickerWeight = (ticker, rawValue) =>
+    setUiState((s) => {
+      const others = s.selectedTickers.filter((t) => t !== ticker)
+      if (others.length === 0) {
+        return { ...s, weights: { [ticker]: 100 } }
+      }
+      const value = Math.max(0, Math.min(100, rawValue))
+      const othersShare = roundPct((100 - value) / others.length)
+      const weights = { [ticker]: value }
+      others.forEach((t) => {
+        weights[t] = othersShare
+      })
+      return { ...s, weights }
+    })
+
+  const resetWeightsToEqual = () =>
+    setUiState((s) => ({ ...s, weights: equalSplit(s.selectedTickers) }))
 
   if (loadError) {
     return <CenteredMessage>데이터 로드 실패: {loadError}</CenteredMessage>
@@ -121,7 +141,8 @@ export default function App() {
           selectedTickerData={selectedTickerData}
           weights={uiState.weights}
           onToggleTicker={toggleSelectedTicker}
-          onWeightChange={setTickerWeight}
+          onWeightChange={adjustTickerWeight}
+          onResetWeights={resetWeightsToEqual}
         />
       )}
     </div>

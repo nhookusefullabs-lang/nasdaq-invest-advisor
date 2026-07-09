@@ -140,16 +140,38 @@ describe('App end-to-end flow (real nasdaq100.json)', () => {
       expect(screen.getByText('종합 예상 수익률 (가중 평균)')).toBeInTheDocument()
     )
 
-    // default equal weight: 50/50
-    const [firstTicker] = tickersToAdd
+    // default: 100 / n equal split (2 tickers -> 50/50)
+    const [firstTicker, secondTicker] = tickersToAdd
     const firstWeightInput = screen.getByLabelText(`${firstTicker} 가중치`)
-    expect(firstWeightInput).toHaveValue(100)
+    const secondWeightInput = screen.getByLabelText(`${secondTicker} 가중치`)
+    expect(firstWeightInput).toHaveValue(50)
+    expect(secondWeightInput).toHaveValue(50)
 
-    // manually skew the weight toward the first ticker and confirm normalized % updates
+    // adjusting one ticker's weight auto-rebalances the rest so the total stays 100
     await user.clear(firstWeightInput)
-    await user.type(firstWeightInput, '300')
+    await user.type(firstWeightInput, '70')
 
-    await waitFor(() => expect(screen.getByText('75.0%')).toBeInTheDocument())
-    expect(screen.getByText('25.0%')).toBeInTheDocument()
+    await waitFor(() => expect(firstWeightInput).toHaveValue(70))
+    expect(secondWeightInput).toHaveValue(30)
+
+    // "균등 배분으로 초기화" resets back to an equal split
+    await user.click(screen.getByRole('button', { name: '균등 배분으로 초기화' }))
+    await waitFor(() => expect(firstWeightInput).toHaveValue(50))
+    expect(secondWeightInput).toHaveValue(50)
+
+    // skew again, then add a 3rd ticker — composition changes reset everyone to a fresh 100/n split
+    await user.clear(firstWeightInput)
+    await user.type(firstWeightInput, '80')
+    await waitFor(() => expect(secondWeightInput).toHaveValue(20))
+
+    const thirdTicker = REAL_DATA.tickers[2].ticker
+    await user.clear(screen.getByPlaceholderText(/티커 또는 종목명 검색/))
+    await user.type(screen.getByPlaceholderText(/티커 또는 종목명 검색/), thirdTicker)
+    await user.click(await screen.findByRole('button', { name: '+ 추가' }))
+
+    const thirdWeightInput = screen.getByLabelText(`${thirdTicker} 가중치`)
+    await waitFor(() => expect(firstWeightInput).toHaveValue(33.3))
+    expect(secondWeightInput).toHaveValue(33.3)
+    expect(thirdWeightInput).toHaveValue(33.3)
   })
 })

@@ -1,7 +1,7 @@
 import Disclaimer from '../components/Disclaimer.jsx'
 import TickerPicker from '../components/TickerPicker.jsx'
 import PortfolioPieChart from '../components/PortfolioPieChart.jsx'
-import { buildPortfolio, DEFAULT_WEIGHT } from '../lib/portfolio.js'
+import { buildPortfolio } from '../lib/portfolio.js'
 import { assignPortfolioColors } from '../lib/portfolioColors.js'
 
 export default function Portfolio({
@@ -12,17 +12,17 @@ export default function Portfolio({
   weights,
   onToggleTicker,
   onWeightChange,
+  onResetWeights,
 }) {
   const portfolio = buildPortfolio(selectedTickerData, weights)
   const colors = assignPortfolioColors(selectedTickers)
-  const resetToEqual = () => selectedTickerData.forEach((t) => onWeightChange(t.ticker, DEFAULT_WEIGHT))
 
   return (
     <div>
       <h2 className="text-xl font-bold mb-1">포트폴리오 구성 (비중 직접 설정)</h2>
       <p className="text-sm text-gray-500 mb-4">
-        종목별로 상대 가중치를 입력하면 합계 대비 비율로 자동 환산됩니다. 안정형/공격형 등 위험성향별 자동 구성은 다음
-        버전에서 제공됩니다.
+        종목별 비중(%)을 입력하면 나머지 종목이 남은 비중을 균등하게 나눠 가져 합계가 항상 100%로 자동
+        맞춰집니다. 안정형/공격형 등 위험성향별 자동 구성은 다음 버전에서 제공됩니다.
       </p>
 
       <TickerPicker allTickers={allTickerData} selectedTickers={selectedTickers} onAdd={onToggleTicker} />
@@ -54,14 +54,13 @@ export default function Portfolio({
               <input
                 type="number"
                 min="0"
-                value={weights[t.ticker] ?? DEFAULT_WEIGHT}
+                max="100"
+                value={weights[t.ticker] ?? 0}
                 onChange={(e) => onWeightChange(t.ticker, Number(e.target.value))}
                 aria-label={`${t.ticker} 가중치`}
                 className="w-20 border border-gray-300 rounded px-2 py-1 text-right"
               />
-              <span className="text-gray-400 text-xs w-14 text-right">
-                {portfolio ? `${portfolio.weightsPct[t.ticker].toFixed(1)}%` : '-'}
-              </span>
+              <span className="text-gray-400 text-xs">%</span>
               <button
                 type="button"
                 onClick={() => onToggleTicker(t.ticker)}
@@ -78,9 +77,9 @@ export default function Portfolio({
         )}
       </div>
 
-      {selectedTickerData.length > 0 && (
+      {selectedTickerData.length > 1 && (
         <div className="flex justify-end mb-4">
-          <button type="button" onClick={resetToEqual} className="text-xs text-blue-600 hover:underline">
+          <button type="button" onClick={onResetWeights} className="text-xs text-blue-600 hover:underline">
             균등 배분으로 초기화
           </button>
         </div>

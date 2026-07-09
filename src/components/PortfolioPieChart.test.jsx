@@ -21,15 +21,21 @@ describe('PortfolioPieChart', () => {
     expect(screen.getByRole('img', { name: /파이차트/ })).toBeInTheDocument()
   })
 
-  it('shows a tooltip with the value and ticker on hover', async () => {
+  it('always shows a ticker label on each slice, and adds the company name in a tooltip on hover', async () => {
     const user = userEvent.setup()
     const { container } = render(<PortfolioPieChart entries={[entry('AAPL', 60), entry('MSFT', 40)]} />)
 
+    // ticker labels are direct-labeled on the chart at all times (no hover needed)
+    expect(screen.getByText('AAPL')).toBeInTheDocument()
+    expect(screen.getByText('MSFT')).toBeInTheDocument()
     expect(screen.queryByText('60.0%')).not.toBeInTheDocument()
+    expect(screen.queryByText('AAPL Inc.')).not.toBeInTheDocument()
+
     const paths = container.querySelectorAll('path')
     await user.hover(paths[0])
     expect(screen.getByText('60.0%')).toBeInTheDocument()
-    expect(screen.getByText('AAPL')).toBeInTheDocument()
+    expect(screen.getAllByText('AAPL').length).toBe(2) // direct label + tooltip
+    expect(screen.getByText('AAPL Inc.')).toBeInTheDocument()
   })
 
   it('folds isOther entries into a single combined slice', () => {
