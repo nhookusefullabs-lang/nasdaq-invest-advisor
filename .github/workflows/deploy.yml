@@ -1,0 +1,60 @@
+name: 배포 (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+  workflow_run:
+    # 데이터 자동 갱신 워크플로우가 main에 커밋을 푸시해도, GITHUB_TOKEN으로 만든 푸시는
+    # 기본적으로 다른 워크플로우의 push 트리거를 발동시키지 않는다.
+    # workflow_run으로 명시적으로 체이닝해서 데이터 갱신 → 재배포가 이어지도록 한다.
+    workflows: ['나스닥100 데이터 자동 갱신']
+    types: [completed]
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Node.js 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: 프로덕션 빌드
+        run: npm run build
+
+      - name: Pages 아티팩트 업로드
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: GitHub Pages 배포
+        id: deployment
+        uses: actions/deploy-pages@v4

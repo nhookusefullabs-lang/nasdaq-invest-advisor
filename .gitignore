@@ -1,0 +1,5 @@
+node_modules/
+dist/
+scripts/collect_data.log
+scripts/run.err
+.DS_Store
