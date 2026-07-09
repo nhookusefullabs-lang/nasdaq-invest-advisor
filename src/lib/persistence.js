@@ -12,6 +12,7 @@ export const DEFAULT_UI_STATE = {
   searchQuery: '',
   filters: DEFAULT_FILTER_STATE,
   selectedTickers: [],
+  weights: {}, // 티커별 상대 가중치 (포트폴리오 화면에서 수동 입력, 정규화 전 원값)
 }
 
 /** validTickerSet: Set<string> — 현재 로드된 데이터의 티커 집합 */
@@ -29,11 +30,17 @@ export function loadPersistedState(validTickerSet) {
       ? parsed.selectedTickers.filter((t) => validTickerSet.has(t))
       : []
 
+    const weights =
+      parsed.weights && typeof parsed.weights === 'object'
+        ? Object.fromEntries(Object.entries(parsed.weights).filter(([t]) => validTickerSet.has(t)))
+        : {}
+
     return {
       ...DEFAULT_UI_STATE,
       ...parsed,
       filters: { ...DEFAULT_FILTER_STATE, ...(parsed.filters ?? {}) },
       selectedTickers,
+      weights,
     }
   } catch {
     return { ...DEFAULT_UI_STATE }

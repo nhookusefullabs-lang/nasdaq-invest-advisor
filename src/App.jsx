@@ -3,6 +3,7 @@ import { loadNasdaq100 } from './lib/loadData.js'
 import { applyFilters } from './lib/filters.js'
 import { recommend } from './lib/recommend.js'
 import { loadPersistedState, savePersistedState, DEFAULT_UI_STATE } from './lib/persistence.js'
+import { DEFAULT_WEIGHT } from './lib/portfolio.js'
 import NavTabs from './components/NavTabs.jsx'
 import HomeSearch from './screens/HomeSearch.jsx'
 import Recommend from './screens/Recommend.jsx'
@@ -35,11 +36,34 @@ export default function App() {
 
   const recommendation = useMemo(() => recommend(filteredTickers), [filteredTickers])
 
+  const availableTickerData = useMemo(() => {
+    if (!dataset) return []
+    return dataset.tickers.filter((t) => t.dataSufficient)
+  }, [dataset])
+
   const selectedTickerData = useMemo(() => {
     if (!dataset) return []
     const byTicker = new Map(dataset.tickers.map((t) => [t.ticker, t]))
     return uiState.selectedTickers.map((t) => byTicker.get(t)).filter(Boolean)
   }, [dataset, uiState.selectedTickers])
+
+  const toggleSelectedTicker = (ticker) =>
+    setUiState((s) => {
+      const isSelected = s.selectedTickers.includes(ticker)
+      const { [ticker]: _removed, ...weightsWithoutTicker } = s.weights
+      return {
+        ...s,
+        selectedTickers: isSelected
+          ? s.selectedTickers.filter((t) => t !== ticker)
+          : [...s.selectedTickers, ticker],
+        weights: isSelected
+          ? weightsWithoutTicker
+          : { ...s.weights, [ticker]: DEFAULT_WEIGHT },
+      }
+    })
+
+  const setTickerWeight = (ticker, weight) =>
+    setUiState((s) => ({ ...s, weights: { ...s.weights, [ticker]: weight } }))
 
   if (loadError) {
     return <CenteredMessage>데이터 로드 실패: {loadError}</CenteredMessage>
@@ -55,7 +79,7 @@ export default function App() {
       <h1 className="text-2xl font-bold mb-1">나스닥 종목추천</h1>
       <p className="text-sm text-gray-500 mb-6">기술적 지표 기반 나스닥100 종목 추천 · 3개월 시뮬레이션</p>
 
-      <NavTabs current={uiState.currentScreen} onChange={setScreen} selectedCount={uiState.selectedTickers.length} />
+      <NavTabs current={uiState.currentScreen} onChange={setScreen} />
 
       {uiState.currentScreen === 'home' && (
         <HomeSearch
@@ -73,14 +97,7 @@ export default function App() {
           generatedAt={dataset.generatedAt}
           recommendation={recommendation}
           selectedTickers={uiState.selectedTickers}
-          onToggleSelect={(ticker) =>
-            setUiState((s) => ({
-              ...s,
-              selectedTickers: s.selectedTickers.includes(ticker)
-                ? s.selectedTickers.filter((t) => t !== ticker)
-                : [...s.selectedTickers, ticker],
-            }))
-          }
+          onToggleSelect={toggleSelectedTicker}
           onGoToSimulation={() => setScreen('simulation')}
         />
       )}
@@ -88,13 +105,24 @@ export default function App() {
       {uiState.currentScreen === 'simulation' && (
         <Simulation
           generatedAt={dataset.generatedAt}
+          allTickerData={availableTickerData}
+          selectedTickers={uiState.selectedTickers}
           selectedTickerData={selectedTickerData}
+          onToggleTicker={toggleSelectedTicker}
           onGoToPortfolio={() => setScreen('portfolio')}
         />
       )}
 
       {uiState.currentScreen === 'portfolio' && (
-        <Portfolio generatedAt={dataset.generatedAt} selectedTickerData={selectedTickerData} />
+        <Portfolio
+          generatedAt={dataset.generatedAt}
+          allTickerData={availableTickerData}
+          selectedTickers={uiState.selectedTickers}
+          selectedTickerData={selectedTickerData}
+          weights={uiState.weights}
+          onToggleTicker={toggleSelectedTicker}
+          onWeightChange={setTickerWeight}
+        />
       )}
     </div>
   )

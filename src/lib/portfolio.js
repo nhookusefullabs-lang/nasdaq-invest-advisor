@@ -1,23 +1,34 @@
-// 균등 비중 포트폴리오 (PRD §4.4)
-// 종합 수익률 = 개별 3개월 실현 수익률의 단순 평균
-// 종합 위험 지표 = 개별 종목 변동성의 단순 평균 ("평균 개별 변동성(상관관계 미반영)")
+// 수동 비중 포트폴리오
+// 종목 수 제한 없음. 사용자가 종목별로 입력한 상대 가중치(weights)를 합계 대비 비율로 정규화해
+// 가중 평균 수익률·가중 평균 변동성(상관관계 미반영)을 계산한다.
 
-export const MIN_PORTFOLIO_SIZE = 3
-export const MAX_PORTFOLIO_SIZE = 5
+export const DEFAULT_WEIGHT = 100
 
-export function buildPortfolio(selectedTickers) {
+export function buildPortfolio(selectedTickers, weights = {}) {
   const n = selectedTickers.length
-  if (n < MIN_PORTFOLIO_SIZE || n > MAX_PORTFOLIO_SIZE) {
-    return null
-  }
-  const equalWeightReturnPct =
-    selectedTickers.reduce((s, t) => s + t.simulation.returnPct, 0) / n
-  const avgIndividualVolatility =
-    selectedTickers.reduce((s, t) => s + t.indicators.volatility, 0) / n
+  if (n === 0) return null
+
+  const rawWeights = selectedTickers.map((t) => Math.max(0, weights[t.ticker] ?? DEFAULT_WEIGHT))
+  const totalWeight = rawWeights.reduce((s, w) => s + w, 0)
+  if (totalWeight <= 0) return null
+
+  const normalizedWeights = rawWeights.map((w) => w / totalWeight)
+
+  const weightedReturnPct = selectedTickers.reduce(
+    (s, t, i) => s + normalizedWeights[i] * t.simulation.returnPct,
+    0
+  )
+  const weightedVolatility = selectedTickers.reduce(
+    (s, t, i) => s + normalizedWeights[i] * t.indicators.volatility,
+    0
+  )
 
   return {
     tickers: selectedTickers.map((t) => t.ticker),
-    equalWeightReturnPct,
-    avgIndividualVolatility,
+    weightsPct: Object.fromEntries(
+      selectedTickers.map((t, i) => [t.ticker, normalizedWeights[i] * 100])
+    ),
+    weightedReturnPct,
+    weightedVolatility,
   }
 }

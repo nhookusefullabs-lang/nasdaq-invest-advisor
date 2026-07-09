@@ -52,7 +52,7 @@ export default function Recommend({ generatedAt, recommendation, selectedTickers
       </div>
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-600">{selectedTickers.length}개 선택됨 (시뮬레이션은 1개 이상, 포트폴리오는 3~5개 필요)</p>
+        <p className="text-sm text-gray-600">{selectedTickers.length}개 선택됨 (시뮬레이션·포트폴리오는 1개 이상부터 가능)</p>
         <button
           type="button"
           disabled={selectedTickers.length === 0}

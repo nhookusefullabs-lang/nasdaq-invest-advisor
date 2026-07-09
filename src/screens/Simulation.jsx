@@ -1,12 +1,22 @@
 import Disclaimer from '../components/Disclaimer.jsx'
+import TickerPicker from '../components/TickerPicker.jsx'
 
-export default function Simulation({ generatedAt, selectedTickerData, onGoToPortfolio }) {
+export default function Simulation({
+  generatedAt,
+  allTickerData,
+  selectedTickers,
+  selectedTickerData,
+  onToggleTicker,
+  onGoToPortfolio,
+}) {
   return (
     <div>
       <h2 className="text-xl font-bold mb-1">과거 3개월 시뮬레이션</h2>
       <p className="text-sm text-gray-500 mb-4">
         과거 3개월 실현 수익률 (미래 보장 아님) — 최근 63거래일 중 첫 거래일 종가를 매수가로 가정합니다.
       </p>
+
+      <TickerPicker allTickers={allTickerData} selectedTickers={selectedTickers} onAdd={onToggleTicker} />
 
       <div className="space-y-3 mb-6">
         {selectedTickerData.map((t) => {
@@ -18,10 +28,20 @@ export default function Simulation({ generatedAt, selectedTickerData, onGoToPort
                 <p className="font-semibold text-sm">
                   {t.ticker} <span className="text-gray-500 font-normal">{t.name}</span>
                 </p>
-                <p className={`font-bold text-sm ${positive ? 'text-red-600' : 'text-blue-600'}`}>
-                  {positive ? '+' : ''}
-                  {sim.returnPct.toFixed(2)}%
-                </p>
+                <div className="flex items-center gap-3">
+                  <p className={`font-bold text-sm ${positive ? 'text-red-600' : 'text-blue-600'}`}>
+                    {positive ? '+' : ''}
+                    {sim.returnPct.toFixed(2)}%
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => onToggleTicker(t.ticker)}
+                    aria-label={`${t.ticker} 제거`}
+                    className="text-gray-400 hover:text-red-600 text-xs"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-gray-600">
                 <div>매수가({sim.anchorDate}): {sim.anchorClose.toFixed(2)}</div>
