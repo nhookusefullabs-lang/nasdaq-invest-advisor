@@ -111,3 +111,59 @@ describe('recommend - data insufficiency exclusion', () => {
     expect(result.list.length).toBe(0)
   })
 })
+
+describe('recommend - high-score inclusion despite failed buy signal', () => {
+  function highScoringSignalFailer(ticker) {
+    // RSI 30 fails rsiOk at every stage-1 level, so this never passes the buy signal —
+    // but disparity 15 (+60) and leading-sector (+10) alone reach score 70.
+    return makeTicker({
+      ticker,
+      isLeadingSector: true,
+      indicators: { ...makeTicker().indicators, rsi14: 30, disparity: 15, volTrend: 0 },
+    })
+  }
+
+  it('includes a signal-failing ticker once its score reaches the 70-point threshold', () => {
+    const passer = makeTicker({ ticker: 'PASS' })
+    const highScorer = highScoringSignalFailer('HIGH')
+    const result = recommend([passer, highScorer])
+
+    const entry = result.list.find((r) => r.ticker === 'HIGH')
+    expect(entry).toBeDefined()
+    expect(entry.signalPassed).toBe(false)
+    expect(entry.score).toBeCloseTo(70)
+    expect(entry.reasons).toMatch(/매수 신호 미충족/)
+  })
+
+  it('excludes a signal-failing ticker scoring just under the 70-point threshold', () => {
+    const almostHighScorer = makeTicker({
+      ticker: 'ALMOST',
+      isLeadingSector: false, // drops the +10 bonus, landing at 60 < 70
+      indicators: { ...makeTicker().indicators, rsi14: 30, disparity: 15, volTrend: 0 },
+    })
+    const result = recommend([almostHighScorer])
+    expect(result.list.length).toBe(0)
+  })
+
+  it('does not count high-score signal-failers toward insufficientSignal (that still tracks real signal passes only)', () => {
+    const highScorer = highScoringSignalFailer('HIGH')
+    const result = recommend([highScorer])
+    expect(result.list.length).toBe(1) // shown, selectable
+    expect(result.insufficientSignal).toBe(true) // but the buy-signal warning still fires
+  })
+
+  it('sorts signal-passers and high-score signal-failers together by score, and still caps at 10', () => {
+    const passers = Array.from({ length: 8 }, (_, i) =>
+      makeTicker({ ticker: `P${i}`, indicators: { ...makeTicker().indicators, disparity: 1 } }) // low score
+    )
+    const highScorers = Array.from({ length: 5 }, (_, i) => highScoringSignalFailer(`H${i}`))
+    const result = recommend([...passers, ...highScorers])
+
+    expect(result.list.length).toBe(10)
+    // higher-scoring signal-failers should rank above the low-scoring passers
+    expect(result.list[0].signalPassed).toBe(false)
+    for (let i = 1; i < result.list.length; i++) {
+      expect(result.list[i - 1].score).toBeGreaterThanOrEqual(result.list[i].score)
+    }
+  })
+})

@@ -7,7 +7,8 @@ export default function Recommend({ generatedAt, recommendation, selectedTickers
     <div>
       <h2 className="text-xl font-bold mb-1">추천 결과</h2>
       <p className="text-sm text-gray-500 mb-4">
-        1단계 매수 신호(RSI·MACD·골든크로스) 통과 종목을 2단계 점수 순으로 정렬했습니다.
+        1단계 매수 신호(RSI·MACD·골든크로스) 통과 종목을 2단계 점수 순으로 정렬했습니다. 신호를 통과하지
+        못했어도 점수 70점 이상인 종목은 고득점 특별 편입으로 함께 보여줍니다.
       </p>
 
       {relaxationApplied && (
@@ -35,8 +36,11 @@ export default function Recommend({ generatedAt, recommendation, selectedTickers
                 onChange={() => onToggleSelect(r.ticker)}
               />
               <div>
-                <p className="font-semibold text-sm">
+                <p className="font-semibold text-sm flex items-center gap-1.5">
                   {r.ticker} <span className="text-gray-500 font-normal">{r.name}</span>
+                  {!r.signalPassed && (
+                    <span className="px-1.5 py-0.5 rounded text-xs bg-purple-100 text-purple-700">고득점 편입</span>
+                  )}
                 </p>
                 <p className="text-xs text-gray-500">{r.reasons}</p>
               </div>

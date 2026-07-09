@@ -6,6 +6,8 @@ const SCORE_VOLUME_MAX = 30
 const SCORE_SECTOR_BONUS = 10
 const MIN_RESULTS = 5
 const MAX_RESULTS = 10
+// 매수 신호를 통과하지 못해도 2단계 점수가 이 값 이상이면 "고득점 특별 편입"으로 선택 가능하게 한다
+const HIGH_SCORE_INCLUSION_THRESHOLD = 70
 
 function stage1Pass(td, level) {
   const rsiOk = td.indicators.rsi14 >= 50
@@ -47,6 +49,12 @@ function buildReasons(td, level) {
   return reasons.join(', ')
 }
 
+function buildHighScoreReasons(td) {
+  const reasons = [`RSI ${Math.round(td.indicators.rsi14)}`, '매수 신호 미충족 (고득점 특별 편입)']
+  if (td.isLeadingSector) reasons.push('주도 섹터 소속')
+  return reasons.join(', ')
+}
+
 /**
  * tickers: deriveTickerData() + applyLeadingSectorFlags() 를 거친 배열
  * 반환: { list, relaxationApplied, insufficientSignal, level }
@@ -54,25 +62,41 @@ function buildReasons(td, level) {
 export function recommend(tickers) {
   const eligible = tickers.filter((t) => t.dataSufficient)
   const { passed, level, relaxationApplied } = runStage1(eligible)
+  const passedTickerSet = new Set(passed.map((t) => t.ticker))
 
-  const scored = passed
-    .map((t) => ({
+  const scoredPassed = passed.map((t) => ({
+    ticker: t.ticker,
+    name: t.name,
+    sector: t.sector,
+    score: scoreTicker(t),
+    reasons: buildReasons(t, level),
+    signalPassed: true,
+    relaxationApplied,
+  }))
+
+  // 매수 신호는 놓쳤지만 2단계 점수가 높은 종목도 선택 가능하도록 별도로 편입한다
+  const scoredHighScoreNoSignal = eligible
+    .filter((t) => !passedTickerSet.has(t.ticker))
+    .map((t) => ({ ticker: t, score: scoreTicker(t) }))
+    .filter(({ score }) => score >= HIGH_SCORE_INCLUSION_THRESHOLD)
+    .map(({ ticker: t, score }) => ({
       ticker: t.ticker,
       name: t.name,
       sector: t.sector,
-      score: scoreTicker(t),
-      reasons: buildReasons(t, level),
-      signalPassed: true,
+      score,
+      reasons: buildHighScoreReasons(t),
+      signalPassed: false,
       relaxationApplied,
     }))
-    .sort((a, b) => b.score - a.score)
 
-  const list = scored.slice(0, MAX_RESULTS)
+  const list = [...scoredPassed, ...scoredHighScoreNoSignal]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, MAX_RESULTS)
 
   return {
     list,
     relaxationApplied,
-    insufficientSignal: list.length < MIN_RESULTS,
+    insufficientSignal: scoredPassed.length < MIN_RESULTS,
     level,
   }
 }
