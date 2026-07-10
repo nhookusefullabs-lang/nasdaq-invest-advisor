@@ -359,3 +359,30 @@
   상수 사용. 결과 객체를 recommend.js 결과와 동형(ticker,score,reasons,signalPassed,
   relaxationApplied,templateChecks[])으로 맞춰 US-6 컨센서스 랭킹이 두 모드를 동일하게
   다룰 수 있게 할 것. 이유 문자열은 0점 요소 생략.
+
+## Iteration 5 — US-5. 미너비니 모드 — 2단계 VCP 근사 스코어링
+- 완료 스토리: US-5
+- 변경 파일:
+  - src/lib/minervini.js 확장: evaluateVcpScore(series, rsPercentileValue) — RS 40 +
+    변동성수축 25 + 드라이업 15 + 피벗근접 20, 전부 constants/v8.js의 VCP_SCORE 사용.
+    PRD 원문 수식을 그대로 옮기면 변동성수축 항이 상한(25)을 초과할 수 있는 결함을
+    발견해(수축비 0.3이면 35점이 나옴) clamp01()로 보정 — "0.5 이하에서 만점"이라는
+    PRD의 서술을 문자 그대로 만족시키도록 수정(원문 수식의 오탈자로 판단). 이유 문자열은
+    "Stage 2 추세" 고정 + 0점이 아닌 요소만 조건부 추가(RS 상위 n% / 변동성 수축 중 /
+    피벗 −n%) — PRD 예시 형식 그대로, 드라이업은 이유 문구에 포함하지 않음(PRD 예시에
+    없음). runMinerviniRecommend(tickers) — 1+2단계 통합 파이프라인, 출력 필드를
+    recommend.js와 동형(ticker/name/sector/score/reasons/signalPassed/
+    relaxationApplied) + 배열 형태의 templateChecks(US-10의 8칸 체크리스트 렌더링을
+    염두에 두고 객체가 아닌 [{code,passed}] 배열로 설계).
+  - src/lib/minervini.test.js 확장: 14개 테스트. 변동성수축 배점은 "정확히 0.5/1.0"이
+    아니라 "0.5보다 충분히 작음/1.0 이상"을 지수적 등락 종가 시리즈로 구성해 검증(정확한
+    분수 경계를 손으로 맞추기보다 클램핑 동작 자체를 검증하는 실용적 접근 — RS/드라이업/
+    피벗은 폐형 수식이라 정확한 경계값으로 손계산 검증).
+- 테스트 수 변화: 240 → 254 (+14), 전체 통과. npm run build 통과(번들 크기 불변).
+- 운영자 액션 필요: 없음
+- 다음 스토리 메모: US-6 (컨센서스 랭킹, src/lib/consensus.js 신설). 입력은 기존
+  recommend.js(수정 금지) 결과 + runMinerviniRecommend() 결과 — 원점수 합산 금지,
+  각 모드 1단계 통과 집합 내 백분위 순위 평균으로 정렬. ★★(양쪽 통과)/★(한쪽 통과)
+  등급, ★★가 항상 ★ 위. "평균의 함정 방지" 테스트(한쪽90/한쪽40 종목보다 양쪽75/75가
+  위) 필수 — indicators.js의 percentileRank류 로직 재사용 가능한지 검토(rsPercentile과
+  동일한 "값 이하 개수/전체" 공식).

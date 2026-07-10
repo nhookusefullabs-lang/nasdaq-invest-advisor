@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { evaluateTrendTemplate, runMinerviniStage1, TREND_TEMPLATE_CONDITION_CODES } from './minervini.js'
+import { evaluateTrendTemplate, runMinerviniStage1, evaluateVcpScore, runMinerviniRecommend, TREND_TEMPLATE_CONDITION_CODES } from './minervini.js'
+import { VCP_SCORE } from './constants/v8.js'
 
 function makeBar(i, { close, high, low } = {}) {
   const c = close ?? 100
@@ -179,5 +180,185 @@ describe('runMinerviniStage1 - real 2y fixture sanity (US-4)', () => {
     const byTicker = Object.fromEntries(result.passed.map((p) => [p.ticker, p]))
     expect(byTicker.MMVI1).toBeDefined()
     expect(byTicker.MMVI2).toBeUndefined()
+  })
+})
+
+// --- v8 US-5: 미너비니 2단계 VCP 근사 스코어링 ---
+
+/** flat 150일 바탕(close=100,volume=1,000,000) 위에 특정 구간만 덮어써서 지표 하나만 표적화한다. */
+function makeFlatSeries(n = 150) {
+  return Array.from({ length: n }, (_, i) => makeBar(i, { close: 100 }))
+}
+
+function overlayCloses(series, fromEnd, closes) {
+  const copy = series.map((b) => ({ ...b }))
+  const start = copy.length - fromEnd
+  closes.forEach((c, i) => {
+    copy[start + i] = { ...copy[start + i], close: c, high: c + 1, low: c - 1 }
+  })
+  return copy
+}
+
+function overlayVolumes(series, fromEnd, volumes) {
+  const copy = series.map((b) => ({ ...b }))
+  const start = copy.length - fromEnd
+  volumes.forEach((v, i) => {
+    copy[start + i] = { ...copy[start + i], volume: v }
+  })
+  return copy
+}
+
+describe('evaluateVcpScore - RS 백분위 배점 (0/40, 경계 70/100)', () => {
+  it('scores 0 at exactly percentile 70, 40 (max) at percentile 100', () => {
+    const series = makeFlatSeries()
+    expect(evaluateVcpScore(series, 70).rsScore).toBeCloseTo(0)
+    expect(evaluateVcpScore(series, 100).rsScore).toBeCloseTo(VCP_SCORE.RS_MAX)
+  })
+
+  it('clamps to 0 below the floor (does not go negative)', () => {
+    const series = makeFlatSeries()
+    expect(evaluateVcpScore(series, 40).rsScore).toBe(0)
+  })
+})
+
+describe('evaluateVcpScore - 변동성 수축 배점 (0/25, 경계 0.5/1.0)', () => {
+  it('caps at max score(25) when the recent window is far quieter than the prior window (ratio well below 0.5)', () => {
+    // prior40: 강한 스윙(±5%), recent10: 매우 잔잔함(±0.1%) -> 수축비 << 0.5
+    const prior40 = []
+    let p = 100
+    for (let i = 0; i < 40; i++) {
+      p *= i % 2 === 0 ? 1.05 : 1 / 1.05
+      prior40.push(p)
+    }
+    const recent10 = []
+    let r = p
+    for (let i = 0; i < 10; i++) {
+      r *= i % 2 === 0 ? 1.001 : 1 / 1.001
+      recent10.push(r)
+    }
+    const series = overlayCloses(makeFlatSeries(), 50, [...prior40, ...recent10])
+    expect(evaluateVcpScore(series, 80).contractionScore).toBeCloseTo(VCP_SCORE.CONTRACTION_MAX)
+  })
+
+  it('scores 0 when the recent window is at least as volatile as the prior window (ratio >= 1.0)', () => {
+    const prior40 = []
+    let p = 100
+    for (let i = 0; i < 40; i++) {
+      p *= i % 2 === 0 ? 1.02 : 1 / 1.02
+      prior40.push(p)
+    }
+    const recent10 = []
+    let r = p
+    for (let i = 0; i < 10; i++) {
+      r *= i % 2 === 0 ? 1.05 : 1 / 1.05 // 더 크게 흔들림 -> 수축비 >= 1
+      recent10.push(r)
+    }
+    const series = overlayCloses(makeFlatSeries(), 50, [...prior40, ...recent10])
+    expect(evaluateVcpScore(series, 80).contractionScore).toBe(0)
+  })
+})
+
+describe('evaluateVcpScore - 거래량 드라이업 배점 (0/15, 경계 0%/−30%)', () => {
+  it('scores 0 at exactly 0% dry-up (recent avg == prior avg, hand-computed)', () => {
+    const series = overlayVolumes(makeFlatSeries(), 55, [
+      ...Array(50).fill(1_000_000),
+      ...Array(5).fill(1_000_000),
+    ])
+    expect(evaluateVcpScore(series, 80).dryUpScore).toBe(0)
+  })
+
+  it('scores max(15) at exactly -30% dry-up (hand-computed)', () => {
+    const series = overlayVolumes(makeFlatSeries(), 55, [
+      ...Array(50).fill(1_000_000),
+      ...Array(5).fill(700_000), // (700000-1000000)/1000000*100 = -30
+    ])
+    expect(evaluateVcpScore(series, 80).dryUpScore).toBeCloseTo(VCP_SCORE.DRYUP_MAX)
+  })
+
+  it('scores 0 when volume increases (positive dry-up %)', () => {
+    const series = overlayVolumes(makeFlatSeries(), 55, [
+      ...Array(50).fill(1_000_000),
+      ...Array(5).fill(1_300_000),
+    ])
+    expect(evaluateVcpScore(series, 80).dryUpScore).toBe(0)
+  })
+})
+
+describe('evaluateVcpScore - 피벗/신고가 근접 배점 (0/20, 경계 0%/10%)', () => {
+  it('scores max(20) when the current close equals the 63-day peak (hand-computed, proximity 0%)', () => {
+    const closes = Array.from({ length: 62 }, () => 90).concat([100]) // peak=current=100
+    const series = overlayCloses(makeFlatSeries(), 63, closes)
+    expect(evaluateVcpScore(series, 80).pivotScore).toBeCloseTo(VCP_SCORE.PIVOT_MAX)
+  })
+
+  it('scores 0 at exactly 10% below the peak (hand-computed)', () => {
+    const closes = Array.from({ length: 62 }, () => 90).concat([81]) // peak=90, gap=9/90*100=10%
+    const series = overlayCloses(makeFlatSeries(), 63, closes)
+    expect(evaluateVcpScore(series, 80).pivotScore).toBeCloseTo(0)
+  })
+})
+
+describe('evaluateVcpScore - 이유 문자열 생성 (US-5)', () => {
+  it('always includes the Stage 2 baseline phrase', () => {
+    const series = makeFlatSeries()
+    expect(evaluateVcpScore(series, 40).reasons).toMatch(/^Stage 2 추세/)
+  })
+
+  it('includes "RS 상위 n%" only when the RS component scores above 0', () => {
+    const series = makeFlatSeries()
+    expect(evaluateVcpScore(series, 90).reasons).toMatch(/RS 상위 10%/)
+    expect(evaluateVcpScore(series, 40).reasons).not.toMatch(/RS 상위/)
+  })
+
+  it('includes "피벗 −n%" only when the pivot component scores above 0', () => {
+    const atPeak = overlayCloses(makeFlatSeries(), 63, Array.from({ length: 62 }, () => 90).concat([100]))
+    const farBelow = overlayCloses(makeFlatSeries(), 63, Array.from({ length: 62 }, () => 90).concat([81]))
+    expect(evaluateVcpScore(atPeak, 40).reasons).toMatch(/피벗 −0\.0%/)
+    expect(evaluateVcpScore(farBelow, 40).reasons).not.toMatch(/피벗/)
+  })
+})
+
+describe('runMinerviniRecommend - 출력 형태가 recommend.js와 동형 (US-5)', () => {
+  it('each list entry has the same core fields as a recommend.js result, plus templateChecks[]', () => {
+    const tickers = Array.from({ length: 5 }, (_, i) => ({
+      ticker: `T${i}`,
+      name: `Ticker ${i}`,
+      sector: 'Technology',
+      series: makeMonotonicSeries(260, { start: 100, step: 0.5 }),
+    }))
+    const result = runMinerviniRecommend(tickers)
+    expect(result).toHaveProperty('list')
+    expect(result).toHaveProperty('relaxationApplied')
+    expect(result).toHaveProperty('insufficientSignal')
+    expect(result).toHaveProperty('level')
+
+    const entry = result.list[0]
+    expect(entry).toMatchObject({
+      ticker: expect.any(String),
+      name: expect.any(String),
+      sector: expect.any(String),
+      score: expect.any(Number),
+      reasons: expect.any(String),
+      signalPassed: true,
+      relaxationApplied: expect.any(Boolean),
+    })
+    expect(Array.isArray(entry.templateChecks)).toBe(true)
+    expect(entry.templateChecks).toHaveLength(8)
+    entry.templateChecks.forEach((c) => {
+      expect(c).toMatchObject({ code: expect.any(String), passed: expect.any(Boolean) })
+    })
+  })
+
+  it('sorts the list by score descending', () => {
+    const fixturePath = path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '__fixtures__/nasdaq100.2y.sample.json'
+    )
+    const raw = JSON.parse(readFileSync(fixturePath, 'utf-8'))
+    const tickers = raw.tickers.map((t) => ({ ticker: t.ticker, name: t.name, sector: t.sector, series: t.series }))
+    const result = runMinerviniRecommend(tickers)
+    for (let i = 1; i < result.list.length; i++) {
+      expect(result.list[i - 1].score).toBeGreaterThanOrEqual(result.list[i].score)
+    }
   })
 })
