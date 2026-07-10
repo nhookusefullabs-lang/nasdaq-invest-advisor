@@ -15,16 +15,25 @@ import {
   atr,
   atrPercent,
   obv,
+  hasFullYearData,
+  rsRawScore,
+  rsPercentile,
+  volatilityContraction,
+  volumeDryUp,
+  pivotProximity,
 } from './indicators.js'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import path from 'node:path'
 
-function makeBar(i, { close, high, low } = {}) {
+function makeBar(i, { close, high, low, volume } = {}) {
   const c = close ?? 10 + i
   return {
     date: `2026-01-${String((i % 28) + 1).padStart(2, '0')}`,
     close: c,
     high: high ?? c + 1,
     low: low ?? c - 1,
-    volume: 1_000_000,
+    volume: volume ?? 1_000_000,
   }
 }
 
@@ -267,5 +276,118 @@ describe('obv (PRD_Nasdaq7 §4.1, US-4)', () => {
       { ...makeBar(2, { close: 105 }), volume: 300 },
     ]
     expect(obv(series)).toEqual([0, 0, 300])
+  })
+})
+
+// --- v8 공유 지표 계층 (PRD_Nasdaq8 §8, US-3) ---
+
+const fixture2yPath = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '__fixtures__/nasdaq100.2y.sample.json'
+)
+const FIXTURE_2Y = JSON.parse(readFileSync(fixture2yPath, 'utf-8'))
+const fixtureSeries = (ticker) => FIXTURE_2Y.tickers.find((t) => t.ticker === ticker).series
+
+describe('hasFullYearData', () => {
+  it('is true at exactly 252 bars and false just under', () => {
+    expect(hasFullYearData(Array.from({ length: 252 }, (_, i) => makeBar(i)))).toBe(true)
+    expect(hasFullYearData(Array.from({ length: 251 }, (_, i) => makeBar(i)))).toBe(false)
+  })
+})
+
+describe('rsRawScore (PRD_Nasdaq8 §8, US-3)', () => {
+  it('computes 2×R3m + R6m + R12m on a linear ramp (hand-computed)', () => {
+    // closes[i] = 100 + i, i=0..251 (252 bars, exactly the minimum)
+    const series = Array.from({ length: 252 }, (_, i) => makeBar(i, { close: 100 + i }))
+    const current = 100 + 251 // 351
+    const r3m = (current / (100 + (252 - 63)) - 1) * 100 // anchor = closes[189] = 289
+    const r6m = (current / (100 + (252 - 126)) - 1) * 100 // anchor = closes[126] = 226
+    const r12m = (current / (100 + (252 - 252)) - 1) * 100 // anchor = closes[0] = 100
+    expect(rsRawScore(series)).toBeCloseTo(2 * r3m + r6m + r12m, 4)
+  })
+
+  it('returns null when there are fewer than 252 bars (데이터 부족)', () => {
+    const series = Array.from({ length: 251 }, (_, i) => makeBar(i, { close: 100 + i }))
+    expect(rsRawScore(series)).toBeNull()
+  })
+
+  it('is positive for a sustained real-data uptrend and negative for a sustained downtrend', () => {
+    expect(rsRawScore(fixtureSeries('MMVI1'))).toBeGreaterThan(0) // 강한 상승 종목
+    expect(rsRawScore(fixtureSeries('MMVI2'))).toBeLessThan(0) // 지속 하락 종목
+  })
+})
+
+describe('rsPercentile', () => {
+  it('ranks an ascending population 0..100 (hand-computed)', () => {
+    expect(rsPercentile([10, 20, 30, 40])).toEqual([25, 50, 75, 100])
+  })
+
+  it('ties share the same percentile', () => {
+    const result = rsPercentile([5, 5, 10])
+    expect(result[0]).toBeCloseTo((2 / 3) * 100)
+    expect(result[1]).toBeCloseTo((2 / 3) * 100)
+    expect(result[2]).toBeCloseTo(100)
+  })
+})
+
+describe('volatilityContraction (PRD_Nasdaq8 §8, US-3)', () => {
+  it('returns null when the prior-40-day stddev is exactly 0 (분모 0, 경계)', () => {
+    // 41 identical closes (40 exactly-zero prior returns) + 10 varying closes (nonzero recent returns)
+    const flat = Array.from({ length: 41 }, () => 100)
+    const varied = [110, 90, 115, 85, 120, 80, 125, 75, 130, 70]
+    const closes = [...flat, ...varied]
+    const series = closes.map((c, i) => makeBar(i, { close: c }))
+    expect(volatilityContraction(series)).toBeNull()
+  })
+
+  it('returns null when there are fewer than 51 bars (데이터 부족)', () => {
+    const series = Array.from({ length: 50 }, (_, i) => makeBar(i, { close: 100 + i }))
+    expect(volatilityContraction(series)).toBeNull()
+  })
+
+  it('is below 1 for real-data tickers whose recent volatility tapers off (contraction)', () => {
+    // MMVI1/MMVI6 fixtures are generated with amplitude tapering toward the end
+    expect(volatilityContraction(fixtureSeries('MMVI1'))).toBeLessThan(1)
+    expect(volatilityContraction(fixtureSeries('MMVI6'))).toBeLessThan(1)
+  })
+})
+
+describe('volumeDryUp (PRD_Nasdaq8 §8, US-3)', () => {
+  it('computes a negative dry-up % when recent volume is lower than the prior period (hand-computed, 음수 드라이업)', () => {
+    const prior50 = Array.from({ length: 50 }, () => 1_000_000)
+    const recent5 = Array.from({ length: 5 }, () => 500_000)
+    const series = [...prior50, ...recent5].map((v, i) => makeBar(i, { volume: v }))
+    expect(volumeDryUp(series)).toBeCloseTo(-50)
+  })
+
+  it('returns null when the prior-50-day average volume is exactly 0 (분모 0, 경계)', () => {
+    const prior50 = Array.from({ length: 50 }, () => 0)
+    const recent5 = Array.from({ length: 5 }, () => 100)
+    const series = [...prior50, ...recent5].map((v, i) => makeBar(i, { volume: v }))
+    expect(volumeDryUp(series)).toBeNull()
+  })
+
+  it('returns null when there are fewer than 55 bars (데이터 부족)', () => {
+    const series = Array.from({ length: 54 }, (_, i) => makeBar(i))
+    expect(volumeDryUp(series)).toBeNull()
+  })
+})
+
+describe('pivotProximity (PRD_Nasdaq8 §8, US-3)', () => {
+  it('is 0 when the current close equals the 63-day peak (hand-computed)', () => {
+    const closes = Array.from({ length: 62 }, () => 90).concat([100])
+    const series = closes.map((c, i) => makeBar(i, { close: c }))
+    expect(pivotProximity(series)).toBeCloseTo(0)
+  })
+
+  it('computes the % gap below the peak (hand-computed)', () => {
+    const closes = Array.from({ length: 62 }, () => 90).concat([81]) // peak=90, current=81 -> 10% gap
+    const series = closes.map((c, i) => makeBar(i, { close: c }))
+    expect(pivotProximity(series)).toBeCloseTo(10)
+  })
+
+  it('returns null when there are fewer than 63 bars (데이터 부족)', () => {
+    const series = Array.from({ length: 62 }, (_, i) => makeBar(i))
+    expect(pivotProximity(series)).toBeNull()
   })
 })

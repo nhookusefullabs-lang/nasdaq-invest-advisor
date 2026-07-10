@@ -300,3 +300,36 @@
   기존 SMA20 동작 불변 확인 필수), rsRawScore/rsPercentile/volatilityContraction/
   volumeDryUp/pivotProximity 신규, hasFullYearData() 헬퍼. src/lib/__fixtures__/
   nasdaq100.2y.sample.json(US-1에서 만든 6종목 다양 패턴)을 지표 테스트에 활용).
+
+## Iteration 3 — US-3. 공유 지표 계층 + 상수 모듈
+- 완료 스토리: US-3
+- 변경 파일:
+  - src/lib/indicators.js: hasFullYearData/rsRawScore/rsPercentile/volatilityContraction/
+    volumeDryUp/pivotProximity 6개 함수 추가(기존 함수 전부 무수정). sma()는 이미
+    임의 period를 지원하므로 SMA50/150/200용 별도 함수를 만들지 않고 그대로 재사용
+    (US-3의 "일반화" 요구사항은 확인만으로 충족됨 — 코드 변경 없음).
+  - src/lib/constants/v8.js(신설, 새 디렉터리): TREND_TEMPLATE/VCP_SCORE/
+    FUNDAMENTAL_THRESHOLDS 전부 "v9 백테스트로 조정 예정인 설계값" 주석과 함께 정의.
+    src/lib/constants.js(v7, 파일)와 src/lib/constants/(v8, 디렉터리)가 이름 충돌 없이
+    공존함을 확인.
+  - src/lib/__fixtures__/nasdaq100.2y.sample.json(수정): MMVI1의 "막판 돌파"가
+    volatilityContraction의 recent10 측정 구간을 오염시켜(9.98배로 오히려 확대) US-1에서
+    의도한 "변동성 수축" 테스트가 깨지는 것을 발견 — 돌파 이벤트를 제거하고 순수 수축
+    패턴만 남기도록 픽스처 재생성(생성기 스크립트도 스크래치패드에서 함께 수정).
+  - src/lib/indicators.test.js: makeBar() 헬퍼가 volume 오버라이드를 무시하던 버그를
+    발견해 수정(기존 테스트는 영향 없음 — 다들 기본값 1,000,000 사용). 신규 지표 6개에
+    대해 15개 테스트 추가(경계: 분모 0 2건, 데이터 부족 5건, 음수 드라이업 1건 포함).
+- 설계 결정: rsRawScore/volatilityContraction/volumeDryUp/pivotProximity의 윈도우 크기
+  (63/126/252, 10/40, 5/50)는 PRD가 constants/v8.js 목록에 명시하지 않은 "알고리즘
+  구조 상수"로 판단해(v7의 SIM_WINDOW=63 같은 기존 로컬 상수 패턴과 동일) 함수 내부에
+  JSDoc 설명과 함께 남겨두고 constants/v8.js로 옮기지 않음 — v9 백테스트로 조정될
+  대상은 임계값·배점(트렌드 템플릿/VCP/펀더멘털)뿐이므로 이 구분이 PRD 의도와 부합.
+- 테스트 수 변화: 211 → 226 (+15, indicators 28→43), 전체 통과. npm run build 통과
+  (번들 크기 불변 — 아직 App에서 import 안 됨).
+- 운영자 액션 필요: 없음
+- 다음 스토리 메모: US-4 (미너비니 1단계 트렌드 템플릿, src/lib/minervini.js 신설).
+  T1~T8 판정 시 constants/v8.js의 TREND_TEMPLATE 상수 사용, hasFullYearData()로
+  데이터 부족 종목 사전 제외, week52HighLow()는 v7 것 재사용(재구현 금지). 완화 폴백은
+  TREND_TEMPLATE_RELAXED_MIN_CONDITIONS(7)/TREND_TEMPLATE_MIN_RESULTS(5) 사용.
+  nasdaq100.2y.sample.json의 MMVI1(상승+수축)/MMVI2(하락)/MMVI4(횡보) 등으로 템플릿
+  통과·탈락 케이스 검증 가능.

@@ -267,3 +267,88 @@ export function obv(series) {
   }
   return out
 }
+
+// --- v8 공유 지표 계층 (PRD_Nasdaq8 §8, US-3) — 추세추종·미너비니 두 모드가 함께 쓴다.
+// v7 신규 지표와 동일하게 원본 바 배열(series)을 입력받고, 현재 시점 스냅샷 값을 반환한다
+// (배열이 아님 — RS/VCP 판정에는 최신값만 필요). SMA50/150/200은 새 함수가 아니라 기존
+// sma(closes, period)를 그대로 재사용한다(이미 임의 period를 지원하므로 일반화 불필요).
+
+/** 데이터가 52주(252거래일) 이상인지 — 미달 시 미너비니 모드 판정 대상에서 제외한다. */
+export function hasFullYearData(series) {
+  return series.length >= 252
+}
+
+/**
+ * RS(상대강도) 원점수 = 2×R3m + R6m + R12m (R = 63/126/252거래일 수익률, 앵커는
+ * "최근 N거래일 중 첫 거래일 종가" — 기존 simulation.returnPct 앵커 규칙과 동일).
+ * 252거래일 미만이면 null.
+ */
+export function rsRawScore(series) {
+  const n = series.length
+  if (n < 252) return null
+  const closes = series.map((b) => b.close)
+  const current = closes[n - 1]
+  const returnOver = (window) => {
+    const anchor = closes[n - window]
+    return (current / anchor - 1) * 100
+  }
+  return 2 * returnOver(63) + returnOver(126) + returnOver(252)
+}
+
+/**
+ * rsRawScores(유니버스 전체의 RS 원점수 배열) 내에서 각 원소가 차지하는 백분위(0~100)를
+ * 동일한 순서로 반환한다 — (해당 값 이하 개수) / 전체 개수 × 100.
+ */
+export function rsPercentile(rsRawScores) {
+  const sorted = [...rsRawScores]
+  return rsRawScores.map((v) => (sorted.filter((x) => x <= v).length / sorted.length) * 100)
+}
+
+/**
+ * 변동성 수축비 = 최근 10일 일수익률 표준편차 ÷ 이전 40일(11~50일 전) 표준편차.
+ * 1에 가까울수록 변동성 불변, 0에 가까울수록 수축. 51거래일 미만이거나 분모가 0이면 null.
+ */
+export function volatilityContraction(series) {
+  const closes = series.map((b) => b.close)
+  if (closes.length < 51) return null
+  const returns = dailyReturns(closes)
+  const recent10 = returns.slice(-10)
+  const prior40 = returns.slice(-50, -10)
+  if (recent10.length < 10 || prior40.length < 40) return null
+  const sdRecent = stddev(recent10)
+  const sdPrior = stddev(prior40)
+  if (!sdPrior) return null
+  return sdRecent / sdPrior
+}
+
+/**
+ * 거래량 드라이업% = (최근 5일 평균 − 직전 50일 평균) / 직전 50일 평균 × 100.
+ * 기존 volumeTrend()의 "최근5 vs 직전20(비중첩)" 규칙과 동일하게, 직전50은 최근5 바로
+ * 앞의 50일을 가리킨다(중첩 없음). 55거래일 미만이거나 분모가 0이면 null.
+ * 값이 음수일수록(거래량 감소) VCP 스코어링에서 가점 대상이다.
+ */
+export function volumeDryUp(series) {
+  const volumes = series.map((b) => b.volume)
+  const n = volumes.length
+  if (n < 55) return null
+  const recent5 = volumes.slice(n - 5, n)
+  const prior50 = volumes.slice(n - 55, n - 5)
+  const avgRecent = average(recent5)
+  const avgPrior = average(prior50)
+  if (!avgPrior) return null
+  return ((avgRecent - avgPrior) / avgPrior) * 100
+}
+
+/**
+ * 피벗/신고가 근접% = (최근 63거래일 최고 종가 − 현재 종가) / 최고 종가 × 100.
+ * 0에 가까울수록 최근 고점과 일치(돌파 임박). 63거래일 미만이거나 최고 종가가 0이면 null.
+ */
+export function pivotProximity(series) {
+  const n = series.length
+  if (n < 63) return null
+  const windowCloses = series.slice(-63).map((b) => b.close)
+  const peak = Math.max(...windowCloses)
+  const current = windowCloses[windowCloses.length - 1]
+  if (!peak) return null
+  return ((peak - current) / peak) * 100
+}
