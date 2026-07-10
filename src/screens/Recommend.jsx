@@ -4,9 +4,11 @@ import AdvancedSettingsPanel from '../components/AdvancedSettingsPanel.jsx'
 import ResearchRequestToggle from '../components/ResearchRequestToggle.jsx'
 import FundamentalBadge from '../components/FundamentalBadge.jsx'
 import FundamentalFailSection from '../components/FundamentalFailSection.jsx'
+import ResearchCheckBadge from '../components/ResearchCheckBadge.jsx'
 import { PRESETS, PRESET_KEYS } from '../lib/presets.js'
 import { TREND_TEMPLATE, TREND_TEMPLATE_RELAXED_MIN_CONDITIONS } from '../lib/constants/v8.js'
 import { evaluateFundamentalHurdle } from '../lib/fundamentals.js'
+import { computeResearchCheckState } from '../lib/researchCheck.js'
 
 // preset 상태 문자열 -> 배너·보조 문구에 쓰는 표시 라벨. 'custom'은 US-10(v7 고급 설정)에서
 // 실제로 도달 가능해진다 — 그 전까지는 세그먼트가 이 라벨을 그릴 일이 없다.
@@ -33,6 +35,14 @@ function splitByFundamentalVerdict(list, fundamentalsMap) {
     }
   }
   return { visible, failed }
+}
+
+// "리스크 플래그 종목 숨기기" 토글이 켜져 있을 때 ⚠ 상태(리스크 플래그 있음 또는 부정적
+// 센티먼트) 종목만 걸러낸다 (PRD_Nasdaq8 §4.5, US-12). fundamentals의 Fail과 달리 별도
+// 섹션으로 옮기지 않고 그냥 숨긴다 — 토글이 꺼져 있으면(기본값) 아무것도 걸러내지 않는다.
+function filterHiddenRiskFlagged(list, researchMap, hideRiskFlagged) {
+  if (!hideRiskFlagged) return list
+  return list.filter((item) => computeResearchCheckState(researchMap?.get(item.ticker)).state !== 'flagged')
 }
 
 // 체크박스가 있는 <label>은 클릭 버블링으로 그 안의 버튼까지 토글해 버리므로, 리서치 요청
@@ -102,6 +112,7 @@ function TrendModeView({
   recommendation,
   researchMap,
   fundamentalsMap,
+  hideRiskFlagged,
   preset,
   onPresetChange,
   customParams,
@@ -113,7 +124,8 @@ function TrendModeView({
   onToggleSelect,
 }) {
   const { relaxationApplied, insufficientSignal } = recommendation
-  const { visible: list, failed } = splitByFundamentalVerdict(recommendation.list, fundamentalsMap)
+  const { visible: afterFundamentals, failed } = splitByFundamentalVerdict(recommendation.list, fundamentalsMap)
+  const list = filterHiddenRiskFlagged(afterFundamentals, researchMap, hideRiskFlagged)
   const label = presetLabel(preset)
   const isNonDefaultPreset = (preset ?? 'default') !== 'default'
 
@@ -206,6 +218,7 @@ function TrendModeView({
               </div>
             )}
             <FundamentalBadge evaluation={r.fundamentalEvaluation} />
+            <ResearchCheckBadge research={researchMap?.get(r.ticker)} />
             {researchMap?.get(r.ticker) && isNonDefaultPreset && (
               <p className="text-xs text-gray-400 mt-1">리서치 풀은 기본형 기준으로 선정되었습니다.</p>
             )}
@@ -243,13 +256,15 @@ function MinerviniModeView({
   minerviniResult,
   researchMap,
   fundamentalsMap,
+  hideRiskFlagged,
   researchRequests,
   onToggleResearchRequest,
   selectedTickers,
   onToggleSelect,
 }) {
   const { relaxationApplied, insufficientSignal } = minerviniResult
-  const { visible: list, failed } = splitByFundamentalVerdict(minerviniResult.list, fundamentalsMap)
+  const { visible: afterFundamentals, failed } = splitByFundamentalVerdict(minerviniResult.list, fundamentalsMap)
+  const list = filterHiddenRiskFlagged(afterFundamentals, researchMap, hideRiskFlagged)
 
   return (
     <>
@@ -282,7 +297,12 @@ function MinerviniModeView({
             researchRequests={researchRequests}
             onToggleResearchRequest={onToggleResearchRequest}
             fundamentalEvaluation={r.fundamentalEvaluation}
-            researchSection={<ResearchSection research={researchMap?.get(r.ticker)} />}
+            researchSection={
+              <>
+                <ResearchCheckBadge research={researchMap?.get(r.ticker)} />
+                <ResearchSection research={researchMap?.get(r.ticker)} />
+              </>
+            }
           >
             <div className="flex-1">
               <p className="font-semibold text-sm flex items-center justify-between gap-1.5">
@@ -330,7 +350,12 @@ function ConsensusCard({
       researchRequests={researchRequests}
       onToggleResearchRequest={onToggleResearchRequest}
       fundamentalEvaluation={entry.fundamentalEvaluation}
-      researchSection={<ResearchSection research={researchMap?.get(entry.ticker)} />}
+      researchSection={
+        <>
+          <ResearchCheckBadge research={researchMap?.get(entry.ticker)} />
+          <ResearchSection research={researchMap?.get(entry.ticker)} />
+        </>
+      }
     >
       <div className="flex-1">
         <p className="font-semibold text-sm flex items-center gap-1.5">
@@ -351,13 +376,15 @@ function ConsensusModeView({
   consensusResult,
   researchMap,
   fundamentalsMap,
+  hideRiskFlagged,
   researchRequests,
   onToggleResearchRequest,
   selectedTickers,
   onToggleSelect,
 }) {
   const { trendInsufficientSignal, minerviniInsufficientSignal } = consensusResult
-  const { visible: list, failed } = splitByFundamentalVerdict(consensusResult.list, fundamentalsMap)
+  const { visible: afterFundamentals, failed } = splitByFundamentalVerdict(consensusResult.list, fundamentalsMap)
+  const list = filterHiddenRiskFlagged(afterFundamentals, researchMap, hideRiskFlagged)
 
   return (
     <>
@@ -403,6 +430,8 @@ export default function Recommend({
   consensusResult,
   researchMap,
   fundamentalsMap,
+  hideRiskFlagged = false,
+  onToggleHideRiskFlagged,
   recommendMode = 'trend',
   onModeChange,
   preset,
@@ -422,12 +451,18 @@ export default function Recommend({
 
       <ModeSegment recommendMode={recommendMode} onModeChange={onModeChange} />
 
+      <label className="flex items-center gap-2 mb-4 text-sm text-gray-600">
+        <input type="checkbox" checked={hideRiskFlagged} onChange={() => onToggleHideRiskFlagged?.()} />
+        리스크 플래그 종목 숨기기
+      </label>
+
       {recommendMode === 'trend' && (
         <TrendModeView
           generatedAt={generatedAt}
           recommendation={recommendation}
           researchMap={researchMap}
           fundamentalsMap={fundamentalsMap}
+          hideRiskFlagged={hideRiskFlagged}
           preset={preset}
           onPresetChange={onPresetChange}
           customParams={customParams}
@@ -445,6 +480,7 @@ export default function Recommend({
           minerviniResult={minerviniResult}
           researchMap={researchMap}
           fundamentalsMap={fundamentalsMap}
+          hideRiskFlagged={hideRiskFlagged}
           researchRequests={researchRequests}
           onToggleResearchRequest={onToggleResearchRequest}
           selectedTickers={selectedTickers}
@@ -457,6 +493,7 @@ export default function Recommend({
           consensusResult={consensusResult}
           researchMap={researchMap}
           fundamentalsMap={fundamentalsMap}
+          hideRiskFlagged={hideRiskFlagged}
           researchRequests={researchRequests}
           onToggleResearchRequest={onToggleResearchRequest}
           selectedTickers={selectedTickers}

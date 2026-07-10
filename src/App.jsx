@@ -91,6 +91,8 @@ export default function App() {
 
   const changeRecommendMode = (recommendMode) => setUiState((s) => ({ ...s, recommendMode }))
 
+  const toggleHideRiskFlagged = () => setUiState((s) => ({ ...s, hideRiskFlagged: !s.hideRiskFlagged }))
+
   // 프리셋 버튼 클릭 시: preset 전환 + 고급 설정 값도 그 프리셋 값으로 덮어쓴다(PRD_Nasdaq7 §3 Must-9).
   const changePreset = (key) =>
     setUiState((s) => ({
@@ -208,6 +210,8 @@ export default function App() {
           onModeChange={changeRecommendMode}
           researchMap={researchMap}
           fundamentalsMap={fundamentalsMap}
+          hideRiskFlagged={uiState.hideRiskFlagged}
+          onToggleHideRiskFlagged={toggleHideRiskFlagged}
           preset={uiState.preset}
           onPresetChange={changePreset}
           customParams={uiState.customParams}

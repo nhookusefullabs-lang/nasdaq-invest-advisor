@@ -481,6 +481,141 @@ describe('Recommend - fundamental hurdle badges (US-11)', () => {
   })
 })
 
+// --- v8 US-12: 리서치 점검 배지 + 숨기기 토글 ---
+
+function makeTwoTickerRecommendation() {
+  return {
+    list: [
+      { ticker: 'OK_T', name: 'OK Co', score: 80.0, reasons: 'RSI 65', signalPassed: true },
+      { ticker: 'FLAG_T', name: 'Flag Co', score: 70.0, reasons: 'RSI 60', signalPassed: true },
+    ],
+    relaxationApplied: false,
+    insufficientSignal: false,
+  }
+}
+
+function makeResearchMapWithFlags() {
+  return new Map([
+    ['OK_T', { ticker: 'OK_T', sentiment: 'positive', summary: '요약.', catalysts: [], risks: [], sources: [], origin: 'recommended', riskFlags: [], stale: false }],
+    [
+      'FLAG_T',
+      {
+        ticker: 'FLAG_T',
+        sentiment: 'neutral',
+        summary: '요약.',
+        catalysts: [],
+        risks: [],
+        sources: [],
+        origin: 'recommended',
+        riskFlags: [{ type: 'litigation', description: '소송 진행 중' }],
+        stale: false,
+      },
+    ],
+  ])
+}
+
+describe('Recommend - research check badges (US-12)', () => {
+  it('shows the 3 badge states: ✓ for a clean ticker, ⚠ for a flagged ticker, and "미실시" for an unresearched one', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeTwoTickerRecommendation()}
+        researchMap={makeResearchMapWithFlags()}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    expect(within(screen.getByText('OK_T').closest('.border')).getByText('리서치 점검 ✓')).toBeInTheDocument()
+    expect(within(screen.getByText('FLAG_T').closest('.border')).getByText('⚠ 리스크 플래그 1건')).toBeInTheDocument()
+  })
+
+  it('shows "리서치 점검 ✓" for a v1-style research entry normalized to riskFlags:[] (researchLoader 하위 호환)', () => {
+    const researchMap = new Map([['OK_T', { ticker: 'OK_T', sentiment: 'positive', riskFlags: [], stale: false }]])
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeRecommendation()}
+        researchMap={researchMap}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    expect(within(screen.getByText('AXON').closest('.border')).getByText('리서치 미실시')).toBeInTheDocument()
+  })
+
+  it('shows no badges when researchMap is not passed (research.json 부재, graceful degradation)', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeTwoTickerRecommendation()}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    expect(screen.getAllByText('리서치 미실시').length).toBe(2)
+    expect(screen.queryByText('리서치 점검 ✓')).not.toBeInTheDocument()
+    expect(screen.queryByText(/⚠ 리스크 플래그/)).not.toBeInTheDocument()
+  })
+})
+
+describe('Recommend - hide risk-flagged toggle (US-12)', () => {
+  it('defaults to unchecked (숨기기 기본 꺼짐) and shows every ticker, including flagged ones', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeTwoTickerRecommendation()}
+        researchMap={makeResearchMapWithFlags()}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    expect(screen.getByRole('checkbox', { name: '리스크 플래그 종목 숨기기' })).not.toBeChecked()
+    expect(screen.getByText('OK_T')).toBeInTheDocument()
+    expect(screen.getByText('FLAG_T')).toBeInTheDocument()
+  })
+
+  it('calls onToggleHideRiskFlagged when the toggle is clicked', async () => {
+    const user = userEvent.setup()
+    let calls = 0
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeTwoTickerRecommendation()}
+        researchMap={makeResearchMapWithFlags()}
+        onToggleHideRiskFlagged={() => (calls += 1)}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    await user.click(screen.getByRole('checkbox', { name: '리스크 플래그 종목 숨기기' }))
+    expect(calls).toBe(1)
+  })
+
+  it('hides only the flagged ticker (not an auto-disqualification, no separate section) when hideRiskFlagged is true', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeTwoTickerRecommendation()}
+        researchMap={makeResearchMapWithFlags()}
+        hideRiskFlagged={true}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    expect(screen.getByRole('checkbox', { name: '리스크 플래그 종목 숨기기' })).toBeChecked()
+    expect(screen.getByText('OK_T')).toBeInTheDocument()
+    expect(screen.queryByText('FLAG_T')).not.toBeInTheDocument()
+    // hidden, not relocated — no "펀더멘털 미달"-style bottom section exists for this
+    expect(screen.queryByText(/리스크 플래그 종목 목록/)).not.toBeInTheDocument()
+  })
+})
+
 describe('Recommend - consensus mode (US-10)', () => {
   it('shows the ★★ grade with both mode scores for a dual-pass ticker', () => {
     render(

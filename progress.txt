@@ -611,3 +611,52 @@
   hideRiskFlagged 토글(localStorage v3, US-9에서 이미 필드 준비됨) 값에 따라 visible에서
   제외하는 필터링을 3개 뷰 공통으로 넣어야 함(자동 탈락이 아니라 사용자 토글이므로
   fundamentals의 "Fail 분리"와는 분기 로직이 다름 — 토글 꺼짐 시 항상 전부 표시).
+
+## Iteration 12 — US-12. 화면2 — 리서치 점검 배지 + 숨기기 토글
+- 완료 스토리: US-12
+- 변경 파일:
+  - src/lib/researchCheck.js(신설): computeResearchCheckState(research) — 순수 함수로
+    분리해 컴포넌트(배지 렌더링)와 화면(숨기기 필터링) 양쪽에서 재사용. 반환
+    { state: 'none'|'ok'|'flagged', flags }. **설계 보정**: PRD는 "✓"를 "플래그 0건 +
+    sentiment≠negative"로만 정의하고 "플래그 0건인데 sentiment===negative"인 조합은
+    정의하지 않았음 — 그대로 두면 부정적 센티먼트 종목이 아무 경고 없이 ✓로 통과하는
+    결함이 되므로, 이 조합도 flagged(빈 flags 배열)로 안전하게 처리(US-5의 VCP 수식
+    보정과 같은 종류의 "PRD 여집합 결함" 패턴).
+  - src/lib/researchCheck.test.js(신설): 8개 테스트.
+  - src/components/ResearchCheckBadge.jsx(신설): 3상태 배지 — "리서치 미실시"(회색)/
+    "리서치 점검 ✓"(초록)/"⚠ 리스크 플래그 n건"(빨강, 펼치면 type 한글 라벨+description)
+    /"⚠ 리서치 점검 필요"(flags 없이 negative sentiment인 보정 케이스, 펼치기 버튼 없음).
+  - src/components/ResearchCheckBadge.test.jsx(신설): 5개 테스트.
+  - src/screens/Recommend.jsx: filterHiddenRiskFlagged(list, researchMap, hideRiskFlagged)
+    헬퍼 신설 — splitByFundamentalVerdict(분리+하단표시)와 달리 그냥 배열에서 제외만
+    한다(별도 섹션 없음, "자동 탈락 아님" 원칙 그대로). 3개 뷰 전부 이 필터를
+    fundamentals 분리 다음 단계로 체이닝(afterFundamentals → filterHiddenRiskFlagged →
+    최종 list). ModeSegment 바로 아래에 "리스크 플래그 종목 숨기기" 체크박스를 모드와
+    무관한 공통 위치로 추가(기본 꺼짐, hideRiskFlagged prop 기본값 false). 3개 뷰의
+    researchSection 슬롯에 ResearchCheckBadge를 ResearchSection과 함께 묶어 전달
+    (배지=요약, 섹션=상세 병존 원칙 그대로 SelectAndResearch API 변경 없이 구현).
+  - src/App.jsx: toggleHideRiskFlagged 핸들러 추가, uiState.hideRiskFlagged/
+    onToggleHideRiskFlagged를 Recommend에 전달.
+  - 기존 테스트 수정: App.test.jsx의 두 e2e 테스트가 `getAllByRole('checkbox')`로 체크박스
+    배열을 가져와 인덱스로 클릭하고 있었는데, 새 "숨기기" 토글 체크박스가 항상 목록 맨 위에
+    먼저 렌더링되면서 인덱스가 한 칸씩 밀려 종목 선택 개수가 어긋나는 회귀가 발생 —
+    두 테스트 모두 `getByRole('checkbox', {name: '리스크 플래그 종목 숨기기'})`로 토글을
+    먼저 찾아 배열에서 제외하도록 수정(동작 자체는 무수정, 쿼리만 정교화).
+  - 신규 테스트: Recommend.test.jsx에 3상태 배지 3개 + 숨기기 토글 3개(총 6개),
+    App.test.jsx에 hideRiskFlagged localStorage 영속 통합 테스트 1개.
+- 디버깅: 처음 작성한 테스트 픽스처(makeResearchMapWithFlags)가 summary 필드를 빼먹어
+  ResearchSection의 firstSentence(undefined)가 TypeError를 던짐 — summary/catalysts/
+  risks/sources/origin을 모두 채운 완전한 research 항목으로 수정. 또한 "배지가 전혀
+  없어야 한다" graceful-degradation 테스트가 `/리스크 플래그/` 정규식으로 검사했는데
+  이 문자열이 항상 렌더링되는 "리스크 플래그 종목 숨기기" 토글 라벨과도 매치돼 오탐 —
+  `/⚠ 리스크 플래그/`(배지 전용 접두사)로 좁혀 수정.
+- 테스트 수 변화: 325 → 345 (+20, researchCheck 0→8, ResearchCheckBadge 0→5,
+  Recommend 24→30, App 12→13), 전체 통과. npm run build 통과(212.87kB→215.19kB).
+- 운영자 액션 필요: 없음
+- 다음 스토리 메모: US-13 (통합 검증 및 마감 — 코드보다 검증 중심). PRD §10 성공 기준
+  7항목을 하나씩 점검해 progress.txt에 기록, README에 v8 운영 절차(주 1회 단일 스크립트
+  실행→크기 확인→리서치 세션(선택)→커밋·배포) 갱신, 미충족 항목이 있으면 체크하지 말고
+  해당 스토리로 되돌아갈 것. 이 스토리를 끝으로 US-1~US-13 전부 완료되면 v8 Ralph 루프
+  종료 — 실데이터(2년 가격+fundamentals) 수집·research.json 재생성은 여전히 운영자가
+  별도 python 세션에서 수행해야 함(코드는 전부 graceful degradation으로 준비됨, US-1/
+  US-2에서 이미 기록된 동일 성격의 운영자 액션).

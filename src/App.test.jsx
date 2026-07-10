@@ -54,7 +54,9 @@ describe('App end-to-end flow (real nasdaq100.json)', () => {
     await user.click(screen.getByRole('button', { name: /이 조건으로 추천 보기/ }))
     await waitFor(() => expect(screen.getByText('추천 결과')).toBeInTheDocument())
 
-    const checkboxes = screen.getAllByRole('checkbox')
+    // exclude the "리스크 플래그 종목 숨기기" toggle checkbox (US-12) — only ticker checkboxes count
+    const hideToggle = screen.getByRole('checkbox', { name: '리스크 플래그 종목 숨기기' })
+    const checkboxes = screen.getAllByRole('checkbox').filter((cb) => cb !== hideToggle)
     expect(checkboxes.length).toBeGreaterThan(0)
 
     // select up to 3 tickers (or as many as available) for portfolio testing
@@ -91,14 +93,16 @@ describe('App end-to-end flow (real nasdaq100.json)', () => {
 
     await user.click(screen.getByRole('button', { name: /이 조건으로 추천 보기/ }))
     await waitFor(() => expect(screen.getByText('추천 결과')).toBeInTheDocument())
-    const checkboxes = screen.getAllByRole('checkbox')
+    const hideToggle = screen.getByRole('checkbox', { name: '리스크 플래그 종목 숨기기' })
+    const checkboxes = screen.getAllByRole('checkbox').filter((cb) => cb !== hideToggle)
     await user.click(checkboxes[0])
 
     unmount()
 
     render(<App />)
     await waitFor(() => expect(screen.getByText('추천 결과')).toBeInTheDocument())
-    const restoredCheckboxes = screen.getAllByRole('checkbox')
+    const restoredHideToggle = screen.getByRole('checkbox', { name: '리스크 플래그 종목 숨기기' })
+    const restoredCheckboxes = screen.getAllByRole('checkbox').filter((cb) => cb !== restoredHideToggle)
     expect(restoredCheckboxes[0]).toBeChecked()
   })
 
@@ -341,6 +345,32 @@ describe('App - recommend mode segment + localStorage (real nasdaq100.json, v8 U
     render(<App />)
     await waitFor(() => expect(screen.getByText('추천 결과')).toBeInTheDocument())
     expect(screen.getByRole('button', { name: '미너비니' })).toHaveAttribute('aria-pressed', 'true')
+  })
+})
+
+describe('App - hide risk-flagged toggle + localStorage (real nasdaq100.json, v8 US-12)', () => {
+  beforeEach(() => {
+    globalThis.localStorage = makeMemoryStorage()
+    globalThis.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(REAL_DATA) }))
+  })
+
+  it('defaults to unchecked and persists a toggled state across a fresh App mount (localStorage v3)', async () => {
+    const user = userEvent.setup()
+    const { unmount } = render(<App />)
+    await waitFor(() => expect(screen.getByText('종목 검색')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: /이 조건으로 추천 보기/ }))
+    await waitFor(() => expect(screen.getByText('추천 결과')).toBeInTheDocument())
+
+    const toggle = screen.getByRole('checkbox', { name: '리스크 플래그 종목 숨기기' })
+    expect(toggle).not.toBeChecked()
+
+    await user.click(toggle)
+    await waitFor(() => expect(screen.getByRole('checkbox', { name: '리스크 플래그 종목 숨기기' })).toBeChecked())
+
+    unmount()
+    render(<App />)
+    await waitFor(() => expect(screen.getByText('추천 결과')).toBeInTheDocument())
+    expect(screen.getByRole('checkbox', { name: '리스크 플래그 종목 숨기기' })).toBeChecked()
   })
 })
 
