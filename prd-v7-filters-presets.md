@@ -96,7 +96,7 @@
 ---
 
 ### US-6. 필터 상태 모델 + localStorage 스키마 v2
-- [ ] **사용자로서, 신규 필터와 프리셋 설정이 새로고침 후에도 유지되길 원한다.**
+- [x] **사용자로서, 신규 필터와 프리셋 설정이 새로고침 후에도 유지되길 원한다.**
 
 **구현:** 필터 state에 신규 5종 추가(기본 꺼짐) + `storage.js` 스키마 버전 1→2
 - v2 신규 필드: 신규 필터 상태, `preset`('conservative'|'default'|'aggressive'|'custom'), `customParams`,

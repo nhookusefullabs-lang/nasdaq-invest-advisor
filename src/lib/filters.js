@@ -16,6 +16,13 @@ export const DEFAULT_FILTER_STATE = {
   volumeTrendMin: null, // 거래량 추세 하한(%), null = 미적용
   leadingSectorOnly: false, // 주도 섹터만
   rsiState: 'off', // 'off' | 'overheated' | 'oversold'
+  // v7 신규 필터 5종 (PRD_Nasdaq7 §3 Must 1~5, US-6) — 첫 진입 시 전부 꺼짐.
+  // 판정 로직은 US-5의 passes*() 함수, 화면1 UI 연결은 US-7에서 수행한다.
+  bollingerState: 'off', // 'off' | 'lowerProximity' | 'upperBreakout'
+  week52State: 'off', // 'off' | 'nearHigh' | 'nearLow'
+  stochasticState: 'off', // 'off' | 'oversold' | 'overbought'
+  atrState: 'off', // 'off' | 'low' | 'high'
+  obvState: 'off', // 'off' | 'rising' | 'falling'
 }
 
 export function applyFilters(tickers, filters, query = '') {

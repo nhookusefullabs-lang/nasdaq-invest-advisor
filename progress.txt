@@ -76,3 +76,26 @@
 - 다음 스토리 메모: US-6 (필터 state에 신규 5종 추가 + persistence.js 스키마 v1→v2
   마이그레이션. 기존 선택종목/비중/필터 보존 + customParams 범위검증 + researchRequests
   유니버스 필터링).
+
+## Iteration 6 — US-6. 필터 상태 모델 + localStorage 스키마 v2
+- 완료 스토리: US-6
+- 변경 파일: src/lib/filters.js(DEFAULT_FILTER_STATE에 bollingerState/week52State/
+  stochasticState/atrState/obvState 5개 필드 추가, 전부 기본 'off' — applyFilters 로직은
+  무수정), src/lib/constants.js(CUSTOM_PARAM_RANGES 추가), src/lib/persistence.js
+  (SCHEMA_VERSION 1→2, preset/customParams/researchRequests 필드 추가, v1→v2 마이그레이션
+  로직 — 기존 field 보존 + 신규 field 기본값), src/lib/persistence.test.js(4개 테스트 추가)
+- 설계 결정: schemaVersion이 SCHEMA_VERSION(2)도 MIGRATABLE_FROM_VERSION(1)도 아니면
+  기존과 동일하게 완전 리셋(회귀 없음 확인 — 999 케이스 테스트 유지). customParams는
+  필드 단위로 범위 검증해 범위 밖 필드"만" 기본값으로 되돌리고 나머지 유효한 필드는
+  보존(완전 리셋 아님) — 스펙 "해당 값만 기본형으로"를 문자 그대로 구현.
+- 테스트 수 변화: 138 → 142 (+4, persistence 5→9), 전체 통과. npm run build 통과.
+- 운영자 액션 필요: 없음
+- ⚠ US-5에서 남긴 갭 계속 유효: deriveTickerData.js에 v7 지표(bollinger/week52/
+  stochastic/atrPercent/obv) 필드 없음. DEFAULT_FILTER_STATE·persistence에 신규 필터
+  상태 필드는 이제 있지만, applyFilters()는 아직 이 신규 필드들을 사용하지 않는다
+  (판정 함수는 US-5에 있지만 배선 안 됨) — US-7에서 화면1 UI를 재편할 때 반드시
+  deriveTickerData 확장 + applyFilters 배선을 함께 처리해야 신규 필터가 실제로 동작함.
+- 다음 스토리 메모: US-7 (화면1 필터 5그룹 접이식 재편. 위 갭 때문에 이 스토리 범위가
+  원래 PRD 기술보다 커질 수 있음 — deriveTickerData에 v7 지표 계산 추가 + applyFilters에
+  신규 5종 필터 판정 배선까지 포함해야 "회귀 테스트"와 "판정 함수와 결과 일치" 승인 기준을
+  충족 가능. 기존 필터 4종 로직·배치 외 변경 금지 원칙은 유지).
