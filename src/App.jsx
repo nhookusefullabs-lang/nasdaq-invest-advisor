@@ -3,6 +3,8 @@ import { loadNasdaq100 } from './lib/loadData.js'
 import { loadResearch, buildResearchMap } from './lib/researchLoader.js'
 import { applyFilters, countWeek52Excluded } from './lib/filters.js'
 import { recommend } from './lib/recommend.js'
+import { runMinerviniRecommend } from './lib/minervini.js'
+import { buildConsensusRanking } from './lib/consensus.js'
 import { PRESETS, DEFAULT_PRESET_KEY } from './lib/presets.js'
 import { loadPersistedState, savePersistedState, DEFAULT_UI_STATE } from './lib/persistence.js'
 import NavTabs from './components/NavTabs.jsx'
@@ -72,6 +74,16 @@ export default function App() {
         }
       : (PRESETS[uiState.preset] ?? PRESETS[DEFAULT_PRESET_KEY])
   const recommendation = useMemo(() => recommend(filteredTickers, activeConfig), [filteredTickers, activeConfig])
+
+  // 미너비니 모드(PRD_Nasdaq8 US-4/US-5)는 원전 기준 고정 — 추세추종처럼 프리셋/고급설정의
+  // 대상이 아니므로 activeConfig 없이 filteredTickers만으로 계산한다.
+  const minerviniResult = useMemo(() => runMinerviniRecommend(filteredTickers), [filteredTickers])
+  const consensusResult = useMemo(
+    () => buildConsensusRanking(recommendation, minerviniResult),
+    [recommendation, minerviniResult]
+  )
+
+  const changeRecommendMode = (recommendMode) => setUiState((s) => ({ ...s, recommendMode }))
 
   // 프리셋 버튼 클릭 시: preset 전환 + 고급 설정 값도 그 프리셋 값으로 덮어쓴다(PRD_Nasdaq7 §3 Must-9).
   const changePreset = (key) =>
@@ -184,6 +196,10 @@ export default function App() {
         <Recommend
           generatedAt={dataset.generatedAt}
           recommendation={recommendation}
+          minerviniResult={minerviniResult}
+          consensusResult={consensusResult}
+          recommendMode={uiState.recommendMode}
+          onModeChange={changeRecommendMode}
           researchMap={researchMap}
           preset={uiState.preset}
           onPresetChange={changePreset}

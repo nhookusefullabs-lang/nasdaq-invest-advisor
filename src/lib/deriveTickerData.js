@@ -86,6 +86,10 @@ export function deriveTickerData(raw) {
     sector,
     dataSufficient: true,
     insufficientReason: null,
+    // 원본 바 배열 보존 (PRD_Nasdaq8 US-10) — 미너비니 모드(minervini.js)가 자체 지표
+    // (rsRawScore/hasFullYearData 등)를 계산하려면 파생 지표가 아니라 원본 series가
+    // 필요하다. 기존 indicators/chart 필드는 무수정, 추가 전용.
+    series,
     indicators: {
       currentClose: currentBar.close,
       sma20,

@@ -509,3 +509,54 @@
   buildConsensusRanking() 중 무엇을 호출할지 분기해야 함(US-6 consensus.js가 이미
   이 3개를 조합하는 지점). "추세추종" 모드에서만 프리셋/고급설정 패널 노출(기존 v7 UI
   그대로). 통합 뷰 카드에 ★★/★ 등급 + 양 모드 점수 + 통합 백분위 문구 렌더링.
+
+## Iteration 10 — US-10. 화면2 — 모드 세그먼트 + 통합 뷰
+- 완료 스토리: US-10
+- 변경 파일:
+  - src/lib/deriveTickerData.js: dataSufficient:true 반환 객체에 원본 series(raw bar
+    배열) 필드를 추가로 보존(기존 indicators/chart 필드 전부 무수정, 추가 전용) —
+    minervini.js(runMinerviniStage1/runMinerviniRecommend)가 rsRawScore/hasFullYearData
+    등을 계산하려면 파생 지표가 아니라 원본 series가 필요하기 때문. applyFilters()는
+    .filter()만 하므로 새 필드는 filteredTickers까지 그대로 통과함을 확인.
+  - src/App.jsx: runMinerviniRecommend(filteredTickers)와 buildConsensusRanking(
+    recommendation, minerviniResult)를 useMemo로 계산해 Recommend에 추가 전달.
+    changeRecommendMode(mode) 핸들러 신설(uiState.recommendMode 갱신, US-9에서 이미
+    스키마·마이그레이션 준비됨). 미너비니는 원전 기준 고정이므로 activeConfig(프리셋)를
+    받지 않음 — filteredTickers만 입력.
+  - src/screens/Recommend.jsx 전면 재구성: 상단 3단 모드 세그먼트(ModeSegment, 기본
+    'trend' — App.jsx가 항상 uiState.recommendMode를 명시적으로 넘기므로 실사용 기본은
+    "통합"이지만, prop 자체의 기본값은 'trend'로 둬 recommendMode를 전달하지 않는
+    기존 Recommend.test.jsx 호출부가 전부 그대로 통과하게 함. "config 없이 호출 시
+    기존 동작 유지"라는 v7 US-8 관례를 그대로 재사용). 3개 서브뷰로 분리:
+    TrendModeView(기존 JSX를 그대로 이동, 로직 무변경), MinerviniModeView(VCP 점수순
+    카드 + TrendTemplateChecklist 8칸 T1~T8 체크리스트 + 완화 배너
+    "조건 완화 적용됨(7/8)"(TREND_TEMPLATE_RELAXED_MIN_CONDITIONS/TREND_TEMPLATE.
+    CONDITION_COUNT 상수 사용) + insufficientSignal 시 "현금 보유가 원칙입니다" 문구),
+    ConsensusModeView(★★/★ 등급 배지 + "추세추종 N점 · 미너비니 M점 · 통합 상위 P%"
+    형식 카드). 신규 SelectAndResearch 헬퍼로 체크박스<label>과 리서치 요청 토글/
+    리서치 상세를 분리 배치(v7 US-11 "체크박스 오작동 방지" 패턴 재사용 — 처음에
+    ResearchSection을 children으로 잘못 넣어 label 안에 들어가는 실수를 발견해
+    researchSection 별도 prop으로 수정). 미너비니·통합 뷰 하단 공통
+    DesignValueNotice("배점·기준값은 v9 백테스트로 조정 예정인 설계값입니다").
+  - 기존 테스트 수정: App.test.jsx의 프리셋/고급설정 테스트 3개가 이제 기본 모드가
+    "통합"이라 프리셋 세그먼트에 도달할 수 없으므로, 각 테스트 시작부에 "추세추종" 버튼
+    클릭을 추가(동작 자체는 무수정, 진입 경로만 추가).
+  - 신규 테스트: deriveTickerData.test.js에 series passthrough 2개, Recommend.test.jsx에
+    모드 세그먼트/미너비니 뷰/통합 뷰 11개, App.test.jsx에 실데이터 기반 3모드 전환 +
+    localStorage 영속 통합 테스트 2개.
+- 설계 결정: Recommend.jsx 컴포넌트 자체의 recommendMode 기본값을 'trend'로 둔 이유는
+  "추세추종 모드에서 기존 화면2 테스트 전부 통과"(승인 기준 2)를 기존 테스트 파일을
+  건드리지 않고 만족시키기 위함 — App.jsx는 항상 명시적으로 uiState.recommendMode
+  (기본 'consensus', US-9)를 전달하므로 실사용 동작과 무관.
+- 테스트 수 변화: 297 → 310 (+13, deriveTickerData 6→8, Recommend 10→21, App 10→12),
+  전체 통과. npm run build 통과(194.78kB→206.21kB — minervini/consensus 로직과 신규
+  뷰가 이제 App에서 실제로 import되어 트리셰이킹 대상에서 빠짐, 예상된 증가).
+- 운영자 액션 필요: 없음
+- 다음 스토리 메모: US-11 (화면2 — 펀더멘털 배지 + Fail 하단 섹션). fundamentals.js/
+  fundamentalsLoader.js(US-7)를 처음으로 App.jsx에 배선 — loadFundamentals() 호출 +
+  buildFundamentalsMap()으로 티커별 맵 구성(researchMap과 동일 패턴). 카드에
+  Pass/Partial/insufficientFundamentals 배지, Fail은 하단 접이식 섹션으로 분리(숨기지
+  않음). fundamentals.json 부재 시 배지·섹션 전부 미표시 + US-10 상태와 시각적으로
+  동일해야 함(graceful degradation 테스트 필수) — 어느 모드(통합/추세추종/미너비니)
+  카드에도 공통 적용되는 것으로 보이므로 SelectAndResearch 근처에 공통 배지 삽입 지점을
+  두는 편이 3개 뷰에 중복 없이 적용하기 좋을 것.

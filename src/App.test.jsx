@@ -236,6 +236,8 @@ describe('App - preset switching recomputes the recommendation (real nasdaq100.j
     await waitFor(() => expect(screen.getByText('종목 검색')).toBeInTheDocument())
     await user.click(screen.getByRole('button', { name: /이 조건으로 추천 보기/ }))
     await waitFor(() => expect(screen.getByText('추천 결과')).toBeInTheDocument())
+    // 프리셋 세그먼트는 "추세추종" 모드에서만 노출된다 (PRD_Nasdaq8 US-10, 기본 모드는 "통합")
+    await user.click(screen.getByRole('button', { name: '추세추종' }))
 
     expect(screen.getByRole('button', { name: '기본형' })).toHaveAttribute('aria-pressed', 'true')
     const defaultReasons = screen.getAllByText(/RSI \d+/).map((el) => el.textContent)
@@ -263,6 +265,7 @@ describe('App - advanced settings panel (real nasdaq100.json, v7 US-10)', () => 
     await waitFor(() => expect(screen.getByText('종목 검색')).toBeInTheDocument())
     await user.click(screen.getByRole('button', { name: /이 조건으로 추천 보기/ }))
     await waitFor(() => expect(screen.getByText('추천 결과')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: '추세추종' }))
 
     await user.click(screen.getByRole('button', { name: /고급 설정/ }))
     const rsiInput = screen.getByLabelText('RSI 하한')
@@ -287,6 +290,7 @@ describe('App - advanced settings panel (real nasdaq100.json, v7 US-10)', () => 
     await waitFor(() => expect(screen.getByText('종목 검색')).toBeInTheDocument())
     await user.click(screen.getByRole('button', { name: /이 조건으로 추천 보기/ }))
     await waitFor(() => expect(screen.getByText('추천 결과')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: '추세추종' }))
 
     await user.click(screen.getByRole('button', { name: /고급 설정/ }))
     fireEvent.change(screen.getByLabelText('RSI 하한'), { target: { value: '65' } })
@@ -296,6 +300,47 @@ describe('App - advanced settings panel (real nasdaq100.json, v7 US-10)', () => 
 
     await waitFor(() => expect(screen.getByRole('button', { name: '기본형' })).toHaveAttribute('aria-pressed', 'true'))
     expect(screen.getByLabelText('RSI 하한')).toHaveValue(50)
+  })
+})
+
+describe('App - recommend mode segment + localStorage (real nasdaq100.json, v8 US-10)', () => {
+  beforeEach(() => {
+    globalThis.localStorage = makeMemoryStorage()
+    globalThis.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(REAL_DATA) }))
+  })
+
+  it('defaults to consensus ("통합") mode and can switch to all three modes without crashing', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await waitFor(() => expect(screen.getByText('종목 검색')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: /이 조건으로 추천 보기/ }))
+    await waitFor(() => expect(screen.getByText('추천 결과')).toBeInTheDocument())
+
+    expect(screen.getByRole('button', { name: '통합' })).toHaveAttribute('aria-pressed', 'true')
+
+    await user.click(screen.getByRole('button', { name: '미너비니' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: '미너비니' })).toHaveAttribute('aria-pressed', 'true'))
+    expect(screen.getByText(/배점·기준값은 v9 백테스트로 조정 예정인 설계값입니다/)).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '추세추종' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: '추세추종' })).toHaveAttribute('aria-pressed', 'true'))
+    expect(screen.getByRole('group', { name: '추천 프리셋' })).toBeInTheDocument()
+  })
+
+  it('persists the selected recommend mode across a fresh App mount (localStorage v3)', async () => {
+    const user = userEvent.setup()
+    const { unmount } = render(<App />)
+    await waitFor(() => expect(screen.getByText('종목 검색')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: /이 조건으로 추천 보기/ }))
+    await waitFor(() => expect(screen.getByText('추천 결과')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: '미너비니' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: '미너비니' })).toHaveAttribute('aria-pressed', 'true'))
+
+    unmount()
+    render(<App />)
+    await waitFor(() => expect(screen.getByText('추천 결과')).toBeInTheDocument())
+    expect(screen.getByRole('button', { name: '미너비니' })).toHaveAttribute('aria-pressed', 'true')
   })
 })
 

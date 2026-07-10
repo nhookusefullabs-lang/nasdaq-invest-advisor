@@ -199,3 +199,254 @@ describe('Recommend - research request toggle (US-11)', () => {
     expect(screen.queryByText('리서치 요청')).not.toBeInTheDocument()
   })
 })
+
+// --- v8 US-10: 모드 세그먼트 + 통합/미너비니 뷰 ---
+
+function makeMinerviniResult(overrides = {}) {
+  return {
+    list: [
+      {
+        ticker: 'FTNT',
+        name: 'Fortinet, Inc.',
+        sector: 'Technology',
+        score: 78.1,
+        reasons: 'Stage 2 추세, RS 상위 12%, 변동성 수축 중',
+        signalPassed: true,
+        relaxationApplied: false,
+        templateChecks: [
+          { code: 'T1', passed: true },
+          { code: 'T2', passed: true },
+          { code: 'T3', passed: true },
+          { code: 'T4', passed: true },
+          { code: 'T5', passed: true },
+          { code: 'T6', passed: true },
+          { code: 'T7', passed: false },
+          { code: 'T8', passed: true },
+        ],
+      },
+    ],
+    relaxationApplied: false,
+    insufficientSignal: false,
+    level: 'strict',
+    excludedForInsufficientData: [],
+    ...overrides,
+  }
+}
+
+function makeConsensusResult(overrides = {}) {
+  return {
+    list: [
+      {
+        ticker: 'FTNT',
+        name: 'Fortinet, Inc.',
+        sector: 'Technology',
+        grade: '★★',
+        singleModeLabel: null,
+        consensusPercentile: 87,
+        trend: { score: 43.5, percentile: 96, reasons: 'RSI 62', signalPassed: true },
+        minervini: { score: 78.1, percentile: 78, reasons: 'Stage 2 추세', signalPassed: true },
+      },
+      {
+        ticker: 'AAPL',
+        name: 'Apple Inc.',
+        sector: 'Technology',
+        grade: '★',
+        singleModeLabel: '추세추종',
+        consensusPercentile: 34,
+        trend: { score: 34.0, percentile: 34, reasons: 'RSI 62', signalPassed: true },
+        minervini: null,
+      },
+    ],
+    trendInsufficientSignal: false,
+    minerviniInsufficientSignal: false,
+    ...overrides,
+  }
+}
+
+describe('Recommend - mode segment (US-10)', () => {
+  it('defaults to trend mode when recommendMode is not passed (regression: v7 behavior unchanged)', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeRecommendation()}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    expect(screen.getByRole('button', { name: '추세추종' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('group', { name: '추천 프리셋' })).toBeInTheDocument()
+  })
+
+  it('calls onModeChange with the clicked mode key', async () => {
+    const user = userEvent.setup()
+    let latest = null
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeRecommendation()}
+        recommendMode="trend"
+        onModeChange={(m) => (latest = m)}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    await user.click(screen.getByRole('button', { name: '미너비니' }))
+    expect(latest).toBe('minervini')
+  })
+
+  it('renders the three mode buttons with the active one pressed', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeRecommendation()}
+        recommendMode="consensus"
+        consensusResult={makeConsensusResult()}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    const group = screen.getByRole('group', { name: '추천 모드' })
+    expect(within(group).getByRole('button', { name: '통합' })).toHaveAttribute('aria-pressed', 'true')
+    expect(within(group).getByRole('button', { name: '추세추종' })).toHaveAttribute('aria-pressed', 'false')
+    expect(within(group).getByRole('button', { name: '미너비니' })).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('hides the preset segment and advanced settings entry point outside trend mode', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeRecommendation()}
+        recommendMode="minervini"
+        minerviniResult={makeMinerviniResult()}
+        customParams={{ rsiMin: 50, goldenCrossWindow: 5, highScoreThreshold: 70 }}
+        onCustomParamChange={noop}
+        onResetToDefault={noop}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    expect(screen.queryByRole('group', { name: '추천 프리셋' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /고급 설정/ })).not.toBeInTheDocument()
+  })
+})
+
+describe('Recommend - minervini mode (US-10)', () => {
+  it('renders the trend template 8-checklist and the score for each card', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeRecommendation()}
+        recommendMode="minervini"
+        minerviniResult={makeMinerviniResult()}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    const checklist = screen.getByLabelText('트렌드 템플릿 체크리스트')
+    expect(within(checklist).getByText('T1✓')).toBeInTheDocument()
+    expect(within(checklist).getByText('T7✗')).toBeInTheDocument()
+    expect(screen.getByText('78.1점')).toBeInTheDocument()
+  })
+
+  it('shows the relaxation-fallback banner with the 7/8 relaxed threshold', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeRecommendation()}
+        recommendMode="minervini"
+        minerviniResult={makeMinerviniResult({ relaxationApplied: true })}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    expect(screen.getByText(/조건 완화 적용됨\(7\/8\)/)).toBeInTheDocument()
+  })
+
+  it('shows the cash-is-the-default banner when insufficientSignal is true', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeRecommendation()}
+        recommendMode="minervini"
+        minerviniResult={makeMinerviniResult({ list: [], insufficientSignal: true })}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    expect(screen.getByText(/미너비니 방법론에서는 조건 미충족 시 현금 보유가 원칙입니다/)).toBeInTheDocument()
+  })
+
+  it('shows the v9-backtest design-value disclaimer', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeRecommendation()}
+        recommendMode="minervini"
+        minerviniResult={makeMinerviniResult()}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    expect(screen.getByText(/배점·기준값은 v9 백테스트로 조정 예정인 설계값입니다/)).toBeInTheDocument()
+  })
+})
+
+describe('Recommend - consensus mode (US-10)', () => {
+  it('shows the ★★ grade with both mode scores for a dual-pass ticker', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeRecommendation()}
+        recommendMode="consensus"
+        consensusResult={makeConsensusResult()}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    const ftntCard = screen.getByText('FTNT').closest('.border')
+    expect(within(ftntCard).getByText('★★')).toBeInTheDocument()
+    expect(within(ftntCard).getByText(/추세추종 43\.5점/)).toBeInTheDocument()
+    expect(within(ftntCard).getByText(/미너비니 78\.1점/)).toBeInTheDocument()
+  })
+
+  it('shows the ★ grade with a single mode label for a single-pass ticker', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeRecommendation()}
+        recommendMode="consensus"
+        consensusResult={makeConsensusResult()}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    const aaplCard = screen.getByText('AAPL').closest('.border')
+    expect(within(aaplCard).getByText('★')).toBeInTheDocument()
+    expect(within(aaplCard).getByText(/추세추종 34\.0점/)).toBeInTheDocument()
+  })
+
+  it('shows the v9-backtest design-value disclaimer', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeRecommendation()}
+        recommendMode="consensus"
+        consensusResult={makeConsensusResult()}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    expect(screen.getByText(/배점·기준값은 v9 백테스트로 조정 예정인 설계값입니다/)).toBeInTheDocument()
+  })
+})

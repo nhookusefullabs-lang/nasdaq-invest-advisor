@@ -63,6 +63,22 @@ function makeSyntheticSeries(days) {
   return series
 }
 
+describe('deriveTickerData - series passthrough (PRD_Nasdaq8 US-10)', () => {
+  it('preserves the original bar array on dataSufficient tickers, for minervini.js to consume', () => {
+    const raw = { ticker: 'T200', name: 'Test 200', sector: 'Technology', series: makeSyntheticSeries(200) }
+    const derived = deriveTickerData(raw)
+    expect(derived.dataSufficient).toBe(true)
+    expect(derived.series).toBe(raw.series)
+  })
+
+  it('does not include a series field on a dataSufficient:false ticker', () => {
+    const raw = { ticker: 'T5', name: 'Test 5', sector: 'Technology', series: makeSyntheticSeries(5) }
+    const derived = deriveTickerData(raw)
+    expect(derived.dataSufficient).toBe(false)
+    expect(derived.series).toBeUndefined()
+  })
+})
+
 describe('deriveTickerData - chart.sixMonth window (PRD_Nasdaq7 §2, US-2)', () => {
   it('caps sixMonth at the most recent 126 trading days for a 200-day series', () => {
     const raw = { ticker: 'T200', name: 'Test 200', sector: 'Technology', series: makeSyntheticSeries(200) }
