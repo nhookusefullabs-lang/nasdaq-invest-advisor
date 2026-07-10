@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { loadNasdaq100 } from './lib/loadData.js'
+import { loadResearch, buildResearchMap } from './lib/researchLoader.js'
 import { applyFilters } from './lib/filters.js'
 import { recommend } from './lib/recommend.js'
 import { loadPersistedState, savePersistedState, DEFAULT_UI_STATE } from './lib/persistence.js'
@@ -23,13 +24,18 @@ export default function App() {
   const [dataset, setDataset] = useState(null)
   const [loadError, setLoadError] = useState(null)
   const [uiState, setUiState] = useState(DEFAULT_UI_STATE)
+  const [researchMap, setResearchMap] = useState(new Map())
 
   useEffect(() => {
     loadNasdaq100()
-      .then((d) => {
+      .then(async (d) => {
         setDataset(d)
         const validSet = new Set(d.tickers.map((t) => t.ticker))
         setUiState(loadPersistedState(validSet))
+
+        // research.json은 선택적 스냅샷 — 없거나 스키마가 안 맞아도 앱은 정상 동작해야 한다
+        const research = await loadResearch()
+        setResearchMap(buildResearchMap(research, d.generatedAt, validSet))
       })
       .catch((e) => setLoadError(e.message))
   }, [])
