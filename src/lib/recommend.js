@@ -4,6 +4,7 @@
 // 2단계 배점(이격도60/거래량30/섹터10)은 프리셋 대상이 아니므로 아래처럼 고정 상수로 둔다.
 
 import { PRESETS, DEFAULT_PRESET_KEY } from './presets.js'
+import { goldenCrossWithin } from './indicators.js'
 
 const SCORE_DISPARITY_MAX = 60
 const SCORE_VOLUME_MAX = 30
@@ -11,15 +12,27 @@ const SCORE_SECTOR_BONUS = 10
 const MIN_RESULTS = 5
 const MAX_RESULTS = 10
 
-// 프리셋의 goldenCrossWindow/goldenCrossRelaxedWindow(거래일 수) → deriveTickerData()가
-// 미리 계산해 둔 indicators.goldenCross{N} 필드명 매핑.
+// 프리셋 3종(보수형/기본형/공격형)의 고정 창(거래일 수) → deriveTickerData()가 미리
+// 계산해 둔 indicators.goldenCross{N} 이산 필드명 매핑. 고급 설정(US-10)의 임의 창
+// (1~20, 이 표에 없는 값)은 아래 goldenCrossPass()가 macdLineSeries/signalLineSeries로
+// 즉석 계산하는 경로로 자동 폴백한다 — 기존 프리셋·테스트 픽스처는 이 표를 그대로 타므로
+// 영향 없다.
 const GOLDEN_CROSS_FIELDS = { 3: 'goldenCross3', 5: 'goldenCross5', 6: 'goldenCross6', 10: 'goldenCross10', 20: 'goldenCross20' }
+
+function goldenCrossPass(td, window) {
+  const field = GOLDEN_CROSS_FIELDS[window]
+  if (field && td.indicators[field] !== undefined) return td.indicators[field]
+  if (td.indicators.macdLineSeries && td.indicators.signalLineSeries) {
+    return goldenCrossWithin(td.indicators.macdLineSeries, td.indicators.signalLineSeries, window)
+  }
+  return false
+}
 
 function stage1Pass(td, level, config) {
   const rsiOk = td.indicators.rsi14 >= config.rsiMin
   const macdOk = td.indicators.macdLine > 0
-  if (level === 'strict') return rsiOk && macdOk && td.indicators[GOLDEN_CROSS_FIELDS[config.goldenCrossWindow]]
-  if (level === 'relaxed10d') return rsiOk && macdOk && td.indicators[GOLDEN_CROSS_FIELDS[config.goldenCrossRelaxedWindow]]
+  if (level === 'strict') return rsiOk && macdOk && goldenCrossPass(td, config.goldenCrossWindow)
+  if (level === 'relaxed10d') return rsiOk && macdOk && goldenCrossPass(td, config.goldenCrossRelaxedWindow)
   if (level === 'rsiMacdOnly') return rsiOk && macdOk
   return false
 }

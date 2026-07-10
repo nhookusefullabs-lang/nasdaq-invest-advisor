@@ -1,5 +1,6 @@
 import Disclaimer from '../components/Disclaimer.jsx'
 import ResearchSection from '../components/ResearchSection.jsx'
+import AdvancedSettingsPanel from '../components/AdvancedSettingsPanel.jsx'
 import { PRESETS, PRESET_KEYS } from '../lib/presets.js'
 
 // preset 상태 문자열 -> 배너·보조 문구에 쓰는 표시 라벨. 'custom'은 US-10(고급 설정)에서
@@ -14,6 +15,9 @@ export default function Recommend({
   researchMap,
   preset,
   onPresetChange,
+  customParams,
+  onCustomParamChange,
+  onResetToDefault,
   selectedTickers,
   onToggleSelect,
   onGoToSimulation,
@@ -57,6 +61,14 @@ export default function Recommend({
           ? '고급 설정에서 직접 조정한 파라미터를 사용 중입니다'
           : (PRESETS[preset] ?? PRESETS.default).description}
       </p>
+
+      {customParams && (
+        <AdvancedSettingsPanel
+          customParams={customParams}
+          onParamChange={onCustomParamChange}
+          onResetToDefault={onResetToDefault}
+        />
+      )}
 
       {relaxationApplied && (
         <div className="mb-4 rounded bg-amber-50 border border-amber-200 text-amber-800 text-sm px-3 py-2">

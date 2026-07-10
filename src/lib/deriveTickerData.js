@@ -101,6 +101,11 @@ export function deriveTickerData(raw) {
       goldenCross3: goldenCrossWithin(macdLine, signalLine, 3),
       goldenCross6: goldenCrossWithin(macdLine, signalLine, 6),
       goldenCross20: goldenCrossWithin(macdLine, signalLine, 20),
+      // 고급 설정(US-10)의 임의 골든크로스 창(1~20)을 recommend.js가 즉석 계산할 수 있도록
+      // 원본 MACD/시그널 시계열도 함께 보관한다 — 위 goldenCross{N} 이산 필드는 프리셋
+      // 3종의 고정 창(3/5/6/10/20)만 커버하므로, 그 외 임의 값은 이 배열로 계산한다.
+      macdLineSeries: macdLine,
+      signalLineSeries: signalLine,
       volatility,
       // v7 신규 필터 5종 지표 (PRD_Nasdaq7 §4.1, US-7) — 추천 스코어링에는 사용하지 않는다.
       bollinger: bollingerBands(series),

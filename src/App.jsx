@@ -58,11 +58,35 @@ export default function App() {
     )
   }, [dataset])
 
-  // preset='custom'은 US-10(고급 설정 패널)에서 실제로 선택 가능해진다 — 그 전까지는
-  // 3개 프리셋 세그먼트(US-9)만으로 preset이 결정되므로 여기서는 프리셋 조회만 한다.
-  // (custom 연동 시 recommend.js의 골든크로스 창 매핑도 함께 일반화해야 함 — progress.txt 참고)
-  const activeConfig = PRESETS[uiState.preset] ?? PRESETS[DEFAULT_PRESET_KEY]
+  // preset='custom'이면 고급 설정(US-10)의 customParams를 recommend() 설정으로 변환한다.
+  // 완화 창은 "동일 로직 유지 (창 2배)" 규칙을 그대로 임의값에 적용 — recommend.js가
+  // macdLineSeries/signalLineSeries로 임의 창을 즉석 계산하도록 이미 일반화돼 있다(US-10).
+  const activeConfig =
+    uiState.preset === 'custom'
+      ? {
+          rsiMin: uiState.customParams.rsiMin,
+          goldenCrossWindow: uiState.customParams.goldenCrossWindow,
+          goldenCrossRelaxedWindow: uiState.customParams.goldenCrossWindow * 2,
+          highScoreThreshold: uiState.customParams.highScoreThreshold,
+        }
+      : (PRESETS[uiState.preset] ?? PRESETS[DEFAULT_PRESET_KEY])
   const recommendation = useMemo(() => recommend(filteredTickers, activeConfig), [filteredTickers, activeConfig])
+
+  // 프리셋 버튼 클릭 시: preset 전환 + 고급 설정 값도 그 프리셋 값으로 덮어쓴다(PRD_Nasdaq7 §3 Must-9).
+  const changePreset = (key) =>
+    setUiState((s) => ({
+      ...s,
+      preset: key,
+      customParams: {
+        rsiMin: PRESETS[key].rsiMin,
+        goldenCrossWindow: PRESETS[key].goldenCrossWindow,
+        highScoreThreshold: PRESETS[key].highScoreThreshold,
+      },
+    }))
+
+  // 고급 설정 파라미터를 직접 조정하면 preset이 'custom'으로 전환된다.
+  const changeCustomParam = (key, value) =>
+    setUiState((s) => ({ ...s, preset: 'custom', customParams: { ...s.customParams, [key]: value } }))
 
   const availableTickerData = useMemo(() => {
     if (!dataset) return []
@@ -138,7 +162,10 @@ export default function App() {
           recommendation={recommendation}
           researchMap={researchMap}
           preset={uiState.preset}
-          onPresetChange={(preset) => setUiState((s) => ({ ...s, preset }))}
+          onPresetChange={changePreset}
+          customParams={uiState.customParams}
+          onCustomParamChange={changeCustomParam}
+          onResetToDefault={() => changePreset(DEFAULT_PRESET_KEY)}
           selectedTickers={uiState.selectedTickers}
           onToggleSelect={toggleSelectedTicker}
           onGoToSimulation={() => setScreen('simulation')}

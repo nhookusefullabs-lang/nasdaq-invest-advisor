@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { render, screen, within, waitFor, cleanup } from '@testing-library/react'
+import { render, screen, within, waitFor, fireEvent, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App.jsx'
 
@@ -244,5 +244,53 @@ describe('App - preset switching recomputes the recommendation (real nasdaq100.j
     // on this real dataset, so the recomputed reason list must differ from the default one.
     const conservativeReasons = screen.getAllByText(/RSI \d+/).map((el) => el.textContent)
     expect(conservativeReasons).not.toEqual(defaultReasons)
+  })
+})
+
+describe('App - advanced settings panel (real nasdaq100.json, v7 US-10)', () => {
+  beforeEach(() => {
+    globalThis.localStorage = makeMemoryStorage()
+    globalThis.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(REAL_DATA) }))
+  })
+
+  it('adjusting a custom param switches to "사용자 설정", and clicking a preset overwrites it back', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await waitFor(() => expect(screen.getByText('종목 검색')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: /이 조건으로 추천 보기/ }))
+    await waitFor(() => expect(screen.getByText('추천 결과')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: /고급 설정/ }))
+    const rsiInput = screen.getByLabelText('RSI 하한')
+    expect(rsiInput).toHaveValue(50) // 기본형 값에서 시작
+
+    fireEvent.change(rsiInput, { target: { value: '60' } })
+
+    // adjusting a param switches the segment to "사용자 설정"
+    await waitFor(() => expect(screen.getByText('사용자 설정')).toBeInTheDocument())
+    expect(screen.getByRole('button', { name: '기본형' })).toHaveAttribute('aria-pressed', 'false')
+
+    // clicking a preset overwrites the custom value back to that preset's own value
+    await user.click(screen.getByRole('button', { name: '공격형' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: '공격형' })).toHaveAttribute('aria-pressed', 'true'))
+    expect(screen.queryByText('사용자 설정')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('RSI 하한')).toHaveValue(45) // 공격형의 RSI 하한
+  })
+
+  it('the "기본형으로 초기화" button resets preset and all custom params back to default', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await waitFor(() => expect(screen.getByText('종목 검색')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: /이 조건으로 추천 보기/ }))
+    await waitFor(() => expect(screen.getByText('추천 결과')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: /고급 설정/ }))
+    fireEvent.change(screen.getByLabelText('RSI 하한'), { target: { value: '65' } })
+    await waitFor(() => expect(screen.getByText('사용자 설정')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: '기본형으로 초기화' }))
+
+    await waitFor(() => expect(screen.getByRole('button', { name: '기본형' })).toHaveAttribute('aria-pressed', 'true'))
+    expect(screen.getByLabelText('RSI 하한')).toHaveValue(50)
   })
 })

@@ -186,3 +186,34 @@
   recommend.js가 goldenCrossWithin()을 그 배열로 직접 즉석 계산하도록 일반화하거나,
   (b) 다른 방식으로 임의 창을 지원해야 함. App.jsx의 activeConfig 계산에도
   preset==='custom'일 때 customParams를 사용하는 분기를 추가해야 함.
+
+## Iteration 10 — US-10. 고급 설정 패널 (자유 파라미터) + 골든크로스 창 일반화
+- 완료 스토리: US-10
+- 변경 파일:
+  - src/lib/deriveTickerData.js: indicators.macdLineSeries/signalLineSeries(원본 MACD·
+    시그널 전체 배열) 추가 — 임의 골든크로스 창 계산의 데이터 소스.
+  - src/lib/recommend.js: goldenCrossPass(td, window) 헬퍼 신설 — GOLDEN_CROSS_FIELDS
+    이산 매핑(3/5/6/10/20)에 먼저 시도하고, 없으면 macdLineSeries/signalLineSeries로
+    goldenCrossWithin()을 즉석 계산하는 경로로 자동 폴백. 기존 프리셋·테스트 픽스처는
+    이산 매핑을 그대로 타므로 무영향(회귀 없음, recommend.test.js 22개 그대로 통과).
+  - src/components/AdvancedSettingsPanel.jsx(신설): 기본 접힘 패널, RSI 하한/골든크로스
+    창/고득점 편입 임계 3개 숫자 입력(범위 강제 clamp), "기본형 X → 현재 Y" 변경 표시,
+    "기본형으로 초기화" 버튼. 상태를 소유하지 않고 onParamChange/onResetToDefault만 호출.
+  - src/screens/Recommend.jsx: AdvancedSettingsPanel을 프리셋 세그먼트 아래 삽입
+    (customParams가 있을 때만 — 구형 테스트 호출부 하위 호환).
+  - src/App.jsx: changePreset(key)가 preset 전환 시 customParams도 그 프리셋 값으로
+    덮어씀. changeCustomParam(key,value)이 파라미터 변경 시 preset='custom'으로 전환.
+    activeConfig 계산에 preset==='custom' 분기 추가(customParams → config 변환,
+    완화 창 = 골든크로스 창 × 2, "창 2배" 규칙 그대로 임의값에 적용).
+  - 신규 테스트: AdvancedSettingsPanel.test.jsx 7개(기본 접힘/범위 클램프 3종/초기화
+    버튼/변경 힌트), recommend.test.js에 임의 창(7) 계산·폴백 3개, App.test.jsx에
+    "조정→사용자 설정→프리셋 클릭→덮어씀" + "초기화 버튼" 실데이터 통합 테스트 2개.
+- 테스트 수 변화: 167 → 179 (+12), 전체 통과. npm run build 통과(187.75kB→190.19kB).
+- 운영자 액션 필요: 없음
+- ⚠ 남은 갭 없음 — US-8/US-9에서 이월된 "임의 창 일반화"와 "custom 분기 배선" 모두
+  이번 스토리에서 해소함.
+- 다음 스토리 메모: US-11 (리서치 요청 목록, v6 연계 절충안 A — 마지막 스토리).
+  ResearchRequestList.jsx 신설 + 화면1/2/3 종목 카드에 토글 버튼. researchRequests는
+  이미 US-6에서 스키마·마이그레이션·유니버스 필터링까지 구현돼 있으므로 이번엔 순수
+  UI(토글/목록 패널/복사)만 추가하면 됨. 클립보드 API 실패 폴백(선택 가능한 텍스트 노출)
+  필요. 실행 트리거·API 호출 코드는 추가하지 않음(Out of Scope).

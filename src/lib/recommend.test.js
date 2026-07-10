@@ -260,3 +260,62 @@ describe('recommend - conservative/aggressive presets (US-8)', () => {
     expect(result.list.length).toBe(5)
   })
 })
+
+describe('recommend - arbitrary golden-cross windows via raw series (US-10 고급 설정)', () => {
+  // signal flat at 0, macd rises from -1 to +1 between index 3 and 4 -> a cross at index 4.
+  const signalLineSeries = Array(10).fill(0)
+  const macdLineSeries = [-1, -1, -1, -1, 1, 1, 1, 1, 1, 1]
+
+  // Deliberately does NOT spread makeTicker()'s indicators (which default every discrete
+  // goldenCross{3,5,6,10,20} flag to true) — this fixture must exercise the array-based
+  // fallback path exclusively, not the discrete-field shortcut.
+  function makeCustomTicker(overrides = {}) {
+    return {
+      ticker: 'CUSTOM',
+      name: 'Custom Co',
+      sector: 'Technology',
+      dataSufficient: true,
+      isLeadingSector: false,
+      indicators: {
+        rsi14: 60,
+        macdLine: 1, // scalar (last value), macdOk requires > 0
+        disparity: 5,
+        volTrend: 10,
+        volatility: 0.02,
+        macdLineSeries,
+        signalLineSeries,
+      },
+      simulation: { returnPct: 5 },
+      ...overrides,
+    }
+  }
+
+  it('window=7 (not a discrete preset window) detects the cross via macdLineSeries/signalLineSeries', () => {
+    // 5 tickers so the strict level alone already reaches MIN_RESULTS and the loop stops there
+    // (recommend keeps relaxing past a level until it hits MIN_RESULTS or runs out of levels).
+    const tickers = Array.from({ length: 5 }, (_, i) => makeCustomTicker({ ticker: `T${i}` }))
+    const config = { rsiMin: 50, goldenCrossWindow: 7, goldenCrossRelaxedWindow: 14, highScoreThreshold: 70 }
+    const result = recommend(tickers, config)
+    expect(result.level).toBe('strict')
+    expect(result.list.length).toBe(5)
+  })
+
+  it('window=5 (too narrow to reach the cross at index 4) does not detect it, falling back through relaxation', () => {
+    const tickers = Array.from({ length: 5 }, (_, i) => makeCustomTicker({ ticker: `T${i}` }))
+    const config = { rsiMin: 50, goldenCrossWindow: 5, goldenCrossRelaxedWindow: 14, highScoreThreshold: 70 }
+    const result = recommend(tickers, config)
+    // strict(5) fails to see the index-4 cross, but relaxed(14) does -> falls back and stops there
+    expect(result.level).toBe('relaxed10d')
+    expect(result.list.length).toBe(5)
+  })
+
+  it('does not crash when macdLineSeries/signalLineSeries are absent for a non-discrete window (fails golden cross, still reachable via rsiMacdOnly relaxation)', () => {
+    const config = { rsiMin: 50, goldenCrossWindow: 7, goldenCrossRelaxedWindow: 14, highScoreThreshold: 70 }
+    const bare = { ...makeCustomTicker({ ticker: 'BARE' }), indicators: { rsi14: 60, macdLine: 1, disparity: 5, volTrend: 10, volatility: 0.02 } }
+    const result = recommend([bare], config)
+    // strict(7) and relaxed(14) both lack goldenCross data (undefined field, no series) -> false;
+    // rsiMacdOnly ignores golden cross entirely, so rsiOk+macdOk alone still surfaces it.
+    expect(result.level).toBe('rsiMacdOnly')
+    expect(result.list.length).toBe(1)
+  })
+})
