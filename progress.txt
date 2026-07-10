@@ -333,3 +333,29 @@
   TREND_TEMPLATE_RELAXED_MIN_CONDITIONS(7)/TREND_TEMPLATE_MIN_RESULTS(5) 사용.
   nasdaq100.2y.sample.json의 MMVI1(상승+수축)/MMVI2(하락)/MMVI4(횡보) 등으로 템플릿
   통과·탈락 케이스 검증 가능.
+
+## Iteration 4 — US-4. 미너비니 모드 — 1단계 트렌드 템플릿
+- 완료 스토리: US-4
+- 변경 파일:
+  - src/lib/minervini.js(신설): evaluateTrendTemplate(series, rsPercentileValue)(T1~T8
+    판정 + passedCount/allPassed/missingConditions/insufficientData) + runMinerviniStage1
+    (tickers[{ticker,name,sector,series}]) — 유니버스 rsRawScore→rsPercentile 계산 후
+    8/8 시도, MIN_RESULTS(5) 미달 시 7/8로 완화(2단계뿐, 추세추종처럼 3단계 아님),
+    그래도 부족하면 있는 만큼만 + insufficientSignal. 데이터 252일 미만 종목은
+    excludedForInsufficientData로 분리 반환. week52HighLow는 v7 것 재사용(재구현 안 함).
+  - src/lib/minervini.test.js(신설): 14개 테스트. T6/T7 경계값은 week52HighLow가
+    high/low만 참조하고 close는 안 본다는 점을 이용해 "한 바의 high/low만 인위적으로
+    벌려 window의 min/max를 고정하고, 마지막 바의 close만 정확한 경계값으로 맞추는"
+    기법으로 정밀 테스트. T3는 단조 상승/하락 시리즈로 SMA200의 22일 전 대비 방향을
+    구조적으로 검증. 완화 폴백 테스트는 "상승 추세 유지 + 한 바의 high만 인위적으로
+    키워 52주 고점만 왜곡"시켜 T7 하나만 표적으로 실패시키는 기법 사용 — 처음에
+    조작 인덱스를 252일 관측창(마지막 252거래일) 밖에 둬서 효과가 없었던 실수를
+    발견해 인덱스를 창 안으로 수정함(디버깅 기록).
+- 테스트 수 변화: 226 → 240 (+14), 전체 통과. npm run build 통과(번들 크기 불변 —
+  아직 App에서 import 안 됨).
+- 운영자 액션 필요: 없음
+- 다음 스토리 메모: US-5 (미너비니 2단계 VCP 스코어링, minervini.js 확장). RS백분위40+
+  변동성수축25+거래량드라이업15+피벗근접20 선형·클램프, constants/v8.js의 VCP_SCORE
+  상수 사용. 결과 객체를 recommend.js 결과와 동형(ticker,score,reasons,signalPassed,
+  relaxationApplied,templateChecks[])으로 맞춰 US-6 컨센서스 랭킹이 두 모드를 동일하게
+  다룰 수 있게 할 것. 이유 문자열은 0점 요소 생략.
