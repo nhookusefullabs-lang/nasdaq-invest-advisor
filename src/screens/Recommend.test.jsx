@@ -399,6 +399,88 @@ describe('Recommend - minervini mode (US-10)', () => {
   })
 })
 
+// --- v8 US-11: 펀더멘털 배지 + Fail 하단 섹션 ---
+
+function makeFundamentalsMap() {
+  return new Map([
+    ['PASS_T', { ticker: 'PASS_T', epsGrowthQoQ_yoy: 31, epsAccelerating: true, revenueGrowthQoQ_yoy: 25, marginImproving: true, roe: 0.22, quarters: [], missing: [] }],
+    ['PARTIAL_T', { ticker: 'PARTIAL_T', epsGrowthQoQ_yoy: 31, epsAccelerating: true, revenueGrowthQoQ_yoy: 12, marginImproving: false, roe: 0.05, quarters: [], missing: [] }],
+    ['FAIL_T', { ticker: 'FAIL_T', epsGrowthQoQ_yoy: 5, epsAccelerating: false, revenueGrowthQoQ_yoy: 5, marginImproving: false, roe: 0.05, quarters: [], missing: [] }],
+    ['INSUFF_T', { ticker: 'INSUFF_T', epsGrowthQoQ_yoy: null, epsAccelerating: null, revenueGrowthQoQ_yoy: null, marginImproving: null, roe: 0.22, quarters: [], missing: ['F1', 'F3'] }],
+  ])
+}
+
+function makeFourTickerRecommendation() {
+  return {
+    list: [
+      { ticker: 'PASS_T', name: 'Pass Co', score: 80.0, reasons: 'RSI 65', signalPassed: true },
+      { ticker: 'PARTIAL_T', name: 'Partial Co', score: 70.0, reasons: 'RSI 60', signalPassed: true },
+      { ticker: 'FAIL_T', name: 'Fail Co', score: 60.0, reasons: 'RSI 55', signalPassed: true },
+      { ticker: 'INSUFF_T', name: 'Insuff Co', score: 50.0, reasons: 'RSI 50', signalPassed: true },
+    ],
+    relaxationApplied: false,
+    insufficientSignal: false,
+  }
+}
+
+describe('Recommend - fundamental hurdle badges (US-11)', () => {
+  it('shows the Pass/Partial/insufficientFundamentals badges inline for their respective tickers', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeFourTickerRecommendation()}
+        fundamentalsMap={makeFundamentalsMap()}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    expect(within(screen.getByText('PASS_T').closest('.border')).getByText(/펀더멘털 Pass/)).toBeInTheDocument()
+    expect(within(screen.getByText('PARTIAL_T').closest('.border')).getByText(/펀더멘털 Partial/)).toBeInTheDocument()
+    expect(within(screen.getByText('INSUFF_T').closest('.border')).getByText(/펀더멘털 판정불가/)).toBeInTheDocument()
+  })
+
+  it('separates the Fail ticker out of the main list into the "펀더멘털 미달" section (not hidden, shown with cause)', async () => {
+    const user = userEvent.setup()
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeFourTickerRecommendation()}
+        fundamentalsMap={makeFundamentalsMap()}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    // FAIL_T is not rendered as a normal card
+    expect(screen.queryByText('FAIL_T')).not.toBeInTheDocument()
+
+    // it appears, with its cause, inside the collapsed-by-default fail section once expanded
+    const failSection = screen.getByRole('button', { name: /펀더멘털 미달/ })
+    expect(failSection).toHaveAttribute('aria-expanded', 'false')
+    await user.click(failSection)
+    expect(screen.getByText('FAIL_T')).toBeInTheDocument()
+    expect(screen.getByText(/EPS \+5% ✗/)).toBeInTheDocument()
+  })
+
+  it('renders no badges and no fail section when fundamentalsMap is not passed (graceful degradation, US-10 parity)', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeFourTickerRecommendation()}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    expect(screen.queryByText(/펀더멘털/)).not.toBeInTheDocument()
+    // all four tickers render normally, including the one that would otherwise Fail
+    expect(screen.getByText('PASS_T')).toBeInTheDocument()
+    expect(screen.getByText('FAIL_T')).toBeInTheDocument()
+    expect(screen.getByText('INSUFF_T')).toBeInTheDocument()
+  })
+})
+
 describe('Recommend - consensus mode (US-10)', () => {
   it('shows the ★★ grade with both mode scores for a dual-pass ticker', () => {
     render(

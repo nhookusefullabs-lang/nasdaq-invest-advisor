@@ -2,8 +2,11 @@ import Disclaimer from '../components/Disclaimer.jsx'
 import ResearchSection from '../components/ResearchSection.jsx'
 import AdvancedSettingsPanel from '../components/AdvancedSettingsPanel.jsx'
 import ResearchRequestToggle from '../components/ResearchRequestToggle.jsx'
+import FundamentalBadge from '../components/FundamentalBadge.jsx'
+import FundamentalFailSection from '../components/FundamentalFailSection.jsx'
 import { PRESETS, PRESET_KEYS } from '../lib/presets.js'
 import { TREND_TEMPLATE, TREND_TEMPLATE_RELAXED_MIN_CONDITIONS } from '../lib/constants/v8.js'
+import { evaluateFundamentalHurdle } from '../lib/fundamentals.js'
 
 // preset 상태 문자열 -> 배너·보조 문구에 쓰는 표시 라벨. 'custom'은 US-10(v7 고급 설정)에서
 // 실제로 도달 가능해진다 — 그 전까지는 세그먼트가 이 라벨을 그릴 일이 없다.
@@ -14,8 +17,27 @@ function presetLabel(preset) {
 const MODE_KEYS = ['consensus', 'trend', 'minervini']
 const MODE_LABELS = { consensus: '통합', trend: '추세추종', minervini: '미너비니' }
 
+// list 항목을 펀더멘털 허들 판정(fail 여부)에 따라 나눈다 (PRD_Nasdaq8 §4.4, US-11).
+// fundamentalsMap이 없거나(fundamentals.json 미제공) 해당 티커 항목이 없으면
+// evaluateFundamentalHurdle이 null을 반환하므로 그 종목은 자연히 visible로 남고
+// 배지도 렌더링되지 않는다 — 별도 분기 없이도 "US-10 상태와 시각적으로 동일"이 보장된다.
+function splitByFundamentalVerdict(list, fundamentalsMap) {
+  const visible = []
+  const failed = []
+  for (const item of list) {
+    const evaluation = evaluateFundamentalHurdle(fundamentalsMap?.get(item.ticker))
+    if (evaluation?.verdict === 'fail') {
+      failed.push({ ticker: item.ticker, name: item.name, reasons: evaluation.reasons })
+    } else {
+      visible.push({ ...item, fundamentalEvaluation: evaluation })
+    }
+  }
+  return { visible, failed }
+}
+
 // 체크박스가 있는 <label>은 클릭 버블링으로 그 안의 버튼까지 토글해 버리므로, 리서치 요청
-// 토글·리서치 상세는 label 바깥(형제)에 배치한다 (v7 US-11 "체크박스 오작동 방지" 패턴 재사용).
+// 토글·펀더멘털 배지·리서치 상세는 label 바깥(형제)에 배치한다 (v7 US-11 "체크박스 오작동
+// 방지" 패턴 재사용).
 function SelectAndResearch({
   ticker,
   selectedTickers,
@@ -23,6 +45,7 @@ function SelectAndResearch({
   researchRequests,
   onToggleResearchRequest,
   children,
+  fundamentalEvaluation,
   researchSection,
 }) {
   return (
@@ -42,6 +65,7 @@ function SelectAndResearch({
           />
         </div>
       )}
+      <FundamentalBadge evaluation={fundamentalEvaluation} />
       {researchSection}
     </div>
   )
@@ -77,6 +101,7 @@ function TrendModeView({
   generatedAt,
   recommendation,
   researchMap,
+  fundamentalsMap,
   preset,
   onPresetChange,
   customParams,
@@ -87,7 +112,8 @@ function TrendModeView({
   selectedTickers,
   onToggleSelect,
 }) {
-  const { list, relaxationApplied, insufficientSignal } = recommendation
+  const { relaxationApplied, insufficientSignal } = recommendation
+  const { visible: list, failed } = splitByFundamentalVerdict(recommendation.list, fundamentalsMap)
   const label = presetLabel(preset)
   const isNonDefaultPreset = (preset ?? 'default') !== 'default'
 
@@ -179,6 +205,7 @@ function TrendModeView({
                 />
               </div>
             )}
+            <FundamentalBadge evaluation={r.fundamentalEvaluation} />
             {researchMap?.get(r.ticker) && isNonDefaultPreset && (
               <p className="text-xs text-gray-400 mt-1">리서치 풀은 기본형 기준으로 선정되었습니다.</p>
             )}
@@ -189,6 +216,8 @@ function TrendModeView({
           <p className="text-sm text-gray-400 py-6 text-center">추천 가능한 종목이 없습니다.</p>
         )}
       </div>
+
+      <FundamentalFailSection failed={failed} />
     </>
   )
 }
@@ -213,12 +242,14 @@ function TrendTemplateChecklist({ templateChecks }) {
 function MinerviniModeView({
   minerviniResult,
   researchMap,
+  fundamentalsMap,
   researchRequests,
   onToggleResearchRequest,
   selectedTickers,
   onToggleSelect,
 }) {
-  const { list, relaxationApplied, insufficientSignal } = minerviniResult
+  const { relaxationApplied, insufficientSignal } = minerviniResult
+  const { visible: list, failed } = splitByFundamentalVerdict(minerviniResult.list, fundamentalsMap)
 
   return (
     <>
@@ -250,6 +281,7 @@ function MinerviniModeView({
             onToggleSelect={onToggleSelect}
             researchRequests={researchRequests}
             onToggleResearchRequest={onToggleResearchRequest}
+            fundamentalEvaluation={r.fundamentalEvaluation}
             researchSection={<ResearchSection research={researchMap?.get(r.ticker)} />}
           >
             <div className="flex-1">
@@ -269,12 +301,21 @@ function MinerviniModeView({
         )}
       </div>
 
+      <FundamentalFailSection failed={failed} />
+
       <DesignValueNotice />
     </>
   )
 }
 
-function ConsensusCard({ entry, researchMap, researchRequests, onToggleResearchRequest, selectedTickers, onToggleSelect }) {
+function ConsensusCard({
+  entry,
+  researchMap,
+  researchRequests,
+  onToggleResearchRequest,
+  selectedTickers,
+  onToggleSelect,
+}) {
   const pctTop = Math.round(100 - entry.consensusPercentile)
   const summaryLine =
     entry.grade === '★★'
@@ -288,6 +329,7 @@ function ConsensusCard({ entry, researchMap, researchRequests, onToggleResearchR
       onToggleSelect={onToggleSelect}
       researchRequests={researchRequests}
       onToggleResearchRequest={onToggleResearchRequest}
+      fundamentalEvaluation={entry.fundamentalEvaluation}
       researchSection={<ResearchSection research={researchMap?.get(entry.ticker)} />}
     >
       <div className="flex-1">
@@ -308,12 +350,14 @@ function ConsensusCard({ entry, researchMap, researchRequests, onToggleResearchR
 function ConsensusModeView({
   consensusResult,
   researchMap,
+  fundamentalsMap,
   researchRequests,
   onToggleResearchRequest,
   selectedTickers,
   onToggleSelect,
 }) {
-  const { list, trendInsufficientSignal, minerviniInsufficientSignal } = consensusResult
+  const { trendInsufficientSignal, minerviniInsufficientSignal } = consensusResult
+  const { visible: list, failed } = splitByFundamentalVerdict(consensusResult.list, fundamentalsMap)
 
   return (
     <>
@@ -345,6 +389,8 @@ function ConsensusModeView({
         )}
       </div>
 
+      <FundamentalFailSection failed={failed} />
+
       <DesignValueNotice />
     </>
   )
@@ -356,6 +402,7 @@ export default function Recommend({
   minerviniResult,
   consensusResult,
   researchMap,
+  fundamentalsMap,
   recommendMode = 'trend',
   onModeChange,
   preset,
@@ -380,6 +427,7 @@ export default function Recommend({
           generatedAt={generatedAt}
           recommendation={recommendation}
           researchMap={researchMap}
+          fundamentalsMap={fundamentalsMap}
           preset={preset}
           onPresetChange={onPresetChange}
           customParams={customParams}
@@ -396,6 +444,7 @@ export default function Recommend({
         <MinerviniModeView
           minerviniResult={minerviniResult}
           researchMap={researchMap}
+          fundamentalsMap={fundamentalsMap}
           researchRequests={researchRequests}
           onToggleResearchRequest={onToggleResearchRequest}
           selectedTickers={selectedTickers}
@@ -407,6 +456,7 @@ export default function Recommend({
         <ConsensusModeView
           consensusResult={consensusResult}
           researchMap={researchMap}
+          fundamentalsMap={fundamentalsMap}
           researchRequests={researchRequests}
           onToggleResearchRequest={onToggleResearchRequest}
           selectedTickers={selectedTickers}

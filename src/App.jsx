@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { loadNasdaq100 } from './lib/loadData.js'
 import { loadResearch, buildResearchMap } from './lib/researchLoader.js'
+import { loadFundamentals, buildFundamentalsMap } from './lib/fundamentalsLoader.js'
 import { applyFilters, countWeek52Excluded } from './lib/filters.js'
 import { recommend } from './lib/recommend.js'
 import { runMinerviniRecommend } from './lib/minervini.js'
@@ -29,6 +30,7 @@ export default function App() {
   const [loadError, setLoadError] = useState(null)
   const [uiState, setUiState] = useState(DEFAULT_UI_STATE)
   const [researchMap, setResearchMap] = useState(new Map())
+  const [fundamentalsMap, setFundamentalsMap] = useState(new Map())
 
   useEffect(() => {
     loadNasdaq100()
@@ -37,9 +39,13 @@ export default function App() {
         const validSet = new Set(d.tickers.map((t) => t.ticker))
         setUiState(loadPersistedState(validSet))
 
-        // research.json은 선택적 스냅샷 — 없거나 스키마가 안 맞아도 앱은 정상 동작해야 한다
+        // research.json/fundamentals.json은 선택적 스냅샷 — 없거나 스키마가 안 맞아도
+        // 앱은 정상 동작해야 한다 (US-7/US-11 graceful degradation)
         const research = await loadResearch()
         setResearchMap(buildResearchMap(research, d.generatedAt, validSet))
+
+        const fundamentals = await loadFundamentals()
+        setFundamentalsMap(buildFundamentalsMap(fundamentals, validSet))
       })
       .catch((e) => setLoadError(e.message))
   }, [])
@@ -201,6 +207,7 @@ export default function App() {
           recommendMode={uiState.recommendMode}
           onModeChange={changeRecommendMode}
           researchMap={researchMap}
+          fundamentalsMap={fundamentalsMap}
           preset={uiState.preset}
           onPresetChange={changePreset}
           customParams={uiState.customParams}

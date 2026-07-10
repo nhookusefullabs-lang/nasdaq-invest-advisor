@@ -1,9 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { readFileSync, mkdtempSync, rmSync, existsSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { describe, it, expect } from 'vitest'
+import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { validateFundamentals, atomicWriteFundamentals } from './fundamentalsSchema.js'
+import { validateFundamentals } from './fundamentalsSchema.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const FIXTURES = path.resolve(__dirname, '__fixtures__')
@@ -82,47 +81,5 @@ describe('validateFundamentals - individual failure cases (3케이스 이상)', 
     const { valid, errors } = validateFundamentals(doc)
     expect(valid).toBe(false)
     expect(errors.some((e) => e.includes('reason'))).toBe(true)
-  })
-})
-
-describe('atomicWriteFundamentals (US-2)', () => {
-  let dir
-  let target
-
-  beforeEach(() => {
-    dir = mkdtempSync(path.join(tmpdir(), 'fundamentals-atomic-'))
-    target = path.join(dir, 'fundamentals.json')
-  })
-
-  afterEach(() => {
-    rmSync(dir, { recursive: true, force: true })
-  })
-
-  it('writes the file when the data is valid', () => {
-    const result = atomicWriteFundamentals(target, loadFixture('fundamentals.valid.json'))
-    expect(result.ok).toBe(true)
-    expect(existsSync(target)).toBe(true)
-  })
-
-  it('does not create the file when the data is invalid', () => {
-    const result = atomicWriteFundamentals(target, loadFixture('fundamentals.invalid.json'))
-    expect(result.ok).toBe(false)
-    expect(result.errors.length).toBeGreaterThan(0)
-    expect(existsSync(target)).toBe(false)
-  })
-
-  it('leaves an existing valid file untouched when a subsequent write is invalid (원자적 쓰기)', () => {
-    atomicWriteFundamentals(target, loadFixture('fundamentals.valid.json'))
-    const before = readFileSync(target, 'utf-8')
-
-    const result = atomicWriteFundamentals(target, loadFixture('fundamentals.invalid.json'))
-
-    expect(result.ok).toBe(false)
-    expect(readFileSync(target, 'utf-8')).toBe(before)
-  })
-
-  it('does not leave a .tmp file behind after a successful write', () => {
-    atomicWriteFundamentals(target, loadFixture('fundamentals.valid.json'))
-    expect(existsSync(`${target}.tmp`)).toBe(false)
   })
 })

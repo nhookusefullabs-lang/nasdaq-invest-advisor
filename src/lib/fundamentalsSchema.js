@@ -1,7 +1,9 @@
 // fundamentals.json 스키마 검증 (PRD_Nasdaq8 §7, US-2, 버전 1)
 // research.json(v6 researchSchema.js)과 동일한 원칙: 신규 npm 의존성 없이 손으로 구현.
-
-import { writeFileSync, renameSync, existsSync, unlinkSync } from 'node:fs'
+// 순수 검증 함수만 이 파일에 둔다 — App.jsx가 fundamentalsLoader.js를 통해 이 파일을
+// 브라우저 번들에 포함시키므로(US-11), node:fs를 쓰는 원자적 쓰기(atomicWriteFundamentals)는
+// Node 전용 스크립트(scripts/research/validate-fundamentals.mjs)로 분리했다
+// (researchSchema.js/validate-research.mjs가 이미 쓰던 구조와 동일하게 맞춤).
 
 const SCHEMA_VERSION = 1
 const MISSING_CODES = ['F1', 'F2', 'F3', 'F4', 'F5']
@@ -86,26 +88,6 @@ export function validateFundamentals(data) {
   }
 
   return { valid: errors.length === 0, errors }
-}
-
-/**
- * data를 검증한 뒤 통과할 때만 targetPath에 원자적으로 쓴다 (research.json
- * atomicWriteResearch와 동일 패턴, v6 US-2 재사용). 검증 실패나 쓰기 도중 오류가 나도
- * 기존 targetPath 파일은 훼손되지 않는다.
- * 반환: { ok: true } | { ok: false, errors: string[] }
- */
-export function atomicWriteFundamentals(targetPath, data) {
-  const { valid, errors } = validateFundamentals(data)
-  if (!valid) return { ok: false, errors }
-
-  const tmpPath = `${targetPath}.tmp`
-  try {
-    writeFileSync(tmpPath, JSON.stringify(data, null, 2))
-    renameSync(tmpPath, targetPath)
-    return { ok: true }
-  } finally {
-    if (existsSync(tmpPath)) unlinkSync(tmpPath)
-  }
 }
 
 export { SCHEMA_VERSION as FUNDAMENTALS_SCHEMA_VERSION, MISSING_CODES }
