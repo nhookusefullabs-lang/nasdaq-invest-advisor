@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import path from 'node:path'
 import { recommend } from './recommend.js'
+import { PRESETS } from './presets.js'
+import { buildDataset } from './buildDataset.js'
 
 function makeTicker(overrides = {}) {
   return {
@@ -15,6 +20,9 @@ function makeTicker(overrides = {}) {
       volTrend: 10,
       goldenCross5: true,
       goldenCross10: true,
+      goldenCross3: true,
+      goldenCross6: true,
+      goldenCross20: true,
       volatility: 0.02,
     },
     simulation: { returnPct: 5 },
@@ -165,5 +173,90 @@ describe('recommend - high-score inclusion despite failed buy signal', () => {
     for (let i = 1; i < result.list.length; i++) {
       expect(result.list[i - 1].score).toBeGreaterThanOrEqual(result.list[i].score)
     }
+  })
+})
+
+// --- v7 US-8: 프리셋 설정 객체화 — 핵심 회귀 기준 ---
+
+describe('recommend - default preset regression (PRD_Nasdaq7 US-8 핵심 회귀 기준)', () => {
+  it('produces byte-identical output to the pre-refactor v5 baseline on real data when called with no config (defaults to 기본형)', () => {
+    const dataPath = path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '../../public/data/nasdaq100.json'
+    )
+    const baselinePath = path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '__fixtures__/recommend-default-baseline.json'
+    )
+    const raw = JSON.parse(readFileSync(dataPath, 'utf-8'))
+    const baseline = JSON.parse(readFileSync(baselinePath, 'utf-8'))
+
+    const dataset = buildDataset(raw)
+    const result = recommend(dataset.tickers) // no config -> 기본형
+
+    expect(result).toEqual(baseline)
+  })
+
+  it('recommend(tickers) with no config equals recommend(tickers, PRESETS.default) explicitly', () => {
+    const tickers = Array.from({ length: 6 }, (_, i) => makeTicker({ ticker: `T${i}` }))
+    expect(recommend(tickers)).toEqual(recommend(tickers, PRESETS.default))
+  })
+})
+
+describe('recommend - conservative/aggressive presets (US-8)', () => {
+  it('conservative: requires RSI >= 55 and a 3-day golden cross at the strict level', () => {
+    const passer = makeTicker({ ticker: 'PASS', indicators: { ...makeTicker().indicators, rsi14: 56, goldenCross3: true } })
+    const failsRsi = makeTicker({ ticker: 'FAILRSI', indicators: { ...makeTicker().indicators, rsi14: 54, goldenCross3: true } })
+    // pad with more conservative-eligible tickers so MIN_RESULTS doesn't force relaxation
+    const filler = Array.from({ length: 4 }, (_, i) =>
+      makeTicker({ ticker: `FILL${i}`, indicators: { ...makeTicker().indicators, rsi14: 56, goldenCross3: true } })
+    )
+    const result = recommend([passer, failsRsi, ...filler], PRESETS.conservative)
+    expect(result.level).toBe('strict')
+    expect(result.list.map((r) => r.ticker)).not.toContain('FAILRSI')
+    expect(result.list.map((r) => r.ticker)).toContain('PASS')
+  })
+
+  it('conservative: high-score inclusion threshold is 80, not the default 70', () => {
+    const highScorer = makeTicker({
+      ticker: 'HIGH',
+      isLeadingSector: true,
+      indicators: { ...makeTicker().indicators, rsi14: 30, disparity: 15, volTrend: 0 }, // score 70 (60+10), fails signal (rsi<55)
+    })
+    // score 70 clears the default(70) threshold but not conservative's 80
+    expect(recommend([highScorer], PRESETS.default).list.length).toBe(1)
+    expect(recommend([highScorer], PRESETS.conservative).list.length).toBe(0)
+  })
+
+  it('aggressive: requires only RSI >= 45 and a 10-day golden cross at the strict level', () => {
+    const passer = makeTicker({ ticker: 'PASS', indicators: { ...makeTicker().indicators, rsi14: 46, goldenCross10: true } })
+    const filler = Array.from({ length: 4 }, (_, i) =>
+      makeTicker({ ticker: `FILL${i}`, indicators: { ...makeTicker().indicators, rsi14: 46, goldenCross10: true } })
+    )
+    const failsRsi = makeTicker({ ticker: 'FAILRSI', indicators: { ...makeTicker().indicators, rsi14: 44, goldenCross10: true } })
+    const result = recommend([passer, failsRsi, ...filler], PRESETS.aggressive)
+    expect(result.level).toBe('strict')
+    expect(result.list.map((r) => r.ticker)).not.toContain('FAILRSI')
+    expect(result.list.map((r) => r.ticker)).toContain('PASS')
+  })
+
+  it('aggressive: high-score inclusion threshold is 60, more permissive than the default 70', () => {
+    const midScorer = makeTicker({
+      ticker: 'MID',
+      isLeadingSector: false,
+      indicators: { ...makeTicker().indicators, rsi14: 30, disparity: 15, volTrend: 0 }, // score 60, fails signal (rsi<45)
+    })
+    expect(recommend([midScorer], PRESETS.default).list.length).toBe(0)
+    expect(recommend([midScorer], PRESETS.aggressive).list.length).toBe(1)
+  })
+
+  it('relaxation fallback doubles the golden-cross window per preset (conservative 3 -> 6, aggressive 10 -> 20)', () => {
+    // conservative: only goldenCross6 true (not goldenCross3) -> falls back to relaxed10d level
+    const tickers = Array.from({ length: 5 }, (_, i) =>
+      makeTicker({ ticker: `T${i}`, indicators: { ...makeTicker().indicators, rsi14: 56, goldenCross3: false, goldenCross6: true } })
+    )
+    const result = recommend(tickers, PRESETS.conservative)
+    expect(result.level).toBe('relaxed10d')
+    expect(result.list.length).toBe(5)
   })
 })

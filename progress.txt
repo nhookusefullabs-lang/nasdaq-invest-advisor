@@ -126,3 +126,32 @@
   기본형 설정 실행 결과가 리팩터링 전과 완전 동일해야 함 — 실데이터 스냅샷 비교 테스트
   필수. 2단계 배점(60/30/10)은 설정 대상 아님, v6 US-1 CLI도 계속 기본형으로 동일 결과
   내야 함에 유의).
+
+## Iteration 8 — US-8. recommend.js 설정 객체화 + 프리셋 정의
+- 완료 스토리: US-8
+- 변경 파일:
+  - src/lib/deriveTickerData.js: goldenCross3/goldenCross6/goldenCross20 필드 추가
+    (기존 goldenCross5/10은 무수정) — 보수형(3→6 완화)·공격형(10→20 완화) 프리셋이
+    필요로 하는 골든크로스 창. macdLine/signalLine 배열은 이미 함수 내부 스코프에
+    있었으므로 별도 아키텍처 변경 없이 goldenCrossWithin() 호출만 추가.
+  - src/lib/presets.js(신설): PRESETS.{conservative,default,aggressive} — RSI 하한/
+    골든크로스 창(기준·완화)/고득점 편입 임계, 2단계 배점(60/30/10)은 포함하지 않음.
+  - src/lib/recommend.js: recommend(tickers, config = PRESETS.default)로 시그니처 변경.
+    stage1Pass/buildReasons가 하드코딩 상수 대신 config를 읽도록 리팩터링. 골든크로스
+    창(숫자) → indicators 필드명은 GOLDEN_CROSS_FIELDS 매핑 테이블로 변환.
+  - src/lib/recommend.test.js: (a) 리팩터링 직전에 저장해 둔 실데이터 스냅샷
+    (__fixtures__/recommend-default-baseline.json, node -e로 커밋 전 캡처)과 config
+    없이 호출한 결과를 deep-equal 비교하는 핵심 회귀 테스트, (b) 보수형/공격형 각각의
+    RSI 임계·골든크로스 창·고득점 편입 임계·완화 폴백(창 2배) 테스트 7개 추가.
+  - 설계 결정: config 없이 호출 시 PRESETS.default가 자동 적용되므로 App.jsx/
+    select-pool.mjs(v6 US-1 CLI)/기존 recommend.test.js 12개는 전혀 손대지 않고도
+    100% 기존 동작 유지 — 이번 스토리에서 호출부 변경은 0건.
+- 테스트 수 변화: 155 → 162 (+7, recommend 12→19), 전체 통과. npm run build 통과
+  (186.51kB). select-pool.mjs CLI 수동 재실행으로 AXON 80.1/MRNA 77.1 등 기존 수치와
+  완전히 동일함을 재확인.
+- 운영자 액션 필요: 없음
+- 다음 스토리 메모: US-9 (화면2 프리셋 세그먼트 UI + 배너 연동. Recommend.jsx에 프리셋
+  선택 세그먼트 추가, App.jsx의 recommend() 호출에 uiState.preset→config 매핑 연결
+  필요 — 단 preset='custom'인 경우의 실제 파라미터 소스는 US-10의 customParams이므로,
+  US-9 시점에는 3개 프리셋 전환만 우선 배선하고 custom 연동은 US-10에서 완성하는 편이
+  자연스러움. "리서치 풀은 기본형 기준" 보조 문구도 이 스토리 범위).

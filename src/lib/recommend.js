@@ -1,31 +1,37 @@
-// 2단계 추천 로직 (PRD §4.2)
+// 2단계 추천 로직 (PRD §4.2, v7 §3 Must-7~8)
 // 1단계: 매수 신호 판정 (모두 충족) → 2단계: 100점 만점 순위 스코어링
+// RSI 하한/골든크로스 창/고득점 편입 임계는 프리셋(config)으로 주입한다(US-8) —
+// 2단계 배점(이격도60/거래량30/섹터10)은 프리셋 대상이 아니므로 아래처럼 고정 상수로 둔다.
+
+import { PRESETS, DEFAULT_PRESET_KEY } from './presets.js'
 
 const SCORE_DISPARITY_MAX = 60
 const SCORE_VOLUME_MAX = 30
 const SCORE_SECTOR_BONUS = 10
 const MIN_RESULTS = 5
 const MAX_RESULTS = 10
-// 매수 신호를 통과하지 못해도 2단계 점수가 이 값 이상이면 "고득점 특별 편입"으로 선택 가능하게 한다
-const HIGH_SCORE_INCLUSION_THRESHOLD = 70
 
-function stage1Pass(td, level) {
-  const rsiOk = td.indicators.rsi14 >= 50
+// 프리셋의 goldenCrossWindow/goldenCrossRelaxedWindow(거래일 수) → deriveTickerData()가
+// 미리 계산해 둔 indicators.goldenCross{N} 필드명 매핑.
+const GOLDEN_CROSS_FIELDS = { 3: 'goldenCross3', 5: 'goldenCross5', 6: 'goldenCross6', 10: 'goldenCross10', 20: 'goldenCross20' }
+
+function stage1Pass(td, level, config) {
+  const rsiOk = td.indicators.rsi14 >= config.rsiMin
   const macdOk = td.indicators.macdLine > 0
-  if (level === 'strict') return rsiOk && macdOk && td.indicators.goldenCross5
-  if (level === 'relaxed10d') return rsiOk && macdOk && td.indicators.goldenCross10
+  if (level === 'strict') return rsiOk && macdOk && td.indicators[GOLDEN_CROSS_FIELDS[config.goldenCrossWindow]]
+  if (level === 'relaxed10d') return rsiOk && macdOk && td.indicators[GOLDEN_CROSS_FIELDS[config.goldenCrossRelaxedWindow]]
   if (level === 'rsiMacdOnly') return rsiOk && macdOk
   return false
 }
 
-function runStage1(eligible) {
+function runStage1(eligible, config) {
   const levels = ['strict', 'relaxed10d', 'rsiMacdOnly']
   let level = levels[0]
-  let passed = eligible.filter((t) => stage1Pass(t, level))
+  let passed = eligible.filter((t) => stage1Pass(t, level, config))
 
   for (let i = 1; i < levels.length && passed.length < MIN_RESULTS; i++) {
     level = levels[i]
-    passed = eligible.filter((t) => stage1Pass(t, level))
+    passed = eligible.filter((t) => stage1Pass(t, level, config))
   }
 
   return { passed, level, relaxationApplied: level !== 'strict' }
@@ -40,10 +46,10 @@ function scoreTicker(td) {
   return Math.round((dispScore + volScore + sectorScore) * 10) / 10
 }
 
-function buildReasons(td, level) {
+function buildReasons(td, level, config) {
   const reasons = [`RSI ${Math.round(td.indicators.rsi14)}`]
-  if (level === 'strict') reasons.push('MACD 골든크로스 (5거래일 이내)')
-  else if (level === 'relaxed10d') reasons.push('MACD 골든크로스 (10거래일 이내, 완화 적용)')
+  if (level === 'strict') reasons.push(`MACD 골든크로스 (${config.goldenCrossWindow}거래일 이내)`)
+  else if (level === 'relaxed10d') reasons.push(`MACD 골든크로스 (${config.goldenCrossRelaxedWindow}거래일 이내, 완화 적용)`)
   else reasons.push('MACD 0선 위 (골든크로스 조건 완화 적용)')
   if (td.isLeadingSector) reasons.push('주도 섹터 소속')
   return reasons.join(', ')
@@ -57,11 +63,13 @@ function buildHighScoreReasons(td) {
 
 /**
  * tickers: deriveTickerData() + applyLeadingSectorFlags() 를 거친 배열
+ * config: 프리셋 설정 객체 (RSI 하한/골든크로스 창(기준·완화)/고득점 편입 임계) — 생략 시 기본형.
+ *   기본형으로 호출하면 v5(리팩터링 전) recommend(tickers)와 완전히 동일한 결과를 낸다 (US-8 회귀 기준).
  * 반환: { list, relaxationApplied, insufficientSignal, level }
  */
-export function recommend(tickers) {
+export function recommend(tickers, config = PRESETS[DEFAULT_PRESET_KEY]) {
   const eligible = tickers.filter((t) => t.dataSufficient)
-  const { passed, level, relaxationApplied } = runStage1(eligible)
+  const { passed, level, relaxationApplied } = runStage1(eligible, config)
   const passedTickerSet = new Set(passed.map((t) => t.ticker))
 
   const scoredPassed = passed.map((t) => ({
@@ -69,7 +77,7 @@ export function recommend(tickers) {
     name: t.name,
     sector: t.sector,
     score: scoreTicker(t),
-    reasons: buildReasons(t, level),
+    reasons: buildReasons(t, level, config),
     signalPassed: true,
     relaxationApplied,
   }))
@@ -78,7 +86,7 @@ export function recommend(tickers) {
   const scoredHighScoreNoSignal = eligible
     .filter((t) => !passedTickerSet.has(t.ticker))
     .map((t) => ({ ticker: t, score: scoreTicker(t) }))
-    .filter(({ score }) => score >= HIGH_SCORE_INCLUSION_THRESHOLD)
+    .filter(({ score }) => score >= config.highScoreThreshold)
     .map(({ ticker: t, score }) => ({
       ticker: t.ticker,
       name: t.name,

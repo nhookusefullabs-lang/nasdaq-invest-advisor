@@ -96,6 +96,11 @@ export function deriveTickerData(raw) {
       signalLine: signalVal,
       goldenCross5: goldenCrossWithin(macdLine, signalLine, 5),
       goldenCross10: goldenCrossWithin(macdLine, signalLine, 10),
+      // 추천 프리셋(PRD_Nasdaq7 §3 Must-7, US-8)의 보수형/공격형 기준·완화 창.
+      // 기본형(5/10)은 위 두 필드를 그대로 재사용한다.
+      goldenCross3: goldenCrossWithin(macdLine, signalLine, 3),
+      goldenCross6: goldenCrossWithin(macdLine, signalLine, 6),
+      goldenCross20: goldenCrossWithin(macdLine, signalLine, 20),
       volatility,
       // v7 신규 필터 5종 지표 (PRD_Nasdaq7 §4.1, US-7) — 추천 스코어링에는 사용하지 않는다.
       bollinger: bollingerBands(series),
