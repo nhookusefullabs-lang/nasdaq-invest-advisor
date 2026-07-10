@@ -204,22 +204,23 @@ describe('App - real research.json integration (v6 smoke test)', () => {
 
     const axonResearch = REAL_RESEARCH.items.find((i) => i.ticker === 'AXON')
     expect(axonResearch).toBeDefined()
+    const firstSource = axonResearch.sources[0]
 
     const axonCard = screen.getByText('AXON').closest('.border')
     expect(within(axonCard).getByText('AI 리서치')).toBeInTheDocument()
 
     await user.click(within(axonCard).getByRole('button', { name: /펼치기/ }))
 
-    // real fetched source titles/links should render, not fixture placeholders
-    expect(within(axonCard).getByRole('link', { name: /Axon Enterprise \(AXON\) Institutional Ownership 2026/ })).toHaveAttribute(
+    // real fetched source titles/links should render, not fixture placeholders — read the
+    // expected title/url straight from the loaded research.json rather than hardcoding it,
+    // since the research content is periodically regenerated against fresh data.
+    expect(within(axonCard).getByRole('link', { name: firstSource.title })).toHaveAttribute(
       'href',
-      expect.stringContaining('marketbeat.com')
+      firstSource.url
     )
-    // research.json's basedOnDataOf (2026-07-08) predates the 12-month-recollected dataset's
-    // generatedAt (2026-07-09, PRD_Nasdaq7 US-1) — this is a genuine mismatch, so the v6
-    // staleness warning (US-4) is expected to appear here (both the header badge and the
-    // expanded body warning), not absent.
-    expect(within(axonCard).getAllByText(/이전 데이터 기준/).length).toBeGreaterThan(0)
+    // research.json's basedOnDataOf equals the dataset's generatedAt (both regenerated
+    // together this session), so no staleness warning (US-4) should appear here.
+    expect(within(axonCard).queryByText(/이전 데이터 기준/)).not.toBeInTheDocument()
   })
 })
 
