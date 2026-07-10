@@ -4,6 +4,10 @@ import { sma, ema, rsiWilder, macd, disparity, volumeTrend, goldenCrossWithin, d
 const SIM_WINDOW = 63
 // 시뮬레이션 화면의 1개월 미니 차트 창 (약 21거래일)
 const ONE_MONTH_WINDOW = 21
+// 시뮬레이션 화면의 6개월 미니 차트 창 (약 126거래일, PRD_Nasdaq7 §2 — 12개월 수집 전환의
+// 파급효과 차단: "수집된 전체 기간"이 아니라 고정된 최근 126거래일로 정의한다).
+// 수집 데이터가 126거래일 이하면(v5 6개월 수집 데이터 등) 전체 기간을 그대로 사용한다.
+const SIX_MONTH_WINDOW = 126
 // 지표(SMA20/RSI14/MACD 워밍업) 안정 계산을 위한 최소 거래일 (수집 스크립트와 동일 기준)
 const MIN_TRADING_DAYS = 110
 
@@ -88,11 +92,12 @@ export function deriveTickerData(raw) {
       periodHigh,
       periodLow,
     },
-    // 시뮬레이션 화면의 1/3/6개월 미니 차트용 종가 시계열. 6개월 창은 수집된 전체 기간을 그대로 사용한다.
+    // 시뮬레이션 화면의 1/3/6개월 미니 차트용 종가 시계열. 6개월 창은 최근 126거래일 고정
+    // (데이터가 126거래일 이하면 전체 기간 사용).
     chart: {
       oneMonth: toChartPoints(series.slice(-ONE_MONTH_WINDOW)),
       threeMonth: toChartPoints(window63),
-      sixMonth: toChartPoints(series),
+      sixMonth: toChartPoints(series.slice(-SIX_MONTH_WINDOW)),
     },
     // sectorAnalysis.computeLeadingSectors() 실행 후 채워짐
     isLeadingSector: false,

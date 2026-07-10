@@ -43,3 +43,44 @@ describe('deriveTickerData against collected data', () => {
     expect(sufficientCount).toBe(raw.tickers.length)
   })
 })
+
+function makeSyntheticSeries(days) {
+  const series = []
+  const base = new Date('2026-01-01T00:00:00Z')
+  for (let i = 0; i < days; i++) {
+    const d = new Date(base.getTime() + i * 24 * 60 * 60 * 1000)
+    const close = 100 + i * 0.1
+    series.push({
+      date: d.toISOString().slice(0, 10),
+      high: close + 1,
+      low: close - 1,
+      close,
+      volume: 1_000_000 + i,
+    })
+  }
+  return series
+}
+
+describe('deriveTickerData - chart.sixMonth window (PRD_Nasdaq7 §2, US-2)', () => {
+  it('caps sixMonth at the most recent 126 trading days for a 200-day series', () => {
+    const raw = { ticker: 'T200', name: 'Test 200', sector: 'Technology', series: makeSyntheticSeries(200) }
+    const derived = deriveTickerData(raw)
+    expect(derived.dataSufficient).toBe(true)
+    expect(derived.chart.sixMonth.length).toBe(126)
+    expect(derived.chart.sixMonth.at(-1).date).toBe(raw.series.at(-1).date)
+  })
+
+  it('uses the full series for sixMonth when it has 126 days or fewer (no regression for v5-era 120-day data)', () => {
+    const raw = { ticker: 'T120', name: 'Test 120', sector: 'Technology', series: makeSyntheticSeries(120) }
+    const derived = deriveTickerData(raw)
+    expect(derived.dataSufficient).toBe(true)
+    expect(derived.chart.sixMonth.length).toBe(120)
+  })
+
+  it('keeps oneMonth(21) and threeMonth(63) windows unchanged by the sixMonth redefinition', () => {
+    const raw = { ticker: 'T200', name: 'Test 200', sector: 'Technology', series: makeSyntheticSeries(200) }
+    const derived = deriveTickerData(raw)
+    expect(derived.chart.oneMonth.length).toBe(21)
+    expect(derived.chart.threeMonth.length).toBe(63)
+  })
+})

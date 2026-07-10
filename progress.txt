@@ -11,3 +11,15 @@
   구현·검증 가능하므로 루프는 계속 진행함.
 - 다음 스토리 메모: US-2 (sixMonth 차트 정의를 "전체 기간" → "최근 126거래일"로 변경,
   deriveTickerData.js 수정 + 200일/120일 픽스처 테스트).
+
+## Iteration 2 — US-2. sixMonth 차트 정의 변경 (수집 기간 변경 파급효과 차단)
+- 완료 스토리: US-2
+- 변경 파일: src/lib/deriveTickerData.js (SIX_MONTH_WINDOW=126 상수 추가, chart.sixMonth를
+  series.slice(-126)로 변경), src/lib/deriveTickerData.test.js (200일/120일 합성 시리즈
+  테스트 3개 추가)
+- 테스트 수 변화: 102 → 105 (+3), 전체 통과. 실데이터(nasdaq100.json, 현재 123거래일)는
+  126 이하라 기존 "sixMonth === 전체 series" 어서션이 우연히 계속 참 — 실회귀 없음 확인.
+  npm run build 통과.
+- 운영자 액션 필요: 없음 (이 스토리는 순수 함수 변경, 재수집 불필요)
+- 다음 스토리 메모: US-3 (indicators.js에 bollingerBands, week52HighLow 추가 —
+  기존 함수 수정 금지, 252일 미만 시 week52HighLow는 null 반환).
