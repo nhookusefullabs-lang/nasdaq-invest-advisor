@@ -386,3 +386,26 @@
   등급, ★★가 항상 ★ 위. "평균의 함정 방지" 테스트(한쪽90/한쪽40 종목보다 양쪽75/75가
   위) 필수 — indicators.js의 percentileRank류 로직 재사용 가능한지 검토(rsPercentile과
   동일한 "값 이하 개수/전체" 공식).
+
+## Iteration 6 — US-6. 컨센서스 랭킹
+- 완료 스토리: US-6
+- 변경 파일:
+  - src/lib/consensus.js(신설): buildConsensusRanking(trendResult, minerviniResult).
+    각 모드 결과의 list 내부 score 배열을 모집단으로 자기 자신의 백분위를 계산(indicators.js
+    rsPercentile과 동일한 "값 이하 개수/전체" 공식, 이번에도 재사용하지 않고 로컬 구현 —
+    filters.js/indicators.js 각각 독립 구현해 온 기존 관례와 동일). 정렬은 등급(★★ 항상
+    ★ 위) 1차, consensusPercentile(백분위 단순 평균, 원점수 합산 아님) 내림차순 2차.
+    trendResult/minerviniResult가 null이거나 list가 비어도 안전하게 동작(옵셔널 체이닝).
+  - src/lib/consensus.test.js(신설): 6개 테스트. "평균의 함정" 테스트는 population을
+    정확히 1..100 정수로 구성해 percentileOf(v)=v가 항상 성립하게 만드는 기법으로
+    손 계산 없이 정확한 기대값을 얻음(90/40 조합 vs 75/75 조합 비교, 100/★ vs 10★★
+    비교 등).
+- 테스트 수 변화: 254 → 260 (+6), 전체 통과. npm run build 통과(번들 크기 불변 — 아직
+  App에서 import 안 됨).
+- 운영자 액션 필요: 없음
+- 다음 스토리 메모: US-7 (펀더멘털 허들 판정 + 로더, src/lib/fundamentals.js +
+  fundamentalsLoader.js 신설). US-2의 fundamentalsSchema.js/atomicWriteFundamentals는
+  검증·쓰기 전용이었으므로, 이번 스토리에서 실제 로더(fetch, v6 researchLoader 패턴)와
+  Pass/Partial/Fail/insufficientFundamentals 4분기 판정 로직을 새로 만들어야 함.
+  F1·F3·F5 핵심 3종은 constants/v8.js의 FUNDAMENTAL_THRESHOLDS 사용, F2·F4는 판정에
+  미반영(참고 배지 값만 통과).
