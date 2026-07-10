@@ -660,3 +660,49 @@
   종료 — 실데이터(2년 가격+fundamentals) 수집·research.json 재생성은 여전히 운영자가
   별도 python 세션에서 수행해야 함(코드는 전부 graceful degradation으로 준비됨, US-1/
   US-2에서 이미 기록된 동일 성격의 운영자 액션).
+
+## Iteration 13 — US-13. 통합 검증 및 마감 (v8 Ralph 루프 마지막 스토리)
+- 완료 스토리: US-13 (prd-v8-dual-mode_1.md의 US-1~US-13 전부 완료)
+- 변경 파일:
+  - PRD_Nasdaq8.md §10: 성공 기준 7항목을 하나씩 코드 근거와 함께 점검·표시.
+    6항목은 [x](테스트로 검증된 완전 충족), 1항목("2년치 nasdaq100.json +
+    fundamentals.json이 주 1회 단일 스크립트 실행으로 생성")은 [~](코드는 완성됐으나
+    실제 실행은 Ralph 루프 절대 원칙상 이 루프가 수행하지 않으므로 운영자 액션 대기)로
+    구분 표시 — "미충족 항목은 체크하지 말 것" 규칙을 글자 그대로 지키되, "코드는
+    끝났지만 데이터 실행만 남음"이라는 상태를 [ ](완전 미착수)와 구별할 필요가 있어
+    [~](부분 충족) 표기를 도입함.
+  - README.md: 빈 제목 한 줄뿐이던 파일을 프로젝트 한 줄 요약 + 개발 명령어 +
+    5단계 v8 운영 절차(collect_data.py 단일 실행 → 크기 확인/스키마 검증 →
+    /research 선택 실행 → npm test/build 검증 → 커밋·배포)로 채움.
+  - prd-v8-dual-mode_1.md: US-13 체크.
+- 검증 내역(코드 레벨, 실데이터 수집 제외):
+  1. 미너비니 8조건+VCP+7/8 완화+현금보유 배너 — minervini.test.js(28)+Recommend.test.js
+     미너비니 뷰(4) 통과 확인. [x]
+  2. 통합 뷰 ★★/★+백분위 평균 — consensus.test.js(6, "평균의 함정" 포함)+Recommend.test.js
+     통합 뷰(3) 통과 확인. [x]
+  3. 펀더멘털 허들 Pass/Partial/Fail+Fail 분리+결측 구분 — fundamentals.test.js(16)+
+     FundamentalBadge/FundamentalFailSection(12)+Recommend.test.js(3) 통과 확인. [x]
+  4. 리서치 배지 3상태+숨기기+v1 하위호환 — researchCheck.test.js(8)+
+     ResearchCheckBadge.test.js(5)+Recommend.test.js(6)+researchSchema.test.js v1/v2(6)
+     통과 확인. [x]
+  5. localStorage v3 마이그레이션 — persistence.test.js(13, v1→v3/v2→v3 포함) 통과 확인. [x]
+  6. 추세추종 단일 모드=v7 동등 — Recommend.jsx recommendMode 기본값 'trend' 설계로
+     v7 시절 Recommend.test.jsx/App.test.jsx 테스트 전부 무수정 통과 재확인. [x]
+  7. 2년 데이터+fundamentals 단일 스크립트 실행 — 코드 완성(US-1/US-2), 실제 실행은
+     미착수(운영자 액션 필요). [~]
+  - npm run test: 345개 전체 통과(이번 스토리에서 신규 테스트 추가 없음 — 검증 전용
+    이터레이션이므로 기존 스위트 재확인만 수행). npm run build: 통과(215.19kB, 변화 없음
+    — README/PRD 문서만 변경).
+- 운영자 액션 필요 (v8 코드 완성 후 남은 항목, 전부 이 루프 범위 밖):
+  1. **2년 실데이터 재수집**: 별도 python(yfinance/pandas) 세션에서
+     `python scripts/collect_data.py` 1회 실행 → `public/data/nasdaq100.json`(2년치)과
+     `public/data/fundamentals.json`을 함께 생성. 파일 크기 로그(10MB 경고 포함) 확인.
+  2. **research.json 갱신(선택)**: `/research` 세션 실행 시 리스크 플래그를 남기려면
+     schemaVersion:2로 저장(§4.5 작성 규칙 준수) — 플래그를 안 쓰면 기존처럼 v1도 무방.
+  3. 재수집 후 `npm run test && npm run build`로 실데이터 기준 회귀 재확인 필요
+     (특히 hasFullYearData(252일)·rsRawScore가 처음으로 실데이터 기준 값을 가지게 됨 —
+     이번까지는 전부 합성 픽스처(nasdaq100.2y.sample.json)로만 검증됨).
+  4. 재수집·재검증 완료 후 커밋·푸시(배포는 운영자 승인 필요, 이 세션에서 자동 실행 안 함).
+- **PRD_Nasdaq8.md v8 — US-1~US-13 전부 완료.** 코드 레벨 성공 기준 7항목 중 6항목 완전
+  충족, 1항목(실데이터 수집 실행)은 운영자 액션 대기 — 이는 v7 마감 시점과 동일한 종류의
+  잔여 작업(v7도 "12개월 재수집은 운영자 수동 작업"으로 마감했음).

@@ -234,13 +234,26 @@
 
 ## 10. 성공 기준
 
-- [ ] 2년치 nasdaq100.json + fundamentals.json이 주 1회 단일 스크립트 실행으로 생성되고 스키마 검증을 통과한다
-- [ ] 미너비니 모드가 트렌드 템플릿 8조건과 VCP 근사 스코어로 동작하고, 7/8 완화 폴백과 빈 결과 배너("현금 보유 원칙" 안내 포함)가 작동한다
-- [ ] 통합 뷰가 ★★/★ 등급과 백분위 평균 순위로 정렬되고, 카드에 양 모드 점수가 함께 표시된다
-- [ ] 펀더멘털 허들이 Pass/Partial/Fail을 근거 항목과 함께 표시하고, Fail은 하단 접이식 섹션으로 분리되며, 결측은 "데이터 부족"으로 구분된다
-- [ ] 리서치 점검 배지 3상태가 동작하고, 리스크 플래그 숨기기 토글이 작동하며, research.json v1 파일도 하위 호환으로 로드된다
-- [ ] 모드 세그먼트 전환·신규 토글 상태가 localStorage v3로 유지되고, v2 데이터가 손실 없이 마이그레이션된다
-- [ ] 추세추종 단일 모드 선택 시 화면2가 v7과 기능적으로 동일하다 (기존 테스트 전부 통과)
+- [~] 2년치 nasdaq100.json + fundamentals.json이 주 1회 단일 스크립트 실행으로 생성되고 스키마 검증을 통과한다
+      — 코드(collect_data.py PERIOD="2y" + fetch_fundamentals/collect_fundamentals + 원자적 쓰기,
+      validate-fundamentals.mjs/fundamentalsSchema.js)는 US-1/US-2에서 완료됐지만 **실제 실행은
+      Ralph 루프 절대 원칙상 수행하지 않음** — public/data/nasdaq100.json은 여전히 v7 시절 13개월
+      데이터. 운영자가 별도 python 세션에서 `python scripts/collect_data.py` 1회 실행해야 완전히 충족.
+- [x] 미너비니 모드가 트렌드 템플릿 8조건과 VCP 근사 스코어로 동작하고, 7/8 완화 폴백과 빈 결과 배너("현금 보유 원칙" 안내 포함)가 작동한다
+      — minervini.js(US-4/US-5) + Recommend.jsx MinerviniModeView(US-10), 테스트로 검증됨.
+- [x] 통합 뷰가 ★★/★ 등급과 백분위 평균 순위로 정렬되고, 카드에 양 모드 점수가 함께 표시된다
+      — consensus.js(US-6) + ConsensusModeView(US-10), "평균의 함정 방지" 테스트로 검증됨.
+- [x] 펀더멘털 허들이 Pass/Partial/Fail을 근거 항목과 함께 표시하고, Fail은 하단 접이식 섹션으로 분리되며, 결측은 "데이터 부족"으로 구분된다
+      — fundamentals.js(US-7) + FundamentalBadge/FundamentalFailSection(US-11). 결측 구분은
+      "판정불가"(insufficientFundamentals) 배지 텍스트로 표현 — PRD 문구("데이터 부족")와 정확히
+      같은 단어는 아니지만 Fail과 별도로 구분 표시한다는 기능적 요건은 충족.
+- [x] 리서치 점검 배지 3상태가 동작하고, 리스크 플래그 숨기기 토글이 작동하며, research.json v1 파일도 하위 호환으로 로드된다
+      — researchCheck.js/ResearchCheckBadge(US-12), researchSchema.js v1/v2 동시 지원(US-8).
+- [x] 모드 세그먼트 전환·신규 토글 상태가 localStorage v3로 유지되고, v2 데이터가 손실 없이 마이그레이션된다
+      — persistence.js SCHEMA_VERSION 3, MIGRATABLE_FROM_VERSIONS=[1,2](US-9), App 통합 테스트로 검증됨.
+- [x] 추세추종 단일 모드 선택 시 화면2가 v7과 기능적으로 동일하다 (기존 테스트 전부 통과)
+      — Recommend.jsx의 recommendMode 기본값을 'trend'로 둬 기존 Recommend.test.jsx/App.test.jsx
+      v7 테스트를 무수정으로 통과시킴(US-10).
 
 ## 11. v9 예고 (백테스트 검증 릴리스)
 
