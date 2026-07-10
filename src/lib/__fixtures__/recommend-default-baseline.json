@@ -4,17 +4,8 @@
       "ticker": "AXON",
       "name": "Axon Enterprise, Inc.",
       "sector": "Industrials",
-      "score": 80.1,
-      "reasons": "RSI 69, 매수 신호 미충족 (고득점 특별 편입), 주도 섹터 소속",
-      "signalPassed": false,
-      "relaxationApplied": false
-    },
-    {
-      "ticker": "MRNA",
-      "name": "Moderna, Inc.",
-      "sector": "Health Care",
-      "score": 77.1,
-      "reasons": "RSI 65, 매수 신호 미충족 (고득점 특별 편입)",
+      "score": 71.3,
+      "reasons": "RSI 65, 매수 신호 미충족 (고득점 특별 편입), 주도 섹터 소속",
       "signalPassed": false,
       "relaxationApplied": false
     },
@@ -22,53 +13,8 @@
       "ticker": "WDAY",
       "name": "Workday, Inc.",
       "sector": "Technology",
-      "score": 42.6,
-      "reasons": "RSI 57, MACD 골든크로스 (5거래일 이내), 주도 섹터 소속",
-      "signalPassed": true,
-      "relaxationApplied": false
-    },
-    {
-      "ticker": "ADP",
-      "name": "Automatic Data Processing, Inc.",
-      "sector": "Industrials",
-      "score": 35.4,
-      "reasons": "RSI 64, MACD 골든크로스 (5거래일 이내), 주도 섹터 소속",
-      "signalPassed": true,
-      "relaxationApplied": false
-    },
-    {
-      "ticker": "MDB",
-      "name": "MongoDB, Inc.",
-      "sector": "Technology",
-      "score": 34.5,
+      "score": 44.4,
       "reasons": "RSI 58, MACD 골든크로스 (5거래일 이내), 주도 섹터 소속",
-      "signalPassed": true,
-      "relaxationApplied": false
-    },
-    {
-      "ticker": "AAPL",
-      "name": "Apple Inc.",
-      "sector": "Technology",
-      "score": 34,
-      "reasons": "RSI 62, MACD 골든크로스 (5거래일 이내), 주도 섹터 소속",
-      "signalPassed": true,
-      "relaxationApplied": false
-    },
-    {
-      "ticker": "PAYX",
-      "name": "Paychex, Inc.",
-      "sector": "Industrials",
-      "score": 33.7,
-      "reasons": "RSI 64, MACD 골든크로스 (5거래일 이내), 주도 섹터 소속",
-      "signalPassed": true,
-      "relaxationApplied": false
-    },
-    {
-      "ticker": "APP",
-      "name": "AppLovin Corporation",
-      "sector": "Technology",
-      "score": 29.7,
-      "reasons": "RSI 52, MACD 골든크로스 (5거래일 이내), 주도 섹터 소속",
       "signalPassed": true,
       "relaxationApplied": false
     },
@@ -76,7 +22,34 @@
       "ticker": "FTNT",
       "name": "Fortinet, Inc.",
       "sector": "Technology",
-      "score": 28.5,
+      "score": 43.5,
+      "reasons": "RSI 68, MACD 골든크로스 (5거래일 이내), 주도 섹터 소속",
+      "signalPassed": true,
+      "relaxationApplied": false
+    },
+    {
+      "ticker": "MDB",
+      "name": "MongoDB, Inc.",
+      "sector": "Technology",
+      "score": 37.1,
+      "reasons": "RSI 59, MACD 골든크로스 (5거래일 이내), 주도 섹터 소속",
+      "signalPassed": true,
+      "relaxationApplied": false
+    },
+    {
+      "ticker": "AAPL",
+      "name": "Apple Inc.",
+      "sector": "Technology",
+      "score": 36,
+      "reasons": "RSI 64, MACD 골든크로스 (5거래일 이내), 주도 섹터 소속",
+      "signalPassed": true,
+      "relaxationApplied": false
+    },
+    {
+      "ticker": "PAYX",
+      "name": "Paychex, Inc.",
+      "sector": "Industrials",
+      "score": 31.2,
       "reasons": "RSI 63, MACD 골든크로스 (5거래일 이내), 주도 섹터 소속",
       "signalPassed": true,
       "relaxationApplied": false
@@ -85,8 +58,17 @@
       "ticker": "CTAS",
       "name": "Cintas Corporation",
       "sector": "Industrials",
-      "score": 22.3,
-      "reasons": "RSI 58, MACD 골든크로스 (5거래일 이내), 주도 섹터 소속",
+      "score": 16.9,
+      "reasons": "RSI 54, MACD 골든크로스 (5거래일 이내), 주도 섹터 소속",
+      "signalPassed": true,
+      "relaxationApplied": false
+    },
+    {
+      "ticker": "DXCM",
+      "name": "DexCom, Inc.",
+      "sector": "Health Care",
+      "score": 7.5,
+      "reasons": "RSI 56, MACD 골든크로스 (5거래일 이내)",
       "signalPassed": true,
       "relaxationApplied": false
     }

@@ -215,8 +215,11 @@ describe('App - real research.json integration (v6 smoke test)', () => {
       'href',
       expect.stringContaining('marketbeat.com')
     )
-    // basedOnDataOf (2026-07-08) matches the loaded dataset's generatedAt, so no stale warning
-    expect(within(axonCard).queryByText(/이전 데이터 기준/)).not.toBeInTheDocument()
+    // research.json's basedOnDataOf (2026-07-08) predates the 12-month-recollected dataset's
+    // generatedAt (2026-07-09, PRD_Nasdaq7 US-1) — this is a genuine mismatch, so the v6
+    // staleness warning (US-4) is expected to appear here (both the header badge and the
+    // expanded body warning), not absent.
+    expect(within(axonCard).getAllByText(/이전 데이터 기준/).length).toBeGreaterThan(0)
   })
 })
 

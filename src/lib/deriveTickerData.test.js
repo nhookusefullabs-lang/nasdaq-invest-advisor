@@ -28,7 +28,9 @@ describe('deriveTickerData against collected data', () => {
         expect(derived.chart.oneMonth.length).toBeGreaterThan(0)
         expect(derived.chart.oneMonth.length).toBeLessThanOrEqual(21)
         expect(derived.chart.threeMonth.length).toBe(63)
-        expect(derived.chart.sixMonth.length).toBe(rawTicker.series.length)
+        // sixMonth는 최근 126거래일 고정창 (PRD_Nasdaq7 §2, US-2) — 12개월 재수집 후
+        // series.length(약 251)가 126을 넘으므로 전체 기간이 아니라 126으로 캡됨
+        expect(derived.chart.sixMonth.length).toBe(Math.min(126, rawTicker.series.length))
         // 창이 길수록(더 긴 기간) 더 많은(또는 같은) 거래일을 포함해야 한다
         expect(derived.chart.threeMonth.length).toBeGreaterThanOrEqual(derived.chart.oneMonth.length)
         expect(derived.chart.sixMonth.length).toBeGreaterThanOrEqual(derived.chart.threeMonth.length)
