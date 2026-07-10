@@ -186,3 +186,84 @@ export function week52HighLow(series) {
   const low = Math.min(...window.map((b) => b.low))
   return { high, low }
 }
+
+/** period 구간에 null이 하나라도 섞이면 그 지점은 null (분모 0 등 워밍업 전파용). */
+function smaAllowingNulls(arr, period) {
+  const out = new Array(arr.length).fill(null)
+  for (let i = period - 1; i < arr.length; i++) {
+    const window = arr.slice(i - period + 1, i + 1)
+    if (window.some((v) => v == null)) continue
+    out[i] = average(window)
+  }
+  return out
+}
+
+/**
+ * Slow Stochastic — Fast %K = (종가 − N일 최저 저가) / (N일 최고 고가 − N일 최저 저가) × 100,
+ * Slow %K = Fast %K의 SMA(kSmooth), %D = Slow %K의 SMA(dSmooth). 현재 시점 스냅샷만 반환.
+ * N일간 고가=저가(분모 0)이면 그날의 Fast %K는 null이며, 이 null이 이후 평활 구간에 전파된다.
+ */
+export function stochastic(series, kPeriod = 14, kSmooth = 3, dSmooth = 3) {
+  const n = series.length
+  if (n < kPeriod) return { slowK: null, slowD: null }
+
+  const fastK = new Array(n).fill(null)
+  for (let i = kPeriod - 1; i < n; i++) {
+    const window = series.slice(i - kPeriod + 1, i + 1)
+    const highMax = Math.max(...window.map((b) => b.high))
+    const lowMin = Math.min(...window.map((b) => b.low))
+    const denom = highMax - lowMin
+    fastK[i] = denom === 0 ? null : ((series[i].close - lowMin) / denom) * 100
+  }
+
+  const slowKArr = smaAllowingNulls(fastK, kSmooth)
+  const slowDArr = smaAllowingNulls(slowKArr, dSmooth)
+
+  return { slowK: slowKArr[n - 1], slowD: slowDArr[n - 1] }
+}
+
+/**
+ * ATR(Average True Range) — True Range = max(고−저, |고−전일종가|, |저−전일종가|),
+ * ATR = TR의 Wilder 평활(period). 첫 ATR은 첫 period개 TR의 단순평균을 시드로 사용.
+ * 데이터가 (period+1)개 미만이면 null (TR 계산에 전일 종가가 필요하므로 +1).
+ */
+export function atr(series, period = 14) {
+  const n = series.length
+  if (n < period + 1) return null
+
+  const trArr = []
+  for (let i = 1; i < n; i++) {
+    const cur = series[i]
+    const prev = series[i - 1]
+    trArr.push(Math.max(cur.high - cur.low, Math.abs(cur.high - prev.close), Math.abs(cur.low - prev.close)))
+  }
+
+  let value = average(trArr.slice(0, period))
+  for (let i = period; i < trArr.length; i++) {
+    value = (value * (period - 1) + trArr[i]) / period
+  }
+  return value
+}
+
+/** ATR을 최신 종가로 나눈 백분율(ATR%) — 필터의 상대 변동성 판정용. */
+export function atrPercent(series, period = 14) {
+  const value = atr(series, period)
+  const lastClose = series[series.length - 1]?.close
+  if (value == null || !lastClose) return null
+  return (value / lastClose) * 100
+}
+
+/**
+ * OBV(On-Balance Volume) — 종가 상승일 +거래량, 하락일 −거래량, 보합 0의 누적합.
+ * 다른 v7 신규 지표와 달리 필터 판정(OBV vs OBV의 SMA20)에 과거 흐름 전체가 필요하므로
+ * 스냅샷이 아닌 series와 동일 길이의 누적 배열을 반환한다. out[0] = 0 (기준점).
+ */
+export function obv(series) {
+  const out = new Array(series.length).fill(0)
+  for (let i = 1; i < series.length; i++) {
+    const diff = series[i].close - series[i - 1].close
+    const delta = diff > 0 ? series[i].volume : diff < 0 ? -series[i].volume : 0
+    out[i] = out[i - 1] + delta
+  }
+  return out
+}

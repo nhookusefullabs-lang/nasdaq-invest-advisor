@@ -37,3 +37,18 @@
 - 운영자 액션 필요: 없음
 - 다음 스토리 메모: US-4 (stochastic/atr/obv 추가, series bar 배열 입력 시그니처를
   US-3과 동일하게 유지. 스토캐스틱 분모 0, ATR Wilder 평활 초기값, OBV 보합일 케이스 필수).
+
+## Iteration 4 — US-4. 신규 지표 함수 2차 (스토캐스틱 + ATR + OBV)
+- 완료 스토리: US-4
+- 변경 파일: src/lib/indicators.js (stochastic, atr, atrPercent, obv + private helper
+  smaAllowingNulls 추가), src/lib/indicators.test.js (10개 테스트 추가)
+- 설계 결정: obv()는 다른 v7 신규 지표(스냅샷 반환)와 달리 **배열**을 반환함 — PRD 명세
+  그대로("누적 OBV 배열"), 필터가 "OBV vs OBV의 SMA20"을 비교하려면 과거 흐름 전체가
+  필요하기 때문. stochastic은 분모 0(고가=저가)이 발생한 날의 Fast %K를 null로 두고,
+  smaAllowingNulls 헬퍼로 그 null이 평활(SMA) 구간에 전파되게 함 — 억지로 스킵해
+  결측을 감추지 않음.
+- 테스트 수 변화: 111 → 121 (+10), 전체 통과. npm run build 통과.
+- 운영자 액션 필요: 없음
+- 다음 스토리 메모: US-5 (constants.js 임계 상수 + filters.js 판정 함수 5종.
+  ATR 백분위는 유니버스 dataSufficient 종목 전체 분포 기준 — 개별 종목 함수가 아니라
+  풀 단위 계산이 필요함에 유의. 52주 필터는 제외 종목 수도 함께 반환해야 함).

@@ -63,7 +63,7 @@
 ---
 
 ### US-4. 신규 지표 함수 2차 — 스토캐스틱 + ATR + OBV
-- [ ] **개발자로서, 스토캐스틱·ATR·OBV를 순수 함수로 계산하고 싶다.**
+- [x] **개발자로서, 스토캐스틱·ATR·OBV를 순수 함수로 계산하고 싶다.**
 
 **구현:** `src/lib/indicators.js`에 추가
 - `stochastic(series, 14, 3, 3)` → {slowK, slowD} — 분모 0(14일 고저 동일)이면 해당일 null

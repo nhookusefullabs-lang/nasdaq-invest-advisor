@@ -11,6 +11,10 @@ import {
   stddev,
   bollingerBands,
   week52HighLow,
+  stochastic,
+  atr,
+  atrPercent,
+  obv,
 } from './indicators.js'
 
 function makeBar(i, { close, high, low } = {}) {
@@ -181,5 +185,87 @@ describe('week52HighLow (PRD_Nasdaq7 §4.1, US-3)', () => {
     const result = week52HighLow(series)
     expect(result.high).toBe(110)
     expect(result.low).toBe(90)
+  })
+})
+
+describe('stochastic (PRD_Nasdaq7 §4.1, US-4)', () => {
+  it('computes Fast %K directly when kSmooth=dSmooth=1 (hand-computed)', () => {
+    // high/low constant (110/90) across the whole series, so every 14-day window has
+    // the same denominator (20) — only the window's close matters for %K.
+    const series = Array.from({ length: 14 }, (_, i) =>
+      makeBar(i, { close: i === 13 ? 95 : 100, high: 110, low: 90 })
+    )
+    const result = stochastic(series, 14, 1, 1)
+    // %K = (95 - 90) / (110 - 90) * 100 = 25
+    expect(result.slowK).toBeCloseTo(25)
+    expect(result.slowD).toBeCloseTo(25)
+  })
+
+  it('smooths %D over 3 known Fast %K values when kSmooth=1 (hand-computed)', () => {
+    const closes = Array.from({ length: 13 }, () => 100).concat([95, 100, 105])
+    const series = closes.map((c, i) => makeBar(i, { close: c, high: 110, low: 90 }))
+    // fastK at the last 3 indices: (95-90)/20*100=25, (100-90)/20*100=50, (105-90)/20*100=75
+    const result = stochastic(series, 14, 1, 3)
+    expect(result.slowK).toBeCloseTo(75) // last Fast %K (kSmooth=1, no smoothing)
+    expect(result.slowD).toBeCloseTo((25 + 50 + 75) / 3) // = 50
+  })
+
+  it('returns null slowK/slowD when the most recent 14-day window has zero range (high === low)', () => {
+    const series = Array.from({ length: 14 }, (_, i) => makeBar(i, { close: 100, high: 100, low: 100 }))
+    const result = stochastic(series, 14, 3, 3)
+    expect(result.slowK).toBeNull()
+    expect(result.slowD).toBeNull()
+  })
+})
+
+describe('atr (PRD_Nasdaq7 §4.1, US-4)', () => {
+  it('seeds ATR as the simple average of the first `period` True Range values (hand-computed)', () => {
+    // 15 flat bars (high=110,low=90,close=100): TR = max(20, |110-100|, |90-100|) = 20 for all 14 TRs
+    const series = Array.from({ length: 15 }, (_, i) => makeBar(i, { close: 100, high: 110, low: 90 }))
+    expect(atr(series, 14)).toBeCloseTo(20)
+  })
+
+  it('applies one Wilder smoothing step after the seed (hand-computed)', () => {
+    const flat = Array.from({ length: 15 }, (_, i) => makeBar(i, { close: 100, high: 110, low: 90 }))
+    // 16th bar: TR = max(140-90=50, |140-100|=40, |90-100|=10) = 50
+    const series = [...flat, makeBar(15, { close: 100, high: 140, low: 90 })]
+    // seed = 20 (avg of first 14 TRs), then value = (20*13 + 50) / 14
+    expect(atr(series, 14)).toBeCloseTo((20 * 13 + 50) / 14)
+  })
+
+  it('returns null when there are fewer than period+1 bars', () => {
+    const series = Array.from({ length: 10 }, (_, i) => makeBar(i))
+    expect(atr(series, 14)).toBeNull()
+  })
+
+  it('atrPercent divides ATR by the latest close (hand-computed)', () => {
+    const series = Array.from({ length: 15 }, (_, i) => makeBar(i, { close: 100, high: 110, low: 90 }))
+    expect(atrPercent(series, 14)).toBeCloseTo(20) // ATR=20, close=100 -> 20%
+  })
+})
+
+describe('obv (PRD_Nasdaq7 §4.1, US-4)', () => {
+  it('adds volume on an up day', () => {
+    const series = [makeBar(0, { close: 100, volume: 1000 }), makeBar(1, { close: 105, volume: 500 })].map(
+      (b, i) => ({ ...b, volume: i === 0 ? 1000 : 500 })
+    )
+    expect(obv(series)).toEqual([0, 500])
+  })
+
+  it('subtracts volume on a down day', () => {
+    const series = [
+      { ...makeBar(0, { close: 100 }), volume: 1000 },
+      { ...makeBar(1, { close: 95 }), volume: 700 },
+    ]
+    expect(obv(series)).toEqual([0, -700])
+  })
+
+  it('does not change on a flat (보합) day', () => {
+    const series = [
+      { ...makeBar(0, { close: 100 }), volume: 1000 },
+      { ...makeBar(1, { close: 100 }), volume: 700 },
+      { ...makeBar(2, { close: 105 }), volume: 300 },
+    ]
+    expect(obv(series)).toEqual([0, 0, 300])
   })
 })
