@@ -23,3 +23,17 @@
 - 운영자 액션 필요: 없음 (이 스토리는 순수 함수 변경, 재수집 불필요)
 - 다음 스토리 메모: US-3 (indicators.js에 bollingerBands, week52HighLow 추가 —
   기존 함수 수정 금지, 252일 미만 시 week52HighLow는 null 반환).
+
+## Iteration 3 — US-3. 신규 지표 함수 1차 (볼린저밴드 + 52주 신고가/신저가)
+- 완료 스토리: US-3
+- 변경 파일: src/lib/indicators.js (bollingerBands, week52HighLow 추가 — 기존 함수 무수정),
+  src/lib/indicators.test.js (수기계산 대조 6개 테스트 추가)
+- 설계 결정: PRD가 두 함수 모두 파라미터명을 `series`로 명명한 것에 착안해, 기존 6개 함수와
+  달리 순수 종가 배열이 아니라 원본 바 객체 배열({date,high,low,close,volume})을 입력받도록
+  통일함 — 52주 고저는 high/low 컬럼이 필요하고, 이후 US-4의 stochastic/atr도 동일하게
+  bar 배열을 받을 예정이라 v7 신규 지표 5종의 시그니처를 여기서 맞춰둠. 두 함수 모두
+  "현재 시점 스냅샷 값"만 반환(배열이 아님) — 필터 판정에는 최신값만 필요하기 때문.
+- 테스트 수 변화: 105 → 111 (+6), 전체 통과. npm run build 통과.
+- 운영자 액션 필요: 없음
+- 다음 스토리 메모: US-4 (stochastic/atr/obv 추가, series bar 배열 입력 시그니처를
+  US-3과 동일하게 유지. 스토캐스틱 분모 0, ATR Wilder 평활 초기값, OBV 보합일 케이스 필수).

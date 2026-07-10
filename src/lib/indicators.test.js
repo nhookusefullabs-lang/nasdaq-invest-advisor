@@ -9,7 +9,20 @@ import {
   goldenCrossWithin,
   dailyReturns,
   stddev,
+  bollingerBands,
+  week52HighLow,
 } from './indicators.js'
+
+function makeBar(i, { close, high, low } = {}) {
+  const c = close ?? 10 + i
+  return {
+    date: `2026-01-${String((i % 28) + 1).padStart(2, '0')}`,
+    close: c,
+    high: high ?? c + 1,
+    low: low ?? c - 1,
+    volume: 1_000_000,
+  }
+}
 
 describe('sma', () => {
   it('computes simple moving average with correct warmup', () => {
@@ -118,5 +131,55 @@ describe('dailyReturns / stddev', () => {
     expect(returns[2]).toBeCloseTo(0.1)
     const sd = stddev(returns)
     expect(sd).toBeGreaterThan(0)
+  })
+})
+
+describe('bollingerBands (PRD_Nasdaq7 §4.1, US-3)', () => {
+  it('computes middle/upper/lower from the last `period` closes (hand-computed)', () => {
+    // closes = [10,12,14,16,18], mean=14, sample stddev=sqrt(10)≈3.16227766
+    const series = [10, 12, 14, 16, 18].map((c, i) => makeBar(i, { close: c }))
+    const bands = bollingerBands(series, 5, 2)
+    expect(bands.middle).toBeCloseTo(14)
+    expect(bands.upper).toBeCloseTo(14 + 2 * Math.sqrt(10))
+    expect(bands.lower).toBeCloseTo(14 - 2 * Math.sqrt(10))
+  })
+
+  it('uses only the most recent `period` closes and respects a custom mult (hand-computed)', () => {
+    // extra older bar (close=1000) must be excluded by the period=5 window
+    const series = [1000, 10, 12, 14, 16, 18].map((c, i) => makeBar(i, { close: c }))
+    const bands = bollingerBands(series, 5, 1)
+    expect(bands.middle).toBeCloseTo(14)
+    expect(bands.upper).toBeCloseTo(14 + Math.sqrt(10))
+    expect(bands.lower).toBeCloseTo(14 - Math.sqrt(10))
+  })
+
+  it('returns null when there is less data than `period`', () => {
+    const series = [10, 12, 14].map((c, i) => makeBar(i, { close: c }))
+    expect(bollingerBands(series, 5, 2)).toBeNull()
+  })
+})
+
+describe('week52HighLow (PRD_Nasdaq7 §4.1, US-3)', () => {
+  it('returns null when the series has fewer than 252 trading days', () => {
+    const series = Array.from({ length: 251 }, (_, i) => makeBar(i))
+    expect(week52HighLow(series)).toBeNull()
+  })
+
+  it('returns {high, low} from exactly the most recent 252 bars (hand-computed)', () => {
+    const series = Array.from({ length: 252 }, (_, i) => makeBar(i, { close: 100, high: 100 + i, low: 100 - i }))
+    const result = week52HighLow(series)
+    // last bar (i=251) has the highest high (351) and lowest low (-151)
+    expect(result.high).toBe(100 + 251)
+    expect(result.low).toBe(100 - 251)
+  })
+
+  it('ignores bars older than the most recent 252 (window boundary)', () => {
+    // one extra old bar with an extreme high/low that must NOT affect the 252-day window
+    const outlier = makeBar(0, { close: 100, high: 999999, low: -999999 })
+    const rest = Array.from({ length: 252 }, (_, i) => makeBar(i + 1, { close: 100, high: 110, low: 90 }))
+    const series = [outlier, ...rest]
+    const result = week52HighLow(series)
+    expect(result.high).toBe(110)
+    expect(result.low).toBe(90)
   })
 })

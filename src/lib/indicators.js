@@ -154,3 +154,35 @@ export function stddev(arr) {
   const variance = arr.reduce((s, v) => s + (v - mean) ** 2, 0) / (arr.length - 1)
   return Math.sqrt(variance)
 }
+
+// --- v7 신규 지표 (PRD_Nasdaq7 §4.1) ---
+// 아래 함수들은 위 함수들과 달리 원본 바 배열(series: [{date,high,low,close,volume}], 오름차순)을
+// 입력으로 받는다 — 52주 고저/스토캐스틱/ATR이 종가 외에 고가·저가도 필요하기 때문에 통일했다.
+// 모두 "현재 시점(배열 끝)" 기준 스냅샷 하나만 반환한다 (필터 판정에 최신값만 필요).
+
+/** 52주 신고가/신저가 계산 창(거래일). 미만이면 계산 자체를 하지 않는다. */
+const WEEK52_WINDOW = 252
+
+/**
+ * 볼린저밴드 — 중심선 SMA(period), 상단/하단 = 중심선 ± mult × 표본표준편차(period).
+ * 데이터가 period 미만이면 null.
+ */
+export function bollingerBands(series, period = 20, mult = 2) {
+  if (series.length < period) return null
+  const closes = series.slice(-period).map((b) => b.close)
+  const middle = average(closes)
+  const sd = stddev(closes)
+  return { middle, upper: middle + mult * sd, lower: middle - mult * sd }
+}
+
+/**
+ * 52주(252거래일) 신고가/신저가. "52주"의 의미가 왜곡되지 않도록, 데이터가 252거래일
+ * 미만이면 전체 기간으로 대충 계산하지 않고 null을 반환한다.
+ */
+export function week52HighLow(series) {
+  if (series.length < WEEK52_WINDOW) return null
+  const window = series.slice(-WEEK52_WINDOW)
+  const high = Math.max(...window.map((b) => b.high))
+  const low = Math.min(...window.map((b) => b.low))
+  return { high, low }
+}
