@@ -174,7 +174,7 @@
 ---
 
 ### US-9. localStorage 스키마 v3
-- [ ] **사용자로서, 선택한 추천 모드와 토글 상태가 새로고침 후에도 유지되길 원한다.**
+- [x] **사용자로서, 선택한 추천 모드와 토글 상태가 새로고침 후에도 유지되길 원한다.**
 
 **구현:** 기존 localStorage 모듈 확장
 - 신규 필드: `recommendMode`("consensus"|"trend"|"minervini", 기본 "consensus"),

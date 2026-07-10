@@ -73,7 +73,7 @@ describe('persistence - schema v1 -> v2 migration', () => {
 
     const loaded = loadPersistedState(new Set(['AAPL', 'MSFT']))
 
-    expect(loaded.schemaVersion).toBe(2)
+    expect(loaded.schemaVersion).toBe(3)
     expect(loaded.currentScreen).toBe('portfolio')
     expect(loaded.searchQuery).toBe('app')
     expect(loaded.selectedTickers).toEqual(['AAPL', 'MSFT'])
@@ -92,6 +92,10 @@ describe('persistence - schema v1 -> v2 migration', () => {
     expect(loaded.preset).toBe('default')
     expect(loaded.customParams).toEqual({ rsiMin: 50, goldenCrossWindow: 5, highScoreThreshold: 70 })
     expect(loaded.researchRequests).toEqual([])
+    // brand-new v3 fields default (US-9) — a v1 record skips straight to v3 defaults
+    expect(loaded.recommendMode).toBe('consensus')
+    expect(loaded.hideRiskFlagged).toBe(false)
+    expect(loaded.showFundamentalFail).toBe(false)
   })
 
   it('resets only the out-of-range customParams field, preserving in-range values (not a full reset)', () => {
@@ -125,5 +129,62 @@ describe('persistence - schema v1 -> v2 migration', () => {
     expect(state.filters.stochasticState).toBe('off')
     expect(state.filters.atrState).toBe('off')
     expect(state.filters.obvState).toBe('off')
+  })
+})
+
+// --- v2 → v3 마이그레이션 (PRD_Nasdaq8 §4.6, US-9) ---
+
+describe('persistence - schema v2 -> v3 migration', () => {
+  it('preserves selectedTickers/preset/customParams/researchRequests from a v2 record, fills new v3 fields with defaults', () => {
+    const v2Record = {
+      schemaVersion: 2,
+      currentScreen: 'recommend',
+      selectedTickers: ['AAPL', 'MSFT'],
+      preset: 'aggressive',
+      customParams: { rsiMin: 45, goldenCrossWindow: 10, highScoreThreshold: 75 },
+      researchRequests: ['AAPL'],
+      // v2 record never had recommendMode/hideRiskFlagged/showFundamentalFail
+    }
+    localStorage.setItem('nasdaqAdvisor.uiState', JSON.stringify(v2Record))
+
+    const loaded = loadPersistedState(new Set(['AAPL', 'MSFT']))
+
+    expect(loaded.schemaVersion).toBe(3)
+    // existing v2 fields preserved (no data loss)
+    expect(loaded.currentScreen).toBe('recommend')
+    expect(loaded.selectedTickers).toEqual(['AAPL', 'MSFT'])
+    expect(loaded.preset).toBe('aggressive')
+    expect(loaded.customParams).toEqual({ rsiMin: 45, goldenCrossWindow: 10, highScoreThreshold: 75 })
+    expect(loaded.researchRequests).toEqual(['AAPL'])
+    // brand-new v3 fields default
+    expect(loaded.recommendMode).toBe('consensus')
+    expect(loaded.hideRiskFlagged).toBe(false)
+    expect(loaded.showFundamentalFail).toBe(false)
+  })
+
+  it('resets an out-of-enum recommendMode value to "consensus"', () => {
+    localStorage.setItem(
+      'nasdaqAdvisor.uiState',
+      JSON.stringify({ schemaVersion: 3, recommendMode: 'momentum-only' })
+    )
+    const loaded = loadPersistedState(new Set([]))
+    expect(loaded.recommendMode).toBe('consensus')
+  })
+
+  it('accepts each valid recommendMode enum value unchanged', () => {
+    for (const mode of ['consensus', 'trend', 'minervini']) {
+      localStorage.setItem('nasdaqAdvisor.uiState', JSON.stringify({ schemaVersion: 3, recommendMode: mode }))
+      expect(loadPersistedState(new Set([])).recommendMode).toBe(mode)
+    }
+  })
+
+  it('round-trips hideRiskFlagged/showFundamentalFail toggles', () => {
+    localStorage.setItem(
+      'nasdaqAdvisor.uiState',
+      JSON.stringify({ schemaVersion: 3, hideRiskFlagged: true, showFundamentalFail: true })
+    )
+    const loaded = loadPersistedState(new Set([]))
+    expect(loaded.hideRiskFlagged).toBe(true)
+    expect(loaded.showFundamentalFail).toBe(true)
   })
 })

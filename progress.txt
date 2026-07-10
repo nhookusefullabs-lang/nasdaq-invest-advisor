@@ -478,3 +478,34 @@
   false)/showFundamentalFail(기본 false). 저장된 recommendMode가 enum 밖이면 consensus로
   리셋(customParams 필드 단위 검증과 동일한 방어적 패턴). 기존 필드(선택종목/프리셋/
   customParams/researchRequests) 전부 무손실 보존 확인 필수.
+
+## Iteration 9 — US-9. localStorage 스키마 v3
+- 완료 스토리: US-9
+- 변경 파일:
+  - src/lib/persistence.js: SCHEMA_VERSION 2→3. MIGRATABLE_FROM_VERSION(단일값)을
+    MIGRATABLE_FROM_VERSIONS=[1,2] 배열로 일반화 — v1 레코드도 v2 전용 필드 유무와
+    무관하게 동일한 병합 로직으로 안전하게 v3까지 한 번에 마이그레이션됨을 확인했으므로
+    별도의 v1→v2→v3 단계 분리 없이 하나의 로드 경로로 처리. DEFAULT_UI_STATE에
+    recommendMode('consensus')/hideRiskFlagged(false)/showFundamentalFail(false) 추가.
+    RECOMMEND_MODE_VALUES enum 검증(밖이면 consensus로 리셋), 나머지 2개 신규 필드는
+    typeof boolean 아니면 기본값(false)으로 방어.
+  - src/lib/persistence.test.js: 기존 v1→v2 테스트의 `loaded.schemaVersion` 기대값을
+    2→3으로 갱신(스키마가 3으로 올라갔으므로), 같은 테스트에 v3 신규 필드 기본값 검증
+    3개 추가. 신규 describe 블록(v2→v3 마이그레이션) 4개 테스트: 기존 필드(선택종목/
+    preset/customParams/researchRequests) 무손실 보존, 잘못된 recommendMode 리셋,
+    3개 enum 값 각각 왕복 확인, hideRiskFlagged/showFundamentalFail 토글 왕복.
+- 설계 결정: PRD가 "v1→v2 패턴 재사용"이라 명시했지만 기존 코드가 단일 정수
+  MIGRATABLE_FROM_VERSION이라 v1을 v3로 바로 매핑하려면 배열화가 필요했음 — 정확히
+  "v2에서 마이그레이션"만 지원하면 v1 레코드가 로드 시 완전 리셋되는 회귀가 생기므로
+  [1,2] 배열로 확장. 이 결정이 기존 v1→v2 테스트(스키마 2로 착지)의 스펙과 어긋나지
+  않도록, 해당 테스트를 스키마 3으로 착지하는 것으로 최신화(자연스러운 결과 — v1
+  레코드는 이제 v3까지 한 번에 마이그레이션됨).
+- 테스트 수 변화: 291 → 295 (+4, persistence 9→13), 전체 통과. npm run build 통과
+  (194.40kB→194.78kB).
+- 운영자 액션 필요: 없음
+- 다음 스토리 메모: US-10 (화면2 — 모드 세그먼트 + 통합 뷰). Recommend.jsx에 v7 프리셋
+  세그먼트 패턴을 재사용해 모드 3단 세그먼트(통합/추세추종/미너비니) 추가, App.jsx가
+  uiState.recommendMode에 따라 recommend()/runMinerviniRecommend()/
+  buildConsensusRanking() 중 무엇을 호출할지 분기해야 함(US-6 consensus.js가 이미
+  이 3개를 조합하는 지점). "추세추종" 모드에서만 프리셋/고급설정 패널 노출(기존 v7 UI
+  그대로). 통합 뷰 카드에 ★★/★ 등급 + 양 모드 점수 + 통합 백분위 문구 렌더링.
