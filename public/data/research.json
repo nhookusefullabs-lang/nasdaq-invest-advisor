@@ -1,0 +1,233 @@
+{
+  "schemaVersion": 1,
+  "researchedAt": "2026-07-10",
+  "basedOnDataOf": "2026-07-08",
+  "items": [
+    {
+      "ticker": "AXON",
+      "sentiment": "positive",
+      "summary": "Axon Enterprise는 2026년 6월 말~7월 초 6거래일 연속 상승하며 주가가 약 34~40% 급등했다. 1분기 매출이 전년 대비 34% 증가하고 AI 관련 매출이 전년比 700% 급증한 실적, 연간 매출 성장률 가이던스를 27~30%에서 30~32%로 상향한 점이 배경으로 지목된다. 다만 트레일링 PER이 353배에 달하는 등 밸류에이션 부담과 최근 3개월간 임원진의 순매도(인사이더 셀링)도 함께 보고되고 있다.",
+      "catalysts": [
+        "1분기 매출 34% 증가 및 순매출유지율(NRR) 125%, AI 제품 매출 전년比 700% 급증에 따른 연간 가이던스 상향(30~32%)",
+        "ICE(이민세관집행국)의 테이저 관련 2.2억 달러 규모 5년 계약 추진 소식 및 관련 정치적 관심(대통령 매수 보도)",
+        "Zacks Rank #1(Strong Buy)로 상향 및 애널리스트 컨센서스 Strong Buy 유지"
+      ],
+      "risks": [
+        "트레일링 PER 353배(포워드 PER 약 51배)로 대표되는 고밸류에이션 부담과 순이익률 약 4.5% 수준의 마진 압박",
+        "최근 3개월간 임원진(최고인사책임자, 최고매출책임자 등) 합산 수백만 달러 규모 순매도(인사이더 셀링) 및 최근 12개월 누적 약 4,300만 달러 순매도",
+        "일부 애널리스트의 목표주가 하향 조정(예: 799달러→735달러) 및 EPS 추정치 하향(1.91달러→1.68달러) 사례 보고"
+      ],
+      "institutionalActivity": "2026년 1분기(3월 31일 종료) 13F 집계 기준 약 1,196개 기관이 6,574만 주(약 80.3%)를 보유하며, Vanguard·BlackRock·State Street·Fmr(Fidelity)·Geode Capital 등이 최대 보유 기관으로 나타남.",
+      "analystView": "2026년 7월 10일 수집 시점 기준 TipRanks 집계 애널리스트 20명 중 15명 Strong Buy·4명 Moderate Buy·1명 Hold로 컨센서스 Strong Buy, 평균 목표주가 약 670~739달러 수준. Zacks Rank는 #1(Strong Buy).",
+      "sources": [
+        {
+          "title": "Axon Enterprise (AXON) Institutional Ownership 2026",
+          "url": "https://www.marketbeat.com/stocks/NASDAQ/AXON/institutional-ownership/",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "AXON 13F Hedge Fund & Institutional Ownership",
+          "url": "https://hedgefollow.com/stocks/AXON",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "Axon Enterprise, Inc. (AXON) Stock Forecast, Price Targets and Analysts Predictions - TipRanks",
+          "url": "https://www.tipranks.com/stocks/axon/forecast",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "Axon Enterprise Stock Rockets on AI-Fueled Demand - TipRanks",
+          "url": "https://www.tipranks.com/news/catalyst/axon-enterprise-stock-rockets-on-ai-fueled-demand",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "6-Day Rally Sends Axon Enterprise Stock Up 40% - Trefis",
+          "url": "https://www.trefis.com/articles-v3/605878/6-day-rally-sends-axon-enterprise-stock-up-40/2026-07-07",
+          "date": "2026-07-07",
+          "operatorProvided": false
+        },
+        {
+          "title": "Why Axon Enterprise Stock Popped Today - The Motley Fool",
+          "url": "https://www.fool.com/investing/2026/06/29/why-axon-enterprise-stock-popped-today/",
+          "date": "2026-06-29",
+          "operatorProvided": false
+        },
+        {
+          "title": "Axon Enterprise PE Ratio 2012-2026 - MacroTrends",
+          "url": "https://www.macrotrends.net/stocks/charts/AXON/axon-enterprise/pe-ratio",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "Axon Enterprise Revenue 2012-2026 - MacroTrends",
+          "url": "https://www.macrotrends.net/stocks/charts/AXON/axon-enterprise/revenue",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "Axon Enterprise Profit Margin 2012-2026 - MacroTrends",
+          "url": "https://www.macrotrends.net/stocks/charts/AXON/axon-enterprise/profit-margins",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "AXON Stock Holds Range As Drone Deal And Insider Sales Collide - StocksToTrade",
+          "url": "https://stockstotrade.com/news/axon-enterprise-inc-axon-news-2026_06_23/",
+          "date": "2026-06-23",
+          "operatorProvided": false
+        },
+        {
+          "title": "Axon Enterprise (Nasdaq:AXON) Stock Analysis - Simply Wall St",
+          "url": "https://simplywall.st/stocks/us/capital-goods/nasdaq-axon/axon-enterprise",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        }
+      ],
+      "signalPassed": false,
+      "origin": "recommended"
+    },
+    {
+      "ticker": "MRNA",
+      "sentiment": "neutral",
+      "summary": "모더나(MRNA) 주가는 2026년 들어 두 배 이상 상승했는데, 이는 코로나19 백신 의존도를 벗어난 파이프라인 확장 기대와 규제 진전이 배경으로 보도된다. 2026년 7월 초 미국 FDA 자문위원회가 50세 이상 성인 대상 계절 독감 백신 승인을 9대0으로 권고했고, 최종 FDA 결정은 8월 초로 예상된다. 2026년 1분기 매출은 전년동기대비 260% 증가한 3.89억달러를 기록했으나, 최근 12개월 매출은 전년대비 약 30% 감소했고 2025 회계연도에는 소송 충당금 등의 영향으로 순손실(약 28억달러)이 지속됐다.",
+      "catalysts": [
+        "FDA 자문위, 50세 이상 성인용 계절 독감백신 승인 9대0 권고(최종 FDA 결정 2026년 8월 초 예정)",
+        "2026년 7월 모건스탠리($39)·BofA($38)·RBC캐피탈($45) 등 복수 애널리스트의 목표주가 상향",
+        "Merck와의 개인맞춤형 암백신 협력 등 면역항암·희귀질환 분야 파이프라인 다각화 및 2026년 1분기 매출 전년동기대비 260% 성장"
+      ],
+      "risks": [
+        "흑색종(melanoma) 백신 등 후기임상 데이터 발표가 아직 대기 중이며 부진한 결과 시 투자심리 급변 가능성 지적됨(Motley Fool, 2026-07-07)",
+        "최근 12개월 매출은 전년대비 약 30% 감소했고 2025 회계연도 소송 충당금(약 9억달러) 영향으로 순손실 지속, 총이익률도 마이너스 구간 포함",
+        "주가가 2026년 들어 두 배 이상 오른 상황에서도 TipRanks 컨센서스는 \"Hold\"(매수1·보유13·매도2)이고 평균 목표주가 대비 상승여력이 제한적이라는 점에서 밸류에이션 부담 우려 존재"
+      ],
+      "institutionalActivity": null,
+      "analystView": "2026년 7월 10일 수집 기준, TipRanks는 컨센서스 \"Hold\"(매수1·보유13·매도2, 평균 목표주가 $44.50)를, Zacks는 평균 브로커리지 추천등급(ABR) 2.96(27개 증권사 기준, 1=적극매수~5=적극매도)으로 대체로 중립적인 시각을 보이나 평균 목표주가는 $60.91로 두 소스 간 편차가 큼.",
+      "sources": [
+        {
+          "title": "Moderna (MRNA) Stock Forecast, Price Targets and Analysts Predictions - TipRanks",
+          "url": "https://www.tipranks.com/stocks/mrna/forecast",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "What is the current Price Target and Forecast for Moderna (MRNA) - Zacks",
+          "url": "https://www.zacks.com/stock/research/MRNA/price-target-stock-forecast",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "Moderna Stock Is Soaring. Is It Too Late to Buy? - The Motley Fool",
+          "url": "https://www.fool.com/investing/2026/07/07/moderna-stock-is-soaring-is-it-too-late-to-buy/",
+          "date": "2026-07-07",
+          "operatorProvided": false
+        },
+        {
+          "title": "Moderna Revenue 2017-2026 - MacroTrends",
+          "url": "https://www.macrotrends.net/stocks/charts/MRNA/moderna/revenue",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "Moderna PE Ratio 2017-2026 - MacroTrends",
+          "url": "https://www.macrotrends.net/stocks/charts/MRNA/moderna/pe-ratio",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "Moderna Financial Ratios for Analysis 2016-2025 - MacroTrends",
+          "url": "https://www.macrotrends.net/stocks/charts/MRNA/moderna/financial-ratios",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        }
+      ],
+      "signalPassed": false,
+      "origin": "recommended"
+    },
+    {
+      "ticker": "WDAY",
+      "sentiment": "positive",
+      "summary": "Workday(WDAY) 주가는 2026년 들어 연초 대비 약 33% 하락했으나, 최근(2026년 7월) 반도체에서 소프트웨어로의 섹터 순환매 속에 반등하며 한 달새 약 4% 상승했다. 2026 회계연도 1분기 실적에서 매출·이익 모두 컨센서스를 상회했고 연간 비GAAP 영업마진 가이던스를 30.5%로 50bp 상향 조정했다. 밸류에이션 지표(PER)는 FY2026 1분기 133.82배에서 FY2027 1분기 추정 37.14배 수준까지 낮아진 것으로 집계된다.",
+      "catalysts": [
+        "AI 기반 신규 계약(ACV) 성장이 최근 5년래 최대치를 기록하며 핵심 사업 모멘텀 확인",
+        "비GAAP 영업마진 가이던스 상향(30.5%, +50bp) 및 헤드카운트 증가 최소화를 통한 수익성 개선",
+        "소프트웨어 섹터 전반의 순환매 유입(반도체 대비 저평가 인식)"
+      ],
+      "risks": [
+        "AI 기반 자동화가 좌석(seat) 기반 과금 모델의 매출을 잠식할 수 있다는 우려(Bank of America 지적)",
+        "Workday의 AI 채용·스크리닝 제품에 대한 규제·소송 리스크 및 대형 고객사의 컴플라이언스 요구 강화 가능성",
+        "AI발 경쟁 심화로 가격결정력이 약화되거나 R&D·M&A 지출 확대가 수익성을 압박할 가능성"
+      ],
+      "institutionalActivity": "2025년 4분기(2026년 2월경 제출) 13F 공시 기준 기관투자자 1,104곳이 총 1억9,267만주(발행주식의 약 89.81%)를 보유 중이며, 최대주주인 Vanguard Group은 해당 분기에 보유 지분을 14.7% 늘려 약 2,501만주(약 53.7억 달러 규모)를 보유.",
+      "analystView": "수집 시점(2026년 7월 10일) 기준 TipRanks 집계로는 매수 17건·보유 16건·매도 0건에 평균 목표주가 171.30달러(38.34% 상승여력)이며, Zacks 집계로는 31명 중 Strong Buy 24건 등 매수 의견이 다수(72.23%)이고 평균 목표주가 296.32달러(범위 238~350달러)로 두 소스 간 목표주가 편차가 존재함.",
+      "sources": [
+        {
+          "title": "Workday (WDAY) Institutional Ownership 2026",
+          "url": "https://www.marketbeat.com/stocks/NASDAQ/WDAY/institutional-ownership/",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "Workday, Inc. $WDAY Shares Acquired by Pacer Advisors Inc.",
+          "url": "https://www.themarketsdaily.com/2026/06/19/workday-inc-wday-shares-acquired-by-pacer-advisors-inc.html",
+          "date": "2026-06-19",
+          "operatorProvided": false
+        },
+        {
+          "title": "Workday (WDAY) Stock Forecast, Price Targets and Analysts Predictions - TipRanks",
+          "url": "https://www.tipranks.com/stocks/wday/forecast",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "What is the current Price Target and Forecast for Workday (WDAY) - Zacks",
+          "url": "https://www.zacks.com/stock/research/WDAY/price-target-stock-forecast",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "Workday (WDAY) Outpaces Stock Market Gains: What You Should Know - Yahoo Finance",
+          "url": "https://finance.yahoo.com/markets/stocks/articles/workday-wday-outpaces-stock-market-215003049.html",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "Workday PE Ratio 2012-2026 - Macrotrends",
+          "url": "https://www.macrotrends.net/stocks/charts/WDAY/workday/pe-ratio",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "Workday Debt to Equity Ratio 2012-2025 - Macrotrends",
+          "url": "https://www.macrotrends.net/stocks/charts/WDAY/workday/debt-equity-ratio",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "Workday (WDAY) Statistics & Valuation - StockAnalysis",
+          "url": "https://stockanalysis.com/stocks/wday/statistics/",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "Analyst resets Workday stock forecast on hidden AI risk - TheStreet",
+          "url": "https://www.thestreet.com/investing/stocks/analyst-resets-workday-stock-forecast-on-hidden-ai-risk",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        },
+        {
+          "title": "Workday (WDAY) Could Be 16% Undervalued On Analyst Upgrades And Earnings Optimism - Simply Wall St News",
+          "url": "https://simplywall.st/stocks/us/software/nasdaq-wday/workday/news/workday-wday-could-be-16-undervalued-on-analyst-upgrades-and",
+          "date": "2026-07-10",
+          "operatorProvided": false
+        }
+      ],
+      "signalPassed": true,
+      "origin": "recommended"
+    }
+  ],
+  "skipped": []
+}

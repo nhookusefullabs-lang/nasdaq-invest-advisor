@@ -14,6 +14,12 @@ const dataPath = path.join(
 )
 const REAL_DATA = JSON.parse(readFileSync(dataPath, 'utf-8'))
 
+const researchPath = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../public/data/research.json'
+)
+const REAL_RESEARCH = JSON.parse(readFileSync(researchPath, 'utf-8'))
+
 function makeMemoryStorage() {
   const store = new Map()
   return {
@@ -177,5 +183,39 @@ describe('App end-to-end flow (real nasdaq100.json)', () => {
     await waitFor(() => expect(firstWeightInput).toHaveValue(33.3))
     expect(secondWeightInput).toHaveValue(33.3)
     expect(thirdWeightInput).toHaveValue(33.3)
+  })
+})
+
+describe('App - real research.json integration (v6 smoke test)', () => {
+  beforeEach(() => {
+    globalThis.localStorage = makeMemoryStorage()
+    globalThis.fetch = vi.fn((url) => {
+      const body = String(url).includes('research.json') ? REAL_RESEARCH : REAL_DATA
+      return Promise.resolve({ ok: true, json: () => Promise.resolve(body) })
+    })
+  })
+
+  it('renders real AI research content (sources included) on the Recommend screen for a researched ticker', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await waitFor(() => expect(screen.getByText('종목 검색')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: /이 조건으로 추천 보기/ }))
+    await waitFor(() => expect(screen.getByText('추천 결과')).toBeInTheDocument())
+
+    const axonResearch = REAL_RESEARCH.items.find((i) => i.ticker === 'AXON')
+    expect(axonResearch).toBeDefined()
+
+    const axonCard = screen.getByText('AXON').closest('.border')
+    expect(within(axonCard).getByText('AI 리서치')).toBeInTheDocument()
+
+    await user.click(within(axonCard).getByRole('button', { name: /펼치기/ }))
+
+    // real fetched source titles/links should render, not fixture placeholders
+    expect(within(axonCard).getByRole('link', { name: /Axon Enterprise \(AXON\) Institutional Ownership 2026/ })).toHaveAttribute(
+      'href',
+      expect.stringContaining('marketbeat.com')
+    )
+    // basedOnDataOf (2026-07-08) matches the loaded dataset's generatedAt, so no stale warning
+    expect(within(axonCard).queryByText(/이전 데이터 기준/)).not.toBeInTheDocument()
   })
 })
