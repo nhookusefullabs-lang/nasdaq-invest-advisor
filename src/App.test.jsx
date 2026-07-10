@@ -213,7 +213,9 @@ describe('App - real research.json integration (v6 smoke test)', () => {
     const axonCard = screen.getByText('AXON').closest('.border')
     expect(within(axonCard).getByText('AI 리서치')).toBeInTheDocument()
 
-    await user.click(within(axonCard).getByRole('button', { name: /펼치기/ }))
+    // scope to the "AI 리서치" section's own expand button — AXON also carries a risk-flag
+    // badge (US-12) with its own "펼치기" button, so a bare /펼치기/ match is now ambiguous
+    await user.click(within(axonCard).getByRole('button', { name: /AI 리서치/ }))
 
     // real fetched source titles/links should render, not fixture placeholders — read the
     // expected title/url straight from the loaded research.json rather than hardcoding it,

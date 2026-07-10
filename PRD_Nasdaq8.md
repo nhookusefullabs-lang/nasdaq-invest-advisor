@@ -234,11 +234,11 @@
 
 ## 10. 성공 기준
 
-- [~] 2년치 nasdaq100.json + fundamentals.json이 주 1회 단일 스크립트 실행으로 생성되고 스키마 검증을 통과한다
-      — 코드(collect_data.py PERIOD="2y" + fetch_fundamentals/collect_fundamentals + 원자적 쓰기,
-      validate-fundamentals.mjs/fundamentalsSchema.js)는 US-1/US-2에서 완료됐지만 **실제 실행은
-      Ralph 루프 절대 원칙상 수행하지 않음** — public/data/nasdaq100.json은 여전히 v7 시절 13개월
-      데이터. 운영자가 별도 python 세션에서 `python scripts/collect_data.py` 1회 실행해야 완전히 충족.
+- [x] 2년치 nasdaq100.json + fundamentals.json이 주 1회 단일 스크립트 실행으로 생성되고 스키마 검증을 통과한다
+      — 2026-07-10 운영자 세션에서 `python scripts/collect_data.py` 1회 실행으로 실제 검증 완료:
+      nasdaq100.json 100/100 티커·502거래일(2년치, 8.07MB), fundamentals.json 99/100 티커
+      (CCEP만 분기 재무표 없음으로 제외) 동시 생성. 미너비니 파이프라인이 처음으로 실데이터
+      기준 hasFullYearData(≥252일)를 충족해 strict 레벨(완화 없이 8/8)로 12개 종목 통과 확인.
 - [x] 미너비니 모드가 트렌드 템플릿 8조건과 VCP 근사 스코어로 동작하고, 7/8 완화 폴백과 빈 결과 배너("현금 보유 원칙" 안내 포함)가 작동한다
       — minervini.js(US-4/US-5) + Recommend.jsx MinerviniModeView(US-10), 테스트로 검증됨.
 - [x] 통합 뷰가 ★★/★ 등급과 백분위 평균 순위로 정렬되고, 카드에 양 모드 점수가 함께 표시된다

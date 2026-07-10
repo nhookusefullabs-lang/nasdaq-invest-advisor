@@ -4,76 +4,94 @@
       "ticker": "AXON",
       "name": "Axon Enterprise, Inc.",
       "sector": "Industrials",
-      "score": 71.3,
-      "reasons": "RSI 65, 매수 신호 미충족 (고득점 특별 편입), 주도 섹터 소속",
-      "signalPassed": false,
-      "relaxationApplied": false
+      "score": 60.4,
+      "reasons": "RSI 61, MACD 골든크로스 (10거래일 이내, 완화 적용), 주도 섹터 소속",
+      "signalPassed": true,
+      "relaxationApplied": true
+    },
+    {
+      "ticker": "META",
+      "name": "Meta Platforms, Inc.",
+      "sector": "Communication Services",
+      "score": 60,
+      "reasons": "RSI 68, MACD 골든크로스 (10거래일 이내, 완화 적용)",
+      "signalPassed": true,
+      "relaxationApplied": true
     },
     {
       "ticker": "WDAY",
       "name": "Workday, Inc.",
       "sector": "Technology",
-      "score": 44.4,
-      "reasons": "RSI 58, MACD 골든크로스 (5거래일 이내), 주도 섹터 소속",
+      "score": 49.5,
+      "reasons": "RSI 59, MACD 골든크로스 (10거래일 이내, 완화 적용), 주도 섹터 소속",
       "signalPassed": true,
-      "relaxationApplied": false
+      "relaxationApplied": true
+    },
+    {
+      "ticker": "DDOG",
+      "name": "Datadog, Inc.",
+      "sector": "Technology",
+      "score": 44.3,
+      "reasons": "RSI 65, MACD 골든크로스 (10거래일 이내, 완화 적용), 주도 섹터 소속",
+      "signalPassed": true,
+      "relaxationApplied": true
+    },
+    {
+      "ticker": "PANW",
+      "name": "Palo Alto Networks, Inc.",
+      "sector": "Technology",
+      "score": 43.6,
+      "reasons": "RSI 63, MACD 골든크로스 (10거래일 이내, 완화 적용), 주도 섹터 소속",
+      "signalPassed": true,
+      "relaxationApplied": true
+    },
+    {
+      "ticker": "CRWD",
+      "name": "CrowdStrike Holdings, Inc.",
+      "sector": "Technology",
+      "score": 43.5,
+      "reasons": "RSI 66, MACD 골든크로스 (10거래일 이내, 완화 적용), 주도 섹터 소속",
+      "signalPassed": true,
+      "relaxationApplied": true
+    },
+    {
+      "ticker": "CDW",
+      "name": "CDW Corporation",
+      "sector": "Technology",
+      "score": 40.4,
+      "reasons": "RSI 63, MACD 골든크로스 (10거래일 이내, 완화 적용), 주도 섹터 소속",
+      "signalPassed": true,
+      "relaxationApplied": true
+    },
+    {
+      "ticker": "ZS",
+      "name": "Zscaler, Inc.",
+      "sector": "Technology",
+      "score": 39,
+      "reasons": "RSI 55, MACD 골든크로스 (10거래일 이내, 완화 적용), 주도 섹터 소속",
+      "signalPassed": true,
+      "relaxationApplied": true
     },
     {
       "ticker": "FTNT",
       "name": "Fortinet, Inc.",
       "sector": "Technology",
-      "score": 43.5,
-      "reasons": "RSI 68, MACD 골든크로스 (5거래일 이내), 주도 섹터 소속",
+      "score": 36.6,
+      "reasons": "RSI 66, MACD 골든크로스 (10거래일 이내, 완화 적용), 주도 섹터 소속",
       "signalPassed": true,
-      "relaxationApplied": false
+      "relaxationApplied": true
     },
     {
-      "ticker": "MDB",
-      "name": "MongoDB, Inc.",
-      "sector": "Technology",
-      "score": 37.1,
-      "reasons": "RSI 59, MACD 골든크로스 (5거래일 이내), 주도 섹터 소속",
-      "signalPassed": true,
-      "relaxationApplied": false
-    },
-    {
-      "ticker": "AAPL",
-      "name": "Apple Inc.",
-      "sector": "Technology",
-      "score": 36,
-      "reasons": "RSI 64, MACD 골든크로스 (5거래일 이내), 주도 섹터 소속",
-      "signalPassed": true,
-      "relaxationApplied": false
-    },
-    {
-      "ticker": "PAYX",
-      "name": "Paychex, Inc.",
+      "ticker": "ADP",
+      "name": "Automatic Data Processing, Inc.",
       "sector": "Industrials",
-      "score": 31.2,
-      "reasons": "RSI 63, MACD 골든크로스 (5거래일 이내), 주도 섹터 소속",
+      "score": 34.8,
+      "reasons": "RSI 65, MACD 골든크로스 (10거래일 이내, 완화 적용), 주도 섹터 소속",
       "signalPassed": true,
-      "relaxationApplied": false
-    },
-    {
-      "ticker": "CTAS",
-      "name": "Cintas Corporation",
-      "sector": "Industrials",
-      "score": 16.9,
-      "reasons": "RSI 54, MACD 골든크로스 (5거래일 이내), 주도 섹터 소속",
-      "signalPassed": true,
-      "relaxationApplied": false
-    },
-    {
-      "ticker": "DXCM",
-      "name": "DexCom, Inc.",
-      "sector": "Health Care",
-      "score": 7.5,
-      "reasons": "RSI 56, MACD 골든크로스 (5거래일 이내)",
-      "signalPassed": true,
-      "relaxationApplied": false
+      "relaxationApplied": true
     }
   ],
-  "relaxationApplied": false,
+  "relaxationApplied": true,
   "insufficientSignal": false,
-  "level": "strict"
+  "level": "relaxed10d"
 }

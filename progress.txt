@@ -706,3 +706,48 @@
 - **PRD_Nasdaq8.md v8 — US-1~US-13 전부 완료.** 코드 레벨 성공 기준 7항목 중 6항목 완전
   충족, 1항목(실데이터 수집 실행)은 운영자 액션 대기 — 이는 v7 마감 시점과 동일한 종류의
   잔여 작업(v7도 "12개월 재수집은 운영자 수동 작업"으로 마감했음).
+
+## Iteration 14 (운영자 세션, 루프 종료 후) — 2년 실데이터 재수집 + 회귀 재확인 + research.json 재생성
+- 위 "운영자 액션 필요" 1~4번을 실제로 수행(python 3.13.14 + yfinance 1.5.1 + pandas 3.0.3
+  로컬 사용 가능 확인 후 진행). 13개 v8 코드 커밋은 이 이터레이션 전에 이미 push됨.
+- 1) `python scripts/collect_data.py` 실행: nasdaq100.json 100/100 티커 성공(0 실패),
+  502거래일/티커(2년치), 파일 크기 8.07MB(10MB 경고 미발생). fundamentals.json 99/100
+  티커 성공, CCEP만 "분기 재무표 없음"으로 excluded 처리. generatedAt: 2026-07-10.
+- 2) 회귀 재확인(`npm run test`): 실행 직후 345개 중 2개 실패 — 둘 다 v7 12개월 재수집
+  때와 동일한 "실데이터가 정당하게 바뀌어서 생기는 예상된 실패" 패턴:
+  - `recommend.test.js`의 US-8 회귀 기준 스냅샷(`recommend-default-baseline.json`)이
+    구 13개월 데이터 기준이라 새 2년 데이터의 실제 추천 결과와 달라짐 — node 스크립트로
+    `recommend(buildDataset(new nasdaq100.json).tickers)`를 재실행해 픽스처 재생성(코드
+    변경 없음, 데이터만 최신화).
+  - `App.test.jsx`의 real-research.json 통합 테스트가 `within(axonCard).getByRole('button',
+    {name:/펼치기/})`로 버튼을 찾았는데, 새 research.json(v2, riskFlags 포함)에서 AXON에
+    리스크 플래그가 2건 생겨 US-12의 배지도 자체 "펼치기" 버튼을 갖게 되면서 쿼리가
+    모호(ambiguous)해짐 — "AI 리서치" 섹션 버튼임을 명확히 하도록
+    `{name:/AI 리서치/}`로 좁혀 수정(동작 자체는 무수정, 쿼리만 정교화).
+  재수정 후 345개 전체 통과. `npm run build` 통과(215.19kB, README/PRD만 바뀐 이전
+  빌드와 동일 — 데이터 파일은 번들에 안 들어감).
+- 실데이터 기준 미너비니 파이프라인 최초 정상 동작 확인(node 스크립트로 직접 실행):
+  level='strict'(완화 없이 8/8 조건 통과), 12개 종목 통과, insufficientSignal=false,
+  excludedForInsufficientData=0(전 종목 502일≥252일 충족). 상위 3종목: FTNT 81.2 /
+  MU 73.3 / AMD 64.9. 컨센서스 뷰에서 ★★(양쪽 모드 통과) 1종목 확인. v7 US-1의
+  "251 vs 252일 오프바이원" 같은 실데이터 특유 버그는 이번엔 발견되지 않음(2년 수집이라
+  버퍼가 충분해 경계값 문제가 발생하지 않은 것으로 추정).
+- 3) `/research` 세션 실행: 재수집으로 추천 풀이 8종목(AXON/WDAY/FTNT/MDB/AAPL/PAYX/
+  CTAS/DXCM)에서 10종목(AXON/META/WDAY/DDOG/PANW/CRWD/CDW/ZS/FTNT/ADP)으로 전면
+  교체됨(완화 레벨 relaxed10d). 사용자가 추가로 MNST/CSX/SBUX 3종목 리서치를 요청 —
+  `select-pool.mjs MNST CSX SBUX`로 나스닥100 소속·dataSufficient 여부 사전 검증 후 승인,
+  세션 리서치 대상 총 13종목(15종목 상한 이내). 종목별 general-purpose 서브에이전트를
+  병렬 실행(계층 A: EDGAR/Dataroma/Macrotrends/TipRanks/Zacks/Motley Fool/뉴스, 3-5회
+  검색 상한, 매수/매도 권유 표현 금지, 사실 기반 소스 근거 필수)해 리서치를 수집하고
+  `atomicWriteResearch`로 스키마 v2(riskFlags 포함) 검증 후 원자적 저장. 10개 추천 풀
+  종목은 origin:'recommended'+signalPassed:true, MNST/CSX/SBUX는 origin:'userRequested'.
+  리스크 플래그 발견 종목: AXON(소송+기타), META(실적임박+소송+규제), DDOG(기타),
+  PANW(기타), CRWD(소송+규제), ZS(가이던스컷+기타), FTNT(실적임박), ADP(실적임박),
+  MNST(실적임박), CSX(실적임박+규제), SBUX(실적임박+소송) — WDAY/CDW는 플래그 없음(✓).
+  basedOnDataOf를 새 generatedAt(2026-07-10)과 동일하게 맞춰 staleness 경고 없음.
+- 최종 상태: `npm run test`(345개 전체 통과) + `npm run build`(통과) 재확인 완료.
+  변경 파일: public/data/nasdaq100.json, public/data/fundamentals.json,
+  public/data/research.json, src/lib/__fixtures__/recommend-default-baseline.json,
+  src/App.test.jsx(쿼리 정교화 1건), PRD_Nasdaq8.md(§10 항목1 [~]→[x]).
+- 운영자 액션 필요: 이 이터레이션 결과물(실데이터 3종 JSON + 회귀 수정 2건 + PRD 갱신)의
+  커밋·푸시 여부는 사용자 확인 후 진행.

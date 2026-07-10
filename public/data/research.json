@@ -1,661 +1,774 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "researchedAt": "2026-07-10",
-  "basedOnDataOf": "2026-07-09",
+  "basedOnDataOf": "2026-07-10",
   "items": [
     {
       "ticker": "AXON",
-      "sentiment": "neutral",
-      "summary": "AXON 주가는 2026년 초 고점(2025년 8월 기록) 대비 약 30~50% 하락했으며, 이는 AI 디스럽션 우려에 따른 소프트웨어/SaaS 섹터 전반의 조정과 함께 자사 밸류에이션(P/E 100배 안팎, P/S 11~15배 수준)에 대한 시장의 경계감이 맞물린 결과로 보도되었다. 다만 2026년 1분기 매출 성장률은 34%, 연간 매출 가이던스는 30~32%로 상향되었고 AI 제품군(Draft One, Axon Assistant 등) 매출은 전년 대비 700% 이상 증가한 것으로 나타나 펀더멘털과 주가 흐름 간 괴리가 존재한다는 분석도 있다. Needham은 2026년 7월 목표주가를 600달러에서 750달러로 상향(매수 유지)했다.",
+      "sentiment": "positive",
+      "summary": "Axon Enterprise는 2026년 1분기(3월 31일 마감) 매출이 전년 동기 대비 약 34% 성장했으며, AI 및 카운터드론(Dedrone) 사업 호조로 2026 회계연도 매출 성장률 가이던스를 기존 27~32%에서 30~32%로 상향 조정했다. 부채비율(D/E, 2026년 1분기 기준)은 0.53배로 비교적 낮은 편이나, PE 비율은 약 353배(2026년 5월 27일 기준, Macrotrends)로 시장에서 매우 높은 밸류에이션을 부여받고 있다. 커버리지 애널리스트 다수가 매수 의견을 유지하고 있다.",
       "catalysts": [
-        "LAPD와의 계약 확대(연간 지출 2,200만 달러 규모로 2배 이상 증가)",
-        "ICE의 테이저 관련 2.2억 달러 규모 조달 검토 및 FIFA 월드컵 관련 보안 수요에 따른 Dedrone 대드론 제품 매출 급증(전년비 300%+)",
-        "AI 제품군(Draft One, Axon Assistant, Axon Vision) 매출 급성장(전년비 700%+) 및 기존 고객 지출 확대(순매출유지율 125%)"
+        "2026 회계연도 매출 성장 가이던스 상향(27~30%→30~32%)",
+        "AI 및 카운터드론(Dedrone) 사업 부문 예약(bookings) 급증",
+        "해외 매출 2배 이상 성장(2026년 1분기 기준)"
       ],
       "risks": [
-        "고밸류에이션 부담(P/E 약 100~150배, P/S 11~15배로 항공우주·방위 업종 평균 대비 높음)으로 실적 미스에 대한 민감도 상승",
-        "관세 영향 및 Dedrone 하드웨어 비중 확대로 매출총이익률이 전년비 약 150bp 하락",
-        "2026년 2월 이후 CEO·CFO의 자사주 매도(61건) 등 내부자 매도 증가가 투자심리에 부담"
+        "PE 비율 약 353배로 시장 평균 대비 현저히 높은 밸류에이션 부담(고평가 시 주가 변동성 확대 가능)",
+        "정부 고객의 재정 압박이 다년 계약 체결 속도를 제약할 가능성이 일부 자료에서 언급됨",
+        "AI 기반 공공안전 소프트웨어 시장에서 경쟁 심화"
       ],
-      "institutionalActivity": "2026년 1분기 기준(가장 최근 13F 공시 시점) Vanguard, BlackRock, State Street, Fmr(Fidelity), Geode Capital 등 대형 기관이 상위 보유자로 확인되며 약 1,196개 기관이 총 6,574만 주를 신고 보유 중인 것으로 집계되나, 개별 슈퍼인베스터(Dataroma) 단위의 신규 매수/매도 방향성은 이번 검색에서 별도로 확인되지 않음.",
-      "analystView": "2026년 7월 8일 기준 TipRanks·Zacks 집계상 15~20명 애널리스트의 컨센서스는 강력 매수(TipRanks 8.8/10, Zacks ABR 1.43)이며 평균 목표주가는 TipRanks 약 670달러(고가 825달러, 저가 440달러), Zacks 약 647달러 수준으로 당시 주가 대비 상당한 괴리가 존재했다.",
+      "institutionalActivity": "최근 13F 공시 집계(2026년 1분기, 3월 31일 마감분 기준으로 추정) 상 기관투자자가 발행주식의 약 79%를 보유 중이며, Vanguard Group, BlackRock, State Street, FMR(Fidelity), Geode Capital Management 등이 주요 보유자로 나타났다(HedgeFollow, Fintel 집계).",
+      "analystView": "2026년 7월 8~9일 검색 시점 기준, 커버리지 애널리스트 약 20명 중 컨센서스는 \"Strong Buy\"(Strong Buy 15명, Moderate Buy 4명, Hold 1명)이며, 평균 목표주가는 자료에 따라 약 670~713달러로 다소 차이가 있다. 검색 시점 스냅샷으로 이후 변동될 수 있다.",
+      "origin": "recommended",
+      "signalPassed": true,
       "sources": [
         {
-          "title": "Axon Enterprise (AXON) 13F: $18.05M institutional holdings reported",
-          "url": "https://www.stocktitan.net/sec-filings/AXON/13f-hr-axon-enterprise-inc-sec-filing-e8b5c67930e9.html",
-          "date": "2026-05-15",
-          "operatorProvided": false
+          "title": "Axon Enterprise Stock Forecast: Analyst Ratings, Predictions & Price Target 2026",
+          "url": "https://public.com/stocks/axon/forecast-price-target",
+          "date": "2026-07-10"
         },
         {
-          "title": "AXON - Axon Enterprise Institutional Ownership, Shareholders (Fintel)",
+          "title": "Axon Enterprise (AXON) Stock Forecast and Price Target 2026 - MarketBeat",
+          "url": "https://www.marketbeat.com/stocks/NASDAQ/AXON/forecast/",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Axon Enterprise, Inc. (AXON) Analyst Ratings, Estimates & Forecasts - Yahoo Finance",
+          "url": "https://finance.yahoo.com/quote/AXON/analysis/",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Axon Enterprise PE Ratio 2012-2026 - Macrotrends",
+          "url": "https://www.macrotrends.net/stocks/charts/AXON/axon-enterprise/pe-ratio",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Axon Enterprise Debt to Equity Ratio 2012-2026 - Macrotrends",
+          "url": "https://www.macrotrends.net/stocks/charts/AXON/axon-enterprise/debt-equity-ratio",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Axon Enterprise Revenue 2012-2026 - Macrotrends",
+          "url": "https://www.macrotrends.net/stocks/charts/AXON/axon-enterprise/revenue",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "AXON - Institutional Ownership & Shareholders - Fintel",
           "url": "https://fintel.io/so/us/axon",
-          "date": "2026-07-10",
-          "operatorProvided": false
+          "date": "2026-07-10"
         },
         {
-          "title": "Axon Enterprise, Inc. (AXON) Stock Forecast, Price Targets - TipRanks",
-          "url": "https://www.tipranks.com/stocks/axon/forecast",
-          "date": "2026-07-10",
-          "operatorProvided": false
+          "title": "AXON 13F Hedge Fund & Institutional Ownership - HedgeFollow",
+          "url": "https://hedgefollow.com/stocks/AXON",
+          "date": "2026-07-10"
         },
         {
-          "title": "What is the current Price Target and Forecast for Axon Enterprise (AXON) - Zacks",
-          "url": "https://www.zacks.com/stock/research/AXON/price-target-stock-forecast",
-          "date": "2026-07-08",
-          "operatorProvided": false
-        },
-        {
-          "title": "Why Axon Enterprise Stock Popped Today - The Motley Fool",
-          "url": "https://www.fool.com/investing/2026/06/29/why-axon-enterprise-stock-popped-today/",
-          "date": "2026-06-29",
-          "operatorProvided": false
-        },
-        {
-          "title": "Down 41%, Is this Artificial Intelligence (AI) Stock a Screaming Buy? - The Motley Fool",
-          "url": "https://www.fool.com/investing/2026/07/01/down-41-is-this-artificial-intelligence-ai-stock-a/",
-          "date": "2026-07-01",
-          "operatorProvided": false
-        },
-        {
-          "title": "Axon Enterprise stock (US05464C1018): Sharp 4.3% decline amid valuation concerns",
-          "url": "https://www.ad-hoc-news.de/boerse/news/ueberblick/axon-enterprise-stock-us05464c1018-sharp-4-3-percent-decline-amid/69336962",
-          "date": "2026-05-13",
-          "operatorProvided": false
+          "title": "Nathan Cummings Foundation v. Axon Enterprise, Inc. - Harvard Law School Forum on Corporate Governance",
+          "url": "https://corpgov.law.harvard.edu/2026/03/06/nathan-cummings-foundation-v-axon-enterprise-inc/",
+          "date": "2026-07-10"
         }
       ],
-      "signalPassed": false,
-      "origin": "recommended"
+      "riskFlags": [
+        {
+          "type": "litigation",
+          "description": "2026년 2월 17일 Nathan Cummings Foundation이 Axon Enterprise를 상대로 주주제안(정치자금 지출 투명성 관련 안건) 배제 시도에 대해 소송을 제기함(Harvard Law School Forum on Corporate Governance, ICCR 보도). 이후 경과는 확인되지 않음."
+        },
+        {
+          "type": "other",
+          "description": "일부 자료에서 정부 고객의 재정 압박이 다년 계약 체결 속도에 영향을 줄 수 있다는 우려가 언급되었으나, 구체적 수치 근거나 공식 가이던스 인용은 확인되지 않음."
+        }
+      ]
+    },
+    {
+      "ticker": "META",
+      "sentiment": "positive",
+      "summary": "Meta Platforms의 2026년 1분기 매출은 전년 대비 33% 증가한 563억 달러를 기록했으며, 순이익률은 32.84%로 높은 수익성을 유지하고 있고 PE 비율은 약 20.0배 수준이다. 회사는 AI 인프라 확장을 위해 2026년 설비투자 가이던스를 1,250억~1,450억 달러로 상향 조정했다.",
+      "catalysts": [
+        "2026년 1분기 매출 33% 성장 및 2분기 매출 가이던스 580억~610억 달러",
+        "AI 인프라 투자 확대를 위한 2026년 설비투자 가이던스 상향(1,250억~1,450억 달러)",
+        "2025년 말 워싱턴 D.C. 연방법원 반독점 소송에서 Meta가 개인 소셜네트워킹 시장 내 독점적 지위를 갖지 않는다는 판결"
+      ],
+      "risks": [
+        "미국·EU에서 지속되는 반독점 및 규제 압박, 특히 청소년 보호 관련 감독 강화",
+        "대규모 설비투자 확대로 인한 자본지출 부담 증가",
+        "애널리스트 목표주가 편차가 커(저점 505~622달러, 고점 900~1,015달러) 밸류에이션 불확실성 존재"
+      ],
+      "institutionalActivity": "Dataroma 슈퍼인베스터 13F 집계 기준(정확한 보고 분기는 명시되지 않았으나 2026년 1분기 데이터로 추정), 약 30개 슈퍼인베스터가 META를 보유 중이다. Rob Vinall(RV Capital)이 비중 확대, ValueAct Capital과 Appaloosa Management(David Tepper)는 비중을 크게 축소했다.",
+      "analystView": "TipRanks 기준(접근일 2026-07-10) 40명 애널리스트 평균 목표주가는 817.15달러(Strong Buy, 매수 35·보유 5·매도 0)이다. Zacks 기준으로는 53~54명 애널리스트 평균 목표주가 738.08달러로 역시 낙관적 견해가 우세했다.",
+      "origin": "recommended",
+      "signalPassed": true,
+      "sources": [
+        {
+          "title": "Meta Platforms Stock: Q1 2026 Revenue Rises 33% to $56.3 Billion",
+          "url": "https://www.ad-hoc-news.de/boerse/news/ueberblick/meta-platforms-stock-us30303m1027-q1-2026-revenue-rises-33-percent-to/69281719",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Meta's Legal and Reputational Risks in 2026",
+          "url": "https://www.ainvest.com/news/meta-legal-reputational-risks-2026-looming-storm-shareholder-platform-growth-2601/",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Meta Platforms, Inc. (META) Stock Forecast - TipRanks",
+          "url": "https://www.tipranks.com/stocks/meta/forecast",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Meta Platforms (META) Price Target and Stock Forecast - Zacks",
+          "url": "https://www.zacks.com/stock/research/META/price-target-stock-forecast",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Meta Platforms PE Ratio 2012-2026 - MacroTrends",
+          "url": "https://www.macrotrends.net/stocks/charts/META/meta-platforms/pe-ratio",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "DATAROMA Superinvestor Ownership - META",
+          "url": "https://www.dataroma.com/m/stock.php?sym=META",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Meta Platforms, Inc. (META) Earnings Dates - TipRanks",
+          "url": "https://www.tipranks.com/stocks/meta/earnings",
+          "date": "2026-07-10"
+        }
+      ],
+      "riskFlags": [
+        {
+          "type": "earnings_imminent",
+          "description": "2026년 2분기 실적발표가 2026년 7월 29일 장 마감 후로 예정되어 있음(조회일 기준 약 19일 후)."
+        },
+        {
+          "type": "litigation",
+          "description": "청소년 보호 등과 관련해 2026년 중 다수의 소송이 예정되어 있으며, 회사는 이것이 중대한 손실로 이어질 가능성이 있다고 공시함."
+        },
+        {
+          "type": "regulatory",
+          "description": "미국 및 EU에서 반독점·데이터/청소년 보호 관련 규제 감독이 지속 중(2025년 말 워싱턴 D.C. 연방법원은 소셜네트워킹 시장 내 독점력 부재로 판결)."
+        }
+      ]
     },
     {
       "ticker": "WDAY",
-      "sentiment": "positive",
-      "summary": "Workday 주가는 2026년 들어 AI 파괴 우려에 따른 SaaS/기업용 소프트웨어 섹터 전반의 매도세로 연초 대비 큰 폭 하락한 상태였으나, 2026년 7월 초 반도체주에서 저평가된 소프트웨어주로의 자금 순환(sector rotation)이 발생하며 반등했다(7월 7일 약 4% 상승). 5월 하순 발표된 2027 회계연도 1분기 실적에서 매출·조정 EPS가 시장 예상치를 상회했고, 에이전틱 AI 제품의 신규 연간계약가치(AAV)가 전년 대비 약 200% 증가했다고 보고되었다.",
+      "sentiment": "neutral",
+      "summary": "Workday는 2026년 5월 21일 발표한 FY2027 1분기 실적에서 EPS 2.66달러로 컨센서스(2.25달러)를 상회했으며, Zacks Rank #2(매수)를 받고 있다. 다만 FY2027 구독매출 성장률 가이던스는 12~13%로 전년 대비 둔화되는 추세이며, 설비투자(CAPEX)가 66% 증가하는 등 비용 부담이 커지고 있다. 기관투자자(13F) 동향은 엇갈려, 일부 펀드는 매수를 늘렸지만 대형 펀드 중 하나는 전량 매도했다.",
       "catalysts": [
-        "반도체주 대비 저평가된 소프트웨어주로의 업종 순환매(2026년 7월 초)",
-        "에이전틱 AI 제품 채택 가속(신규 AAV 전년比 약 200% 성장, 2027 회계연도 1분기 실적 기준)",
-        "Guggenheim 등 일부 애널리스트의 SaaS 동종업체(Salesforce, ServiceNow) 투자의견 상향에 따른 섹터 재평가 기대"
+        "FY2027 1분기 EPS 시장 예상치 상회(2.66달러 vs 2.25달러 예상)",
+        "공동창업자 Aneel Bhusri가 Carl Eschenbach를 대신해 CEO로 복귀하는 경영진 교체 발표",
+        "Sana AI 에이전트 기능이 고객 대상으로 출시됨"
       ],
       "risks": [
-        "AI 에이전트 확산에 따른 HR/ERP 소프트웨어 시장 파괴 우려가 연중 주가 하락의 주된 배경으로 작용",
-        "매출 성장률 둔화(약 13.3%로 전년 약 15.0%에서 하락, Macrotrends 기준)",
-        "52주 최고가(약 247.69달러, 2025년 9월) 대비 여전히 큰 폭 하회하며 밸류에이션 재평가 불확실성 존재"
+        "HCM(인적자본관리) 소프트웨어의 인당 과금 모델이 AI로 인한 구조적 disruption 위험에 노출되어 있다는 분석 존재",
+        "FY2027 가이던스상 매출 성장률이 전년 대비 둔화되는 추세(구독매출 성장률 12~13%)",
+        "최근 분기 13F 데이터에서 Tiger Global Management(Chase Coleman)가 보유 지분 100% 전량 매도"
       ],
-      "institutionalActivity": "2026년 1분기(3월 31일 기준, 5월 15일 마감 13F) 기준 Workday는 약 1,104개 기관투자자가 13D/G 또는 13F를 통해 총 약 1억 9,267만 주를 보유하고 있으며, Vanguard, BlackRock, State Street, Eagle Capital Management, Geode Capital 등이 주요 보유자로 확인됨.",
-      "analystView": "2026년 7월 10일 수집 시점 기준 애널리스트 컨센서스는 대체로 \"매수(Buy/Moderate Buy)\" 등급이며, 목표주가는 출처별로 약 171~203달러 범위로 편차가 있었고(TipRanks·Yahoo Finance 스냅샷 상이), Zacks Rank 구체 수치는 검색 결과에서 확인되지 않음.",
+      "institutionalActivity": "Dataroma 기준 2026년 1분기(3월 31일 기준) 13F 데이터에서 Century Management와 First Eagle Investment Management가 지분을 크게 확대한 반면, Tiger Global Management(Chase Coleman)는 지분을 100% 전량 매도(약 100만 주)해 기관 간 시각이 엇갈렸다.",
+      "analystView": "2026년 7월 10일 검색 시점 기준, TipRanks는 매수 17건·보유 16건·매도 0건, 12개월 평균 목표주가 171.30달러로 집계했다. Zacks는 31명 애널리스트 평균 목표주가를 296.32달러(범위 238~350달러), Zacks Rank #2(매수)로 평가했다 — 두 소스 간 산정 기준 차이가 크므로 참고용.",
+      "origin": "recommended",
+      "signalPassed": true,
       "sources": [
         {
-          "title": "WDAY Institutional Ownership (secform4)",
-          "url": "https://www.secform4.com/institution-holders/1327811.html",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "WDAY 13F Hedge Fund & Institutional Ownership (HedgeFollow)",
-          "url": "https://hedgefollow.com/stocks/WDAY",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "Workday Institutional Ownership (Fintel)",
-          "url": "https://fintel.io/so/us/wday",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "Workday (WDAY) Stock Forecast, Price Targets and Analysts Predictions (TipRanks)",
+          "title": "TipRanks - Workday (WDAY) Stock Forecast, Price Targets and Analysts Predictions",
           "url": "https://www.tipranks.com/stocks/wday/forecast",
-          "date": "2026-07-10",
-          "operatorProvided": false
+          "date": "2026-07-10"
         },
         {
-          "title": "Wall Street Analysts Think Workday (WDAY) Is a Good Investment: Is It? (Yahoo Finance)",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/wall-street-analysts-think-workday-133003246.html",
-          "date": "2026-05-31",
-          "operatorProvided": false
+          "title": "Zacks - What is the current Price Target and Forecast for Workday (WDAY)",
+          "url": "https://www.zacks.com/stock/research/WDAY/price-target-stock-forecast",
+          "date": "2026-07-10"
         },
         {
-          "title": "Workday and Twilio Shares Are Soaring, What You Need To Know (StockStory)",
-          "url": "https://stockstory.org/us/stocks/nasdaq/wday/news/why-up-down/workday-and-twilio-shares-are-soaring-what-you-need-to-know",
-          "date": "2026-07-07",
-          "operatorProvided": false
+          "title": "Dataroma - Superinvestor Portfolio Activity for WDAY",
+          "url": "https://www.dataroma.com/m/activity.php?sym=WDAY&typ=a",
+          "date": "2026-07-10"
         },
         {
-          "title": "Workday PE Ratio 2012-2026 (Macrotrends)",
-          "url": "https://www.macrotrends.net/stocks/charts/WDAY/workday/pe-ratio",
-          "date": "2026-07-10",
-          "operatorProvided": false
+          "title": "CNBC - Workday (WDAY) Q1 earnings report 2027",
+          "url": "https://www.cnbc.com/2026/05/21/workday-wday-q1-earnings-report-2027.html",
+          "date": "2026-07-10"
         },
         {
-          "title": "Workday Operating Margin 2012-2025 (Macrotrends)",
-          "url": "https://www.macrotrends.net/stocks/charts/WDAY/workday/operating-margin",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "Did the Rise in This Beaten-Down SaaS Stock Just Signal the Bottom? (The Motley Fool)",
-          "url": "https://www.fool.com/investing/2026/05/26/did-rise-beaten-down-saas-stock-workday/",
-          "date": "2026-05-26",
-          "operatorProvided": false
-        },
-        {
-          "title": "Why Workday Stock Is Soaring Today (The Motley Fool)",
-          "url": "https://www.fool.com/investing/2026/05/22/why-workday-stock-is-soaring-today/",
-          "date": "2026-05-22",
-          "operatorProvided": false
-        },
-        {
-          "title": "Workday (WDAY) Q4 2026 Earnings Transcript (The Motley Fool)",
-          "url": "https://www.fool.com/earnings/call-transcripts/2026/05/21/workday-wday-q4-2026-earnings-transcript/",
-          "date": "2026-05-21",
-          "operatorProvided": false
+          "title": "Seeking Alpha - Workday: Caught In The Middle Of The Software Reinvention",
+          "url": "https://seekingalpha.com/article/4900156-workday-caught-in-the-middle-of-the-software-reinvention",
+          "date": "2026-07-10"
         }
       ],
+      "riskFlags": []
+    },
+    {
+      "ticker": "DDOG",
+      "sentiment": "positive",
+      "summary": "데이터독(Datadog)은 2026년 1분기 매출이 전년 대비 32% 성장한 10억 600만 달러를 기록했으며, 2분기 매출 가이던스로 10.7억~10.8억 달러(전년비 29~31% 성장)를 제시했다. 애널리스트 컨센서스는 매수 우위이며 목표주가는 대체로 220~240달러 구간에 형성되어 있다.",
+      "catalysts": [
+        "2026년 1분기 매출 전년비 32% 성장 지속 및 AI 관련 관측가능성(observability) 수요 확대",
+        "Benchmark 등 일부 애널리스트가 목표주가를 260달러에서 330달러로 상향(2026-07-02)",
+        "2026년 연간 가이던스로 매출 43.0억~43.4억 달러(전년비 25~27% 성장) 제시"
+      ],
+      "risks": [
+        "Bernstein 애널리스트가 \"수요 둔화 신호\"를 이유로 투자의견을 아웃퍼폼에서 마켓퍼폼으로 하향(2026-07-06)",
+        "Dataroma 기준 슈퍼인베스터 포트폴리오 내 보유 종목 0건으로 전통적 가치투자자 그룹의 관심은 낮은 편"
+      ],
+      "institutionalActivity": "2026년 1분기 13F filings 기준 530개 기관이 지분을 늘렸고 438개 기관이 지분을 줄여 전반적으로 매수 우위였다. BlackRock, First Trust Advisors는 비중을 확대한 반면 FMR LLC(Fidelity)는 축소했다. 최대주주는 Vanguard Group이다.",
+      "analystView": "2026년 7월 초 기준 애널리스트 컨센서스는 매수 우위(약 44~45개 매수, 1~2개 매도/보유)이며, 평균 목표주가는 약 222~241달러 수준이다. 다만 2026-07-06 Bernstein의 투자의견 하향이 있어 일부 신중론도 병존한다.",
+      "origin": "recommended",
       "signalPassed": true,
-      "origin": "recommended"
+      "sources": [
+        {
+          "title": "Datadog (DDOG) Stock Forecast and Price Target 2026",
+          "url": "https://www.marketbeat.com/stocks/NASDAQ/DDOG/forecast/",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "DDOG Maintained by Benchmark -- Price Target Raised to $330",
+          "url": "https://www.gurufocus.com/news/8943111/ddog-maintained-by-benchmark-price-target-raised-to-330",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Datadog (DDOG) Receives Downgrade Amid Slowing Demand Signals",
+          "url": "https://www.gurufocus.com/news/8944944/datadog-ddog-receives-downgrade-amid-slowing-demand-signals",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "DATAROMA Superinvestor Ownership - DDOG",
+          "url": "https://www.dataroma.com/m/stock.php?sym=DDOG",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Datadog, Inc. Class A Common Stock (DDOG) Institutional Holdings | Nasdaq",
+          "url": "https://www.nasdaq.com/market-activity/stocks/ddog/institutional-holdings",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Datadog Announces First Quarter 2026 Financial Results",
+          "url": "https://investors.datadoghq.com/news-releases/news-release-details/datadog-announces-first-quarter-2026-financial-results/",
+          "date": "2026-07-10"
+        }
+      ],
+      "riskFlags": [
+        {
+          "type": "other",
+          "description": "Bernstein 애널리스트가 2026-07-06 \"수요 둔화 신호\"를 근거로 DDOG 투자의견을 아웃퍼폼에서 마켓퍼폼으로 하향 조정함(회사 발표 가이던스 자체의 하향은 아님)."
+        }
+      ]
+    },
+    {
+      "ticker": "PANW",
+      "sentiment": "positive",
+      "summary": "Palo Alto Networks는 2026 회계연도 3분기에 매출 30.2억 달러(전년 대비 +31%)를 기록했으며, CyberArk 및 Chronosphere 인수 효과로 Next-Generation Security ARR이 전년 대비 60% 증가한 81억 달러를 기록했다. 다만 7월 초 주가는 급등 이후 밸류에이션 부담과 차익 실현 매물로 단기 조정을 겪었다.",
+      "catalysts": [
+        "CyberArk·Chronosphere 인수 완료로 Next-Gen Security ARR 60% 성장",
+        "2026 회계연도 매출·EPS 가이던스 상향",
+        "Needham이 목표주가를 350달러에서 425달러로 상향(2026-07-07)"
+      ],
+      "risks": [
+        "선행 PER이 약 90배 수준까지 상승해 밸류에이션 부담이 크다는 지적",
+        "JPMorgan이 PANW를 Analyst Focus List에서 제외하고 일부 애널리스트가 Hold/Sell로 하향",
+        "연초 대비 약 80% 급등 이후 과열 신호로 차익 실현 매물 출회"
+      ],
+      "institutionalActivity": "기관 투자자가 발행주식의 약 36.7%를 보유하고 있으며, BlackRock(약 10.4%)과 Vanguard Group(약 10.0%)이 최대주주로 나타난다(정확한 13F 보고 분기는 명시되지 않아 2026년 상반기 기준 최신 집계로 추정).",
+      "analystView": "2026-07-10 기준 TipRanks 집계로 애널리스트 39명 중 컨센서스는 \"Strong Buy\"이며 평균 목표주가 329.62달러(최고 425달러, 최저 210달러)이다. S&P Global 집계(애널리스트 55명)는 평균 목표주가 315.42달러.",
+      "origin": "recommended",
+      "signalPassed": true,
+      "sources": [
+        {
+          "title": "Palo Alto Networks Revenue 2012-2026 | MacroTrends",
+          "url": "https://www.macrotrends.net/stocks/charts/PANW/palo-alto-networks/revenue",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Palo Alto Networks PE Ratio 2012-2026 | MacroTrends",
+          "url": "https://www.macrotrends.net/stocks/charts/PANW/palo-alto-networks/pe-ratio",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Palo Alto Networks (PANW) Stock Forecast, Price Targets and Analysts Predictions | TipRanks",
+          "url": "https://www.tipranks.com/stocks/panw/forecast",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Institutional Holders of Palo Alto Networks | HoldingsChannel",
+          "url": "https://www.holdingschannel.com/institutional/holders-of-palo-alto-networks/",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Palo Alto Networks (PANW) Reports Strong Earnings Amid AI Security Demand | GuruFocus",
+          "url": "https://www.gurufocus.com/news/8949241/palo-alto-networks-panw-reports-strong-earnings-amid-ai-security-demand",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Why Did Palo Alto Networks Stock Drop Today? | The Motley Fool",
+          "url": "https://www.fool.com/investing/2026/07/08/why-did-palo-alto-networks-stock-drop-today/",
+          "date": "2026-07-10"
+        }
+      ],
+      "riskFlags": [
+        {
+          "type": "other",
+          "description": "2026년 7월 초 PANW 주가가 연초 대비 약 80% 급등한 이후 밸류에이션 부담과 JPMorgan의 Analyst Focus List 제외 등으로 단기 조정(7/7~7/8 약 5% 하락)을 겪었다는 보도가 있음."
+        }
+      ]
+    },
+    {
+      "ticker": "CRWD",
+      "sentiment": "positive",
+      "summary": "CrowdStrike는 최근 분기(FY2027 Q1)에서 매출 13.9억 달러(전년 대비 +26%)와 순신규 ARR +32%를 기록하며 연간 가이던스를 상향했다. GAAP 기준 영업이익률(-3.15%)과 순이익률(-0.60%)은 여전히 마이너스이며, 2026년 7월 2일부로 4대1 주식분할이 시행되어 목표주가 수치는 소스 간 편차가 존재한다. 2024년 7월 글로벌 IT 장애와 관련된 델타항공 소송 및 당국 조사는 2026년 7월 기준 진행 중이다.",
+      "catalysts": [
+        "FY2027 1분기 매출 26% 성장 및 순신규 ARR 32% 증가로 연간 가이던스 상향 조정",
+        "2026년 7월 2일 4대1 주식분할 시행",
+        "TipRanks 기준 애널리스트 컨센서스 Strong Buy(매수 30 / 보유 7 / 매도 1)"
+      ],
+      "risks": [
+        "GAAP 기준 영업이익률(-3.15%)·순이익률(-0.60%)이 여전히 마이너스로 수익성 부담 지속",
+        "소스별 목표주가 수치가 최근 주식분할 반영 여부에 따라 최대 2배 가까이 차이 나 교차검증 필요"
+      ],
+      "institutionalActivity": "2026년 1분기(Q1) 13F 보고서 기준, 총 2,239개 기관투자자가 약 1억 8,073만 주를 보유 중이며 최대주주는 Vanguard, BlackRock, State Street 순이다. 1,152개 기관이 지분을 확대한 반면 915개 기관은 축소했다.",
+      "analystView": "2026-07-10 기준(주식분할 직후로 소스 간 수치 편차 존재) TipRanks 컨센서스는 Strong Buy(매수 30 / 보유 7 / 매도 1)이며 평균 목표주가는 718.14달러(최고 825달러, 최저 413달러)로 집계됨.",
+      "origin": "recommended",
+      "signalPassed": true,
+      "sources": [
+        {
+          "title": "CrowdStrike (CRWD) Institutional Ownership / HedgeFollow 13F & Hedge Fund Ownership",
+          "url": "https://hedgefollow.com/stocks/CRWD",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Who owns Crowdstrike Holdings? CRWD Stock Ownership - TipRanks",
+          "url": "https://www.tipranks.com/stocks/crwd/ownership",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Crowdstrike Holdings (CRWD) Stock Forecast, Price Targets and Analysts Predictions - TipRanks",
+          "url": "https://www.tipranks.com/stocks/crwd/forecast",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "CrowdStrike Revenue 2019-2026 - Macrotrends",
+          "url": "https://www.macrotrends.net/stocks/charts/CRWD/crowdstrike/revenue",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "CrowdStrike Reports First Quarter Fiscal Year 2027 Financial Results (SEC 8-K)",
+          "url": "https://www.sec.gov/Archives/edgar/data/1535527/000153552726000022/crwd-20260603xex991.htm",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Judge Lets Delta Lawsuit Over CrowdStrike Outage Proceed - GovInfoSecurity",
+          "url": "https://www.govinfosecurity.com/judge-lets-delta-lawsuit-over-crowdstrike-outage-proceed-a-28443",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "CrowdStrike defeats shareholder lawsuit over huge software outage - CNBC",
+          "url": "https://www.cnbc.com/2026/01/14/crowdstrike-defeats-shareholder-lawsuit-over-huge-software-outage.html",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "CrowdStrike Holdings, Inc. - Form 10-Q FY2026 (SEC EDGAR)",
+          "url": "https://www.sec.gov/Archives/edgar/data/0001535527/000153552726000025/crwd-20260430.htm",
+          "date": "2026-07-10"
+        }
+      ],
+      "riskFlags": [
+        {
+          "type": "litigation",
+          "description": "델타항공이 2024년 7월 글로벌 IT 장애로 손실이 발생했다며 CrowdStrike를 제소했고(2024년 10월), 2025년 5월 각하 신청 일부만 인용되어 소송이 진행 중이며 2026년 7월 기준 증거개시 절차 진행 중임."
+        },
+        {
+          "type": "regulatory",
+          "description": "미국 DOJ와 SEC가 CrowdStrike의 매출 인식 및 ARR 보고 방식과 관련해 2024년 7월 19일 장애 건에 대한 정보 요청을 진행 중임(SEC 10-Q 공시 기재 사항)."
+        }
+      ]
+    },
+    {
+      "ticker": "CDW",
+      "sentiment": "neutral",
+      "summary": "CDW Corporation은 2026년 1분기(3월 31일 마감) 매출이 전년 대비 9% 증가한 58.8억 달러를 기록했고 EPS는 2.28달러로 시장 예상(2.26달러)을 상회했다. 다만 정부 부문을 중심으로 매출총이익률이 다소 축소되었으며, 2026년 연간 가이던스는 공급망 변동성과 메모리 반도체 공급 제약을 이유로 보수적으로 유지되고 있다.",
+      "catalysts": [
+        "2026년 5월 배당 인상 발표",
+        "\"Geared for Growth\" 비용 절감 프로그램으로 2027~2028년까지 연간 1~2억 달러 절감 목표",
+        "Morgan Stanley(목표가 142→170달러), JPMorgan 등 최근 애널리스트 상향 조정"
+      ],
+      "risks": [
+        "정부 부문 등에서 매출총이익률 압박",
+        "2026년 하반기 거시경제 불확실성 및 잠재적 경기침체 리스크는 현재 가이던스에 미반영",
+        "공급망 변동성 및 메모리 반도체 공급 제약"
+      ],
+      "institutionalActivity": "WhaleWisdom/HoldingsChannel의 13F 집계에 따르면 CDW는 약 1,679개 기관 투자자가 보유 중이며 총 보유 주식 수는 약 1억 4,930만 주로, Vanguard Group, BlackRock, Morgan Stanley 등이 상위 보유 기관이다(정확한 보고 분기 미확인).",
+      "analystView": "2026년 7월 검색 시점 기준 TipRanks 집계에서 CDW는 최근 1개월 기준 매수 8건, 보유 6건, 매도 0건이며 3개월 평균 목표주가는 143.29달러이다. 최근 Morgan Stanley·JPMorgan이 Overweight로 상향 조정했다.",
+      "origin": "recommended",
+      "signalPassed": true,
+      "sources": [
+        {
+          "title": "CDW Corporation (CDW) Stock Forecast, Price Targets and Analysts Predictions - TipRanks",
+          "url": "https://www.tipranks.com/stocks/cdw/forecast",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "CDW Revenue 2012-2026 | Macrotrends",
+          "url": "https://www.macrotrends.net/stocks/charts/CDW/cdw/revenue",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "CDW Net Profit Margin 2011-2025 | Macrotrends",
+          "url": "https://www.macrotrends.net/stocks/charts/CDW/cdw/net-profit-margin",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "CDW Corp 13F Hedge Fund and Asset Management Owners - WhaleWisdom",
+          "url": "https://whalewisdom.com/stock/cdw",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "CDW Reports First Quarter 2026 Earnings - CDW Investor Relations",
+          "url": "https://investor.cdw.com/news/news-details/2026/CDW-Reports-First-Quarter-2026-Earnings/default.aspx",
+          "date": "2026-07-10"
+        }
+      ],
+      "riskFlags": []
+    },
+    {
+      "ticker": "ZS",
+      "sentiment": "neutral",
+      "summary": "Zscaler(ZS)는 2026회계연도 3분기(5월 27일 발표)에 매출 8.505억달러(전년비 +25%)로 시장 예상치를 상회했고 비GAAP 영업이익률은 사상 최고치인 23%를 기록했다. 그러나 2027회계연도 ARR/매출 성장률 가이던스를 16~17%로 제시해 시장 예상치를 하회했고, CFO는 영업 리더 2명의 퇴사를 언급하며 \"신중한\" 가이던스 기조를 밝혔다. 발표 직후 주가는 하루 만에 약 31% 폭락해 상장 이래 최대 낙폭을 기록했다.",
+      "catalysts": [
+        "2026회계연도 매출 및 ARR 성장 지속(3분기 매출 전년비 +25%, 가이던스 상회)",
+        "비GAAP 영업이익률 사상 최고치(23%) 달성",
+        "2025년 4분기 13F 기준 기관 투자자 보유 지분 증가 추세"
+      ],
+      "risks": [
+        "2027회계연도 ARR/매출 성장률 가이던스(16~17%)가 시장 예상치 하회 및 FCF 가이던스 하향",
+        "영업 리더십 공백에 따른 실행 리스크",
+        "순이익률이 여전히 마이너스(-2.25%, 2026년 4월 기준 TTM)"
+      ],
+      "institutionalActivity": "2025년 12월 31일 마감 13F 보고 분기 기준 총 828개 기관이 지분을 보유(발행주식의 50.3%)했으며, 기관 보유 주식수는 전분기 대비 508만주 증가한 8,340만주를 기록했다. 최대 기관 주주는 Vanguard Group.",
+      "analystView": "2026년 6월 22일 시점 35명 애널리스트 중 29명 매수, 7명 보유, 매도 의견 없음으로 Strong Buy 컨센서스를 유지하며 평균 목표주가는 약 193~214달러이다. 이는 5월 27일 가이던스 쇼크 이후 반영된 수치.",
+      "origin": "recommended",
+      "signalPassed": true,
+      "sources": [
+        {
+          "title": "Zscaler (ZS) Stock Forecast, Price Targets and Analysts Predictions | TipRanks",
+          "url": "https://www.tipranks.com/stocks/zs/forecast",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Zscaler, Inc. Institutional Ownership | Business Quant",
+          "url": "https://businessquant.com/stocks/zs/institutional-ownership",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Zscaler Revenue / Profit Margin / PE Ratio | Macrotrends",
+          "url": "https://www.macrotrends.net/stocks/charts/ZS/zscaler/revenue",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Zscaler tanks 31% for worst day ever on 'prudent' guidance, sales shakeup | CNBC",
+          "url": "https://www.cnbc.com/2026/05/27/zscaler-zs-earnings-q3-2026.html",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Zscaler Plummets 31% in Record Sell-off Following Sales Leadership Shakeup and Conservative Guidance | AlphaPilot",
+          "url": "https://www.alphapilot.tech/discover/zscaler-plummets-31-in-record-sell-off-following-sales-leadership-shakeup-and-conservative-guidance",
+          "date": "2026-07-10"
+        }
+      ],
+      "riskFlags": [
+        {
+          "type": "guidance_cut",
+          "description": "2026년 5월 27일 실적발표에서 2027회계연도 ARR/매출 성장률 가이던스(16~17%)가 시장 예상치를 하회했고 FCF 가이던스도 하향 조정되어 발표 직후 주가가 하루 만에 약 31% 급락함."
+        },
+        {
+          "type": "other",
+          "description": "최고매출책임자(CRO) 산하 영업 리더 2명이 퇴사하여 CFO가 \"신중한\" 가이던스 기조를 언급, 영업 조직 리더십 공백에 따른 실행 리스크가 존재함."
+        }
+      ]
     },
     {
       "ticker": "FTNT",
-      "sentiment": "neutral",
-      "summary": "FTNT 주가는 최근 6개월간 AI 데이터센터 보안 수요 확대와 SASE 플랫폼 성장에 힘입어 큰 폭으로 상승했으며(보도 기준 연초 대비 약 100% 상승), 7월 초에도 신제품 발표와 AI 인프라 수요 기대감으로 강세를 보였다(7/6 +3.91%, 7/9 +4.31%). 다만 동시에 Russell 방어주 지수 제외에 따른 기술적 매도 압력과 밸류에이션 부담에 대한 우려도 함께 보도되었다.",
+      "sentiment": "positive",
+      "summary": "Fortinet는 2026년 1분기(3월 마감) 매출 18.5억 달러로 전년 대비 20.13% 성장했고, 2025 회계연도 매출은 68억 달러(전년 대비 +14.17%)를 기록했다. 최근 실적 발표에서 컨센서스를 상회하는 실적과 함께 2026년 매출 성장률 가이던스를 전년 대비 15%로 상향했다. 2026년 들어 주가는 약 100% 상승했으며, PER은 58.52배로 시장이 상당한 미래 성장을 이미 반영하고 있다.",
       "catalysts": [
-        "FortiGate 3500G/400G 등 AI 데이터센터·암호화 트래픽 보안용 신제품 출시(섀도우 AI 탐지 기능 포함)",
-        "구독형 소프트웨어 매출 비중 확대에 따른 영업마진 구조적 개선 및 실적 가시성 향상",
-        "2026년 7월 29일 2분기 실적 발표 예정으로 모멘텀 지속 여부 확인 포인트 존재"
+        "2026년 매출 가이던스 상향(전년 대비 +15%)",
+        "AI 기반 보안·네트워킹 통합 플랫폼 신제품 출시",
+        "2026년 들어 주가 약 100% 상승 모멘텀, 다수 애널리스트의 목표주가 상향"
       ],
       "risks": [
-        "HSBC가 2026년 7월 밸류에이션 부담을 이유로 투자의견을 'Reduce'로 하향(당시 주가 약 $156~158 vs 자체 적정가 약 $113.89 제시)",
-        "COO 등 내부자의 대규모 주식 매도 신고로 밸류에이션에 대한 내부 신중론 시사",
-        "Russell 지수 제외에 따른 일시적 기술적 매도세 및 단기 변동성 확대"
+        "PER 58.52배로 밸류에이션 부담이 존재함",
+        "애널리스트 의견이 엇갈림 — 일부 기관(HSBC)은 Hold에서 Reduce로 하향",
+        "매수/보유/매도 의견 분포가 소스마다 상이해 컨센서스가 완전히 통일되어 있지 않음"
       ],
-      "institutionalActivity": "2026년 1분기(Q1) 13F 기준 기관 동향은 혼재 양상으로, WorldQuant Millennium Advisors가 보유주식 약 99.8%(158만주, 약 1억2,760만 달러 상당)를 매도한 반면 Moran Wealth Management(+16.4%)·QRG Capital Management(+21.4%) 등 일부는 비중을 확대했으며, Vanguard·BlackRock·State Street 등 대형 인덱스 운용사가 여전히 상위 주주 지위를 유지(총 1,351개 기관, 약 4억9,300만주 보유, 자료 갱신 시점 2026년 7월).",
-      "analystView": "2026년 7월 수집 시점 기준 TipRanks 집계 애널리스트(44명) 평균 등급은 'Hold'이며 평균 목표주가는 약 $112~114로 최근 종가($156~158선) 대비 낮아 밸류에이션에 대한 신중론이 우세하다(TipRanks 등급 분포 Buy 11 / Hold 31 / Sell 9).",
+      "institutionalActivity": "Vanguard, BlackRock, State Street, Geode Capital, Norges Bank 등 1,351개 기관투자자가 총 4억 9,316만 6,011주를 보유하고 있는 것으로 집계된다(신고 시점 다양, 최신 집계 기준).",
+      "analystView": "2026년 7월 10일 검색 시점 기준, 애널리스트 평균 12개월 목표주가는 113.07달러(최저 $70~최고 $180)이다. 컨센서스 등급은 소스에 따라 Hold 또는 Buy 우세로 엇갈려 표시되고 있다.",
+      "origin": "recommended",
+      "signalPassed": true,
       "sources": [
         {
-          "title": "Fortinet (FTNT) Institutional Ownership 2026",
-          "url": "https://www.marketbeat.com/stocks/NASDAQ/FTNT/institutional-ownership/",
-          "date": "2026-07-10",
-          "operatorProvided": false
+          "title": "Fortinet Revenue 2012-2026 | MacroTrends",
+          "url": "https://www.macrotrends.net/stocks/charts/FTNT/fortinet/revenue",
+          "date": "2026-07-10"
         },
         {
-          "title": "FTNT 13F Hedge Fund & Institutional Ownership - HedgeFollow",
-          "url": "https://hedgefollow.com/stocks/FTNT",
-          "date": "2026-07-10",
-          "operatorProvided": false
+          "title": "Fortinet PE Ratio 2012-2026 | MacroTrends",
+          "url": "https://www.macrotrends.net/stocks/charts/FTNT/fortinet/pe-ratio",
+          "date": "2026-07-10"
         },
         {
-          "title": "FTNT Stock - Institutional Ownership, Shareholders - Fintel",
-          "url": "https://fintel.io/so/us/ftnt",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "Fortinet (FTNT) Stock Forecast, Price Targets and Analysts Predictions - TipRanks",
+          "title": "Fortinet (FTNT) Stock Forecast, Price Targets and Analysts Predictions | TipRanks",
           "url": "https://www.tipranks.com/stocks/ftnt/forecast",
-          "date": "2026-07-10",
-          "operatorProvided": false
+          "date": "2026-07-10"
         },
         {
-          "title": "What is the current Price Target and Forecast for Fortinet (FTNT) - Zacks",
-          "url": "https://www.zacks.com/stock/research/FTNT/price-target-stock-forecast",
-          "date": "2026-07-10",
-          "operatorProvided": false
+          "title": "FTNT - Fortinet, Inc. Stock - Institutional Ownership | Fintel",
+          "url": "https://fintel.io/so/us/ftnt",
+          "date": "2026-07-10"
         },
         {
-          "title": "Fortinet to Announce Second Quarter 2026 Financial Results",
+          "title": "Fortinet Q2 2026 call set for July 29 | StockTitan",
           "url": "https://www.stocktitan.net/news/FTNT/fortinet-to-announce-second-quarter-2026-financial-v6o7d9hbbr10.html",
-          "date": "2026-07-08",
-          "operatorProvided": false
+          "date": "2026-07-10"
         },
         {
-          "title": "Fortinet Inc Stock (FTNT) Moved Up by 4.31% on Jul 9 - TradingKey",
-          "url": "https://www.tradingkey.com/news/market-movers/262020868-market-movers-ftnt-20260709",
-          "date": "2026-07-09",
-          "operatorProvided": false
-        },
-        {
-          "title": "Fortinet Inc Stock (FTNT) Closed Up by 3.91% on Jul 6 - TradingKey",
-          "url": "https://www.tradingkey.com/news/market-movers/262014000-market-movers-ftnt-20260706",
-          "date": "2026-07-06",
-          "operatorProvided": false
-        },
-        {
-          "title": "Fortinet: A Strong Investment in a Competitive Cybersecurity Market - The Motley Fool",
-          "url": "https://www.fool.com/investing/2026/07/03/fortinet-a-strong-investment-in-a-competitive-cybe/",
-          "date": "2026-07-03",
-          "operatorProvided": false
-        },
-        {
-          "title": "Fortinet, Inc. $FTNT Shares Sold by Stephens Investment Management Group LLC",
-          "url": "https://www.thestockobserver.com/2026/07/06/fortinet-inc-ftnt-shares-sold-by-stephens-investment-management-group-llc.html",
-          "date": "2026-07-06",
-          "operatorProvided": false
-        },
-        {
-          "title": "Moran Wealth Management LLC Raises Stock Position in Fortinet, Inc. $FTNT",
-          "url": "https://www.dailypolitical.com/2026/07/04/moran-wealth-management-llc-raises-stock-position-in-fortinet-inc-ftnt.html",
-          "date": "2026-07-04",
-          "operatorProvided": false
-        },
-        {
-          "title": "QRG Capital Management Inc. Raises Stock Holdings in Fortinet, Inc. $FTNT",
-          "url": "https://www.marketbeat.com/instant-alerts/filing-qrg-capital-management-inc-raises-stock-holdings-in-fortinet-inc-ftnt-2026-07-06/",
-          "date": "2026-07-06",
-          "operatorProvided": false
+          "title": "Assessing Fortinet (FTNT) Valuation After Earnings Beat Guidance Hike And AI Security Push | Yahoo Finance",
+          "url": "https://finance.yahoo.com/markets/stocks/articles/assessing-fortinet-ftnt-valuation-earnings-111523353.html",
+          "date": "2026-07-10"
         }
       ],
-      "signalPassed": true,
-      "origin": "recommended"
-    },
-    {
-      "ticker": "MDB",
-      "sentiment": "positive",
-      "summary": "MDB 최근 주가 흐름은 2026년 5월 28일 발표된 FY2027 1분기 실적(매출 6억 8,760만 달러, 전년 대비 +25%, Atlas 매출 +29%)이 시장 기대치를 상회한 것과, 이후 여러 애널리스트의 목표주가 상향 조정이 배경이 되었다. AI 관련 Atlas 클라우드 수요 확대가 최근 주가 상승 모멘텀의 핵심 근거로 언급되고 있다.",
-      "catalysts": [
-        "Citi가 AI 기반 Atlas 수요를 근거로 목표주가를 455달러로 상향하며 90일 촉매 관찰(catalyst watch) 대상에 포함(2026년 7월 초)",
-        "FY2027 1분기 실적에서 Atlas 매출 성장률이 전년 대비 +29%로 가속화",
-        "Truist(375→400달러), BofA(390→450달러), Tigress Financial(430→515달러) 등 다수 애널리스트의 연이은 목표주가 상향(2026년 6~7월)"
-      ],
-      "risks": [
-        "영업이익률이 여전히 마이너스(-4.16%)이며 EBITDA는 전년 대비 46.67% 감소해 수익성 개선이 더딤",
-        "NoSQL/클라우드 데이터베이스 시장에서 Snowflake, GitLab 등과의 경쟁 심화 및 고밸류에이션 부담이 지적됨",
-        "AI·데이터 인프라 투자 확대가 단기적으로 마진에 압박을 줄 수 있음"
-      ],
-      "institutionalActivity": "2026년 1분기(2026년 3월 말 기준) 13F 공시 기준 Vanguard, BlackRock, Fidelity(FMR), T. Rowe Price 등 대형 기관이 상위 보유자로 확인되며, 동일 분기 중 Swedbank AB는 보유 지분을 20.4% 축소하는 등 기관별로 보유 비중 조정이 혼재됨.",
-      "analystView": "2026년 6월 말~7월 초 수집 시점 기준 약 31~33명의 애널리스트 컨센서스는 매수(Buy/Strong Buy) 우위이며 평균 목표주가는 약 393~400달러 수준으로 집계됨(Zacks Rank 세부 수치는 검색 범위 내 미확인).",
-      "sources": [
+      "riskFlags": [
         {
-          "title": "MongoDB (MDB) Institutional Ownership 2026",
-          "url": "https://www.marketbeat.com/stocks/NASDAQ/MDB/institutional-ownership/",
-          "date": "2026-07-09",
-          "operatorProvided": false
-        },
-        {
-          "title": "Swedbank AB Has $142.13 Million Stock Position in MongoDB, Inc. $MDB",
-          "url": "https://www.thecerbatgem.com/2026/07/08/swedbank-ab-has-142-13-million-stock-position-in-mongodb-inc-mdb.html",
-          "date": "2026-07-08",
-          "operatorProvided": false
-        },
-        {
-          "title": "Mongodb, Inc. (MDB) Stock Forecast, Price Targets and Analysts Predictions - TipRanks.com",
-          "url": "https://www.tipranks.com/stocks/mdb/forecast",
-          "date": "2026-07-09",
-          "operatorProvided": false
-        },
-        {
-          "title": "What is the current Price Target and Forecast for MongoDB (MDB)",
-          "url": "https://www.zacks.com/stock/research/MDB/price-target-stock-forecast",
-          "date": "2026-07-09",
-          "operatorProvided": false
-        },
-        {
-          "title": "News Releases | MongoDB, Inc.",
-          "url": "https://investors.mongodb.com/news-events/news-releases",
-          "date": "2026-07-09",
-          "operatorProvided": false
-        },
-        {
-          "title": "MongoDB Revenue 2017-2026 | MDB | MacroTrends",
-          "url": "https://www.macrotrends.net/stocks/charts/MDB/mongodb/revenue",
-          "date": "2026-07-09",
-          "operatorProvided": false
-        },
-        {
-          "title": "MongoDB Profit Margin 2017-2025 | MDB | MacroTrends",
-          "url": "https://www.macrotrends.net/stocks/charts/MDB/mongodb/profit-margins",
-          "date": "2026-07-09",
-          "operatorProvided": false
-        },
-        {
-          "title": "MongoDB EBITDA 2017-2026 | MDB | MacroTrends",
-          "url": "https://www.macrotrends.net/stocks/charts/MDB/mongodb/ebitda",
-          "date": "2026-07-09",
-          "operatorProvided": false
-        },
-        {
-          "title": "GitLab vs. MongoDB: Which Technology Stock Is a Better Buy in 2026? | The Motley Fool",
-          "url": "https://www.fool.com/coverage/better-buy/2026/07/01/gitlab-vs-mongodb-which-technology-stock-is-a-better-buy-in-2026/",
-          "date": "2026-07-01",
-          "operatorProvided": false
-        },
-        {
-          "title": "Snowflake vs. MongoDB: Which Technology Stock Is a Better Buy in 2026? | The Motley Fool",
-          "url": "https://www.fool.com/coverage/better-buy/2026/06/03/snowflake-vs-mongodb-which-technology-stock-is-a-better-buy-in-2026/",
-          "date": "2026-06-03",
-          "operatorProvided": false
+          "type": "earnings_imminent",
+          "description": "Fortinet는 2026년 7월 29일 오후 1:30 PT에 2026 회계연도 2분기 실적 발표 컨퍼런스콜을 예정하고 있음(2026-07-10 기준 약 19일 후)."
         }
-      ],
-      "signalPassed": true,
-      "origin": "recommended"
+      ]
     },
     {
-      "ticker": "AAPL",
-      "sentiment": "positive",
-      "summary": "AAPL 주가는 최근 7거래일간 약 13% 상승했으며, 2026년 7월 6일 브로드컴과의 반도체 공급계약을 2031년까지 연장(15억 달러 규모)한다는 소식에 추가로 1% 상승했다. 2026년 3월 31일 종료 분기(FY2026 Q2) 매출은 1,111.84억 달러로 전년 동기 대비 16.6% 증가했고, 서비스 부문 매출은 309.8억 달러로 사상 최대치를 기록했다. 현재 주가는 P/E 약 36~38배 수준으로 5년 평균 대비 프리미엄 상태에서 거래되고 있다.",
-      "catalysts": [
-        "브로드컴과 2031년까지 반도체 공급계약 연장(2026-07-06 발표, 15억 달러 규모, 커스텀 ASIC 공급 안정화)",
-        "팀 쿡이 언급한 아이폰17 \"이례적인 수요\" 및 아이폰18/폴더블 모델 출시 기대에 따른 업그레이드 사이클",
-        "서비스 부문 사상 최대 분기 매출(309.8억 달러)로 고마진 반복매출 확대"
-      ],
-      "risks": [
-        "밸류에이션 부담(P/E 약 36~38배로 5년 평균 대비 약 27% 프리미엄, 일부 DCF 모델은 적정가치를 185~210달러로 추정)",
-        "중국 조립 아이폰에 대한 관세 비용 노출(2025년 4~12월 33억 달러 관세비용 흡수, 연환산 관세 비용 50억 달러 초과 추정)",
-        "EU 디지털시장법(DMA) 및 미국 법무부(DOJ)의 앱스토어 관행 관련 반독점 규제 조사 지속"
-      ],
-      "institutionalActivity": "2026년 1분기(2026년 3월 31일 종료 분기) 13F 공시 기준 6,425개 기관이 총 2.4조 달러 규모의 AAPL을 보유 중이며 BlackRock(12.3%)과 Vanguard(10.2%)가 최대 보유자, Berkshire Hathaway는 약 578.4억 달러 규모를 보고함.",
-      "analystView": "2026년 7월 초 수집 시점 기준 TipRanks 집계 애널리스트(28~31명)들은 AAPL에 대해 \"매수(Buy)\" 컨센서스와 평균 목표주가 313.33달러(단기 목표주가 평균 250.35달러, 범위 188~325달러)를 제시했고, Zacks 기준 36개 증권사의 평균 추천등급(ABR)은 2.10(매수 우위, Strong Buy 47.22%)이며 JPMorgan은 목표주가를 325달러에서 345달러로 상향함.",
-      "sources": [
-        {
-          "title": "Apple Stock in Recent 13F Filings: What New AAPL Holdings Data Suggests",
-          "url": "https://www.holdingschannel.com/article/202607/apple-stock-in-recent-13f-filings-what-new-aapl-holdings-data-suggests-AAPL07022026latest.htm/",
-          "date": "2026-07-02",
-          "operatorProvided": false
-        },
-        {
-          "title": "AAPL 13F Hedge Fund & Institutional Ownership | HedgeFollow",
-          "url": "https://hedgefollow.com/stocks/AAPL",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "Apple (AAPL) Institutional Ownership $AAPL | MarketBeat",
-          "url": "https://www.marketbeat.com/stocks/NASDAQ/AAPL/institutional-ownership/",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "Apple Inc (AAPL) Stock Forecast, Price Targets and Analysts Predictions - TipRanks",
-          "url": "https://www.tipranks.com/stocks/aapl/forecast",
-          "date": "2026-07-01",
-          "operatorProvided": false
-        },
-        {
-          "title": "Apple - AAPL - Stock Price Today - Zacks",
-          "url": "https://www.zacks.com/stock/quote/AAPL",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "Apple Revenue 2012-2026 | AAPL | MacroTrends",
-          "url": "https://www.macrotrends.net/stocks/charts/AAPL/apple/revenue",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "Apple PE Ratio 2012-2026 | AAPL | MacroTrends",
-          "url": "https://www.macrotrends.net/stocks/charts/AAPL/apple/pe-ratio",
-          "date": "2026-07-06",
-          "operatorProvided": false
-        },
-        {
-          "title": "Can Apple Stock Reach $400 This Year? 3 Catalysts That Can Make It Happen - 24/7 Wall St.",
-          "url": "https://247wallst.com/investing/2026/07/08/can-apple-stock-reach-400-this-year-3-catalysts-that-can-make-it-happen/",
-          "date": "2026-07-08",
-          "operatorProvided": false
-        },
-        {
-          "title": "Why Apple Stock Rallied Today | The Motley Fool",
-          "url": "https://www.fool.com/investing/2026/07/02/why-apple-stock-is-up-today/",
-          "date": "2026-07-02",
-          "operatorProvided": false
-        },
-        {
-          "title": "Is Apple Intelligence the Catalyst Apple Stock Needs? | The Motley Fool",
-          "url": "https://www.fool.com/investing/2026/06/27/is-apple-intelligence-the-catalyst-apple-stock-nee/",
-          "date": "2026-06-27",
-          "operatorProvided": false
-        },
-        {
-          "title": "Assessing Apple (AAPL) Valuation As Tariffs And Production Shifts Reshape Profit Outlook | Yahoo Finance",
-          "url": "https://finance.yahoo.com/markets/stocks/articles/assessing-apple-aapl-valuation-tariffs-150537720.html",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "Apple's $20 Billion Tariff Problem: How Trade Wars Are Reshaping the iPhone Empire",
-          "url": "https://www.techi.com/apple-tariff-problem/",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        }
-      ],
-      "signalPassed": true,
-      "origin": "recommended"
-    },
-    {
-      "ticker": "PAYX",
-      "sentiment": "positive",
-      "summary": "PAYX 주가는 2026년 6월 24일 발표된 회계연도 4분기/FY2026 실적(매출 20% YoY 성장, 조정영업이익 22% 성장, FY2026 조정EPS $5.51로 전년비 11% 증가)에 대한 시장 반응으로 상승세를 보였다. 최근 3개월간 약 +19.2% 상승했으며, 이는 Paycor 인수 통합 진행 상황과 Citi의 투자의견 상향(2026-06-24, Neutral→Buy, 목표가 $99→$140)이 동반된 결과로 보도되었다.",
-      "catalysts": [
-        "FY2026 4분기 실적 호조 및 FY2027 가이던스 상향(매출 성장률 5~6%, 조정EPS 성장률 7~9%, 2026-06-24 발표)",
-        "Paycor 인수 통합에 따른 업마켓 전략 확대 및 크로스셀 기회 증가로 PEO 부문 실적 견인",
-        "Citi의 투자의견 상향(Neutral→Buy, 목표가 $140, 2026-06-24)"
-      ],
-      "risks": [
-        "Paycor 인수 이후 부채 부담 확대(총부채 약 $5.01B, 현금 $1.78B, 순부채 포지션, 부채/자본비율 약 1.25)",
-        "Motley Fool 분석 기준 만성적인 저조한 유기적(Paycor 제외) 매출 성장세 및 밸류에이션 배수(과거 32배 대비 현재 22배) 관련 우려",
-        "애널리스트 목표주가 간 괴리 — TipRanks 컨센서스는 \"Hold\"(매수 0/보유 11/매도 3, 평균목표가 약 $101.58)로 Zacks 집계 평균목표가(약 $139.08)와 상당한 차이를 보여 컨센서스 수렴이 낮음"
-      ],
-      "institutionalActivity": "2026년 1분기(Q1) 13F 신고 기준, Vanguard Group(+약 12.1%, +460만주)과 MML Investors Services(+11.1%)가 지분을 확대한 반면 Wells Fargo, Charles Schwab Investment Management, Select Equity Group 등은 비중을 축소하여 기관 포지셔닝이 엇갈린 모습을 보였다(MarketBeat/HedgeFollow/quiverquant 등 13F 집계 사이트 기준, SEC EDGAR 원문 13F 직접 대조는 미실시).",
-      "analystView": "2026-07-10 수집 시점 기준, 애널리스트 의견이 플랫폼 간 혼재되어 있음 — Zacks 집계로는 16개 증권사 기준 평균 브로커리지 추천(ABR) 3.31/5, 평균 목표주가 약 $139.08인 반면, TipRanks는 컨센서스를 \"Hold\"(매수 0/보유 11/매도 3, 평균목표가 약 $101.58)로 표시하고 있어 두 소스 간 목표주가 격차가 크다; 다만 Citi는 2026-06-24 실적 발표 후 Buy로 상향하며 목표가 $140을 제시했다.",
-      "sources": [
-        {
-          "title": "Paychex Rises as Investors Digest Strong Q4 Results and Paycor Integration Progress",
-          "url": "https://www.quiverquant.com/news/Paychex+Rises+as+Investors+Digest+Strong+Q4+Results+and+Paycor+Integration+Progress",
-          "date": "2026-07-01",
-          "operatorProvided": false
-        },
-        {
-          "title": "Paychex (PAYX) Stock Forecast, Price Targets and Analysts Predictions - TipRanks.com",
-          "url": "https://www.tipranks.com/stocks/payx/forecast",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "What is the current Price Target and Forecast for Paychex (PAYX) - Zacks",
-          "url": "https://www.zacks.com/stock/research/PAYX/price-target-stock-forecast",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "Paychex (PAYX) Institutional Ownership 2026 - MarketBeat",
-          "url": "https://www.marketbeat.com/stocks/NASDAQ/PAYX/institutional-ownership/",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "PAYX 13F Hedge Fund & Institutional Ownership - HedgeFollow",
-          "url": "https://hedgefollow.com/stocks/PAYX",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "Paychex, Inc. $PAYX Stake Lifted by MML Investors Services LLC - Markets Daily",
-          "url": "https://www.themarketsdaily.com/2026/06/16/paychex-inc-payx-stake-lifted-by-mml-investors-services-llc.html",
-          "date": "2026-06-16",
-          "operatorProvided": false
-        },
-        {
-          "title": "The Toughest Questions PAYX Faced On Its Latest Call - Trefis",
-          "url": "https://www.trefis.com/stock/payx/articles/606194/the-toughest-questions-payx-faced-on-its-latest-call/2026-07-08",
-          "date": "2026-07-08",
-          "operatorProvided": false
-        },
-        {
-          "title": "Paychex (PAYX) Statistics & Valuation - stockanalysis.com",
-          "url": "https://stockanalysis.com/stocks/payx/statistics/",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "Paychex - PAYX - Stock Price & News - The Motley Fool",
-          "url": "https://www.fool.com/quote/nasdaq/payx/",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        }
-      ],
-      "signalPassed": true,
-      "origin": "recommended"
-    },
-    {
-      "ticker": "CTAS",
+      "ticker": "ADP",
       "sentiment": "neutral",
-      "summary": "Cintas는 2026-07-15 예정된 FY26 4분기 실적발표와 대기 중인 UniFirst 인수 기대감이 겹치며 최근 주가 강세 흐름을 보였다. 다만 UniFirst 인수 건은 2026-06-11 FTC의 Second Request(추가 자료 요청)로 반독점 심사가 연장되어 거래 종결 시점에 불확실성이 남아 있고, 이에 맞춰 일부 애널리스트는 실적발표를 앞두고 목표주가를 소폭 하향 조정했다.",
+      "summary": "ADP는 2026회계연도 3분기(4월 29일 발표) 실적에서 매출 5.9억 달러(전년比 7% 증가), 조정 희석 EPS 10% 증가(3.37달러, 컨센서스 3.28달러 상회)를 기록했다. 이에 따라 회사는 2026회계연도 전체 가이던스를 상향해 매출 성장률 6~7%, 조정 희석 EPS 성장률 10~11%를 제시했다. Zacks Rank는 #3(Hold)이며, 다수의 애널리스트 컨센서스도 Hold로 집계된다.",
       "catalysts": [
-        "UniFirst 인수 완료 시 북미 유니폼 서비스 시장점유율 약 50%로 확대 및 약 3.75억 달러 시너지 기대",
-        "2026-07-15 예정된 FY26 4분기 실적발표를 앞두고 FY26 매출 가이던스 상향(약 112.1억~112.4억 달러) 및 다분기 연속 EPS 서프라이즈 기록",
-        "45년 연속 배당 증가 등 꾸준한 주주환원 정책"
+        "2026회계연도 3분기 실적이 매출·이익 모두 컨센서스를 상회했고 연간 가이던스가 상향 조정됨",
+        "최근 30일간 다음 분기 EPS 컨센서스 추정치가 0.7% 상향 조정됨",
+        "경영진이 AI 기반 인적자본관리(HCM) 솔루션 수요를 매출 성장 동력으로 언급함"
       ],
       "risks": [
-        "UniFirst 인수 관련 FTC Second Request로 반독점 심사 연장, 거래 종결 시점 불확실성 확대(2026-06-11 공시) 및 거래 무산 시 3.5억 달러 역계약해지금 지급 조건",
-        "실적발표를 앞두고 Truist·Citigroup·Stifel 등 일부 애널리스트의 목표주가 하향 조정",
-        "트레일링 PER 약 36.8배(선행 PER 약 33배)의 높은 밸류에이션과 약 29억 달러 부채 대비 현금 1.83억 달러의 순부채 포지션"
+        "애널리스트 컨센서스가 Hold에 머물러 있으며(약 53%가 Hold, 20%는 Sell 의견)",
+        "목표주가 상단(약 332달러)과 하단(약 230달러) 간 괴리가 커 밸류에이션에 대한 시각이 엇갈림"
       ],
-      "institutionalActivity": "Vanguard Group이 약 10.16%(10,299,258주)를 보유해 최대 기관주주 중 하나로 파악되나(2024회계연도 SC 13G/A 공시 기준), 이후 최신 분기의 구체적 13F 순매수/순매도 변동은 이번 조사에서 확인하지 못함(MarketBeat·Nasdaq 기관보유 현황 페이지 참고, 조회일 2026-07-10).",
-      "analystView": "TipRanks 기준(수집일 2026-07-10) 컨센서스는 \"Moderate Buy\"(매수 6·보유 4·매도 1)이며 12개월 평균 목표주가는 211.33달러이나, 다른 집계에서는 목표주가가 172~255달러로 폭넓게 분산되어 있고 실적발표를 앞두고 일부 하향 조정이 있었음.",
+      "institutionalActivity": "2026년 1분기 기준 최대 기관 주주는 Vanguard Group, BlackRock, State Street, Geode Capital Management 등이며, 총 2,730개 기관이 약 3억 4,795만 주를 보유 중이다.",
+      "analystView": "2026년 7월 10일 기준, 15~27명의 애널리스트 커버리지 컨센서스 등급은 대체로 Hold이며(Strong Buy 13%, Buy 13%, Hold 53%, Sell 20%), 평균 목표주가는 약 244~265달러 수준이다. Zacks Rank는 #3(Hold).",
+      "origin": "recommended",
+      "signalPassed": true,
       "sources": [
         {
-          "title": "Cintas Faces FTC Review in UniFirst Acquisition Plan (8-K)",
-          "url": "https://www.sec.gov/Archives/edgar/data/723254/000095010326008890/dp248355_8k.htm",
-          "date": "2026-06-11",
-          "operatorProvided": false
+          "title": "Automatic Data Processing (ADP) Stock Forecast and Price Target",
+          "url": "https://www.marketbeat.com/stocks/NASDAQ/ADP/forecast/",
+          "date": "2026-07-10"
         },
         {
-          "title": "Cintas deal for UniFirst faces FTC second request under antitrust review",
-          "url": "https://www.sahmcapital.com/news/content/cintas-deal-for-unifirst-faces-ftc-second-request-under-antitrust-review-2026-06-12",
-          "date": "2026-06-12",
-          "operatorProvided": false
+          "title": "Automatic Data Processing (ADP) Stock Forecast, Price Targets and Analysts Predictions",
+          "url": "https://www.tipranks.com/stocks/adp/forecast",
+          "date": "2026-07-10"
         },
         {
-          "title": "Moran Wealth Management LLC Sells 3,597 Shares of Cintas Corporation $CTAS",
-          "url": "https://www.dailypolitical.com/2026/07/04/moran-wealth-management-llc-sells-3597-shares-of-cintas-corporation-ctas.html",
-          "date": "2026-07-04",
-          "operatorProvided": false
+          "title": "ADP: Automatic Data Processing - Detailed Earnings Estimates - Zacks.com",
+          "url": "https://www.zacks.com/stock/quote/ADP/detailed-earning-estimates",
+          "date": "2026-07-10"
         },
         {
-          "title": "CINTAS CORP - Form SC 13G/A (Vanguard Group ownership)",
-          "url": "https://www.sec.gov/Archives/edgar/data/723254/000110465924020609/tv0609-cintascorp.htm",
-          "date": "2024-02-14",
-          "operatorProvided": false
+          "title": "ADP - Automatic Data Processing, Inc. Stock - Institutional Ownership, Shareholders",
+          "url": "https://fintel.io/so/us/adp",
+          "date": "2026-07-10"
         },
         {
-          "title": "Cintas (CTAS) Institutional Ownership - MarketBeat",
-          "url": "https://www.marketbeat.com/stocks/NASDAQ/CTAS/institutional-ownership/",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "Cintas Corporation Common Stock (CTAS) Holding Activity - Nasdaq",
-          "url": "https://www.nasdaq.com/market-activity/stocks/ctas/institutional-holdings",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "Cintas (CTAS) Stock Forecast, Price Targets and Analysts Predictions - TipRanks",
-          "url": "https://www.tipranks.com/stocks/ctas/forecast",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "Cintas (CTAS) Statistics & Valuation - stockanalysis.com",
-          "url": "https://stockanalysis.com/stocks/ctas/statistics/",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "Analysts cut Cintas targets ahead of Q4 earnings on July 15",
-          "url": "https://scanx.trade/stock-market-news/companies/cintas-corporation-to-webcast-q4-fy26-results-on-july-15/44481682",
-          "date": "2026-07-10",
-          "operatorProvided": false
+          "title": "Automatic Data Processing's Q4 2026 Earnings: What to Expect",
+          "url": "https://finance.yahoo.com/markets/stocks/articles/automatic-data-processings-q4-2026-094445069.html",
+          "date": "2026-07-10"
         }
       ],
-      "signalPassed": true,
-      "origin": "recommended"
+      "riskFlags": [
+        {
+          "type": "earnings_imminent",
+          "description": "ADP의 2026회계연도 4분기 실적 발표가 2026년 7월 29일(장 개장 전)로 예정되어 있으며, 애널리스트들은 EPS 2.59달러(전년比 14.6% 증가)를 예상하고 있음."
+        }
+      ]
     },
     {
-      "ticker": "DXCM",
+      "ticker": "MNST",
       "sentiment": "positive",
-      "summary": "DexCom 주가는 2026년 들어 약 7.3% 상승해 업종 평균(-12.4%)을 웃돌았으며, G7 15일 센서의 메디케어 적용 확대와 Stelo OTC CGM 출시, 국제 매출 성장(1분기 기준 26% YoY, 유기적 17%)이 긍정적 배경으로 작용했다. 다만 Abbott·Medtronic 등 경쟁 심화와 GLP-1 약물 확산에 따른 인슐린 집중 치료 환자층 축소 우려로 일부 애널리스트(Barclays)가 투자의견을 하향한 바 있어 주가 흐름에 변동성 요인도 병존한다.",
+      "summary": "Monster Beverage(MNST)는 2026년 1분기 실적에서 매출과 EPS 모두 시장 예상치를 상회했으며, 최근 12개월(TTM) 매출은 전년대비 18.06% 증가한 87.93억 달러, 순이익은 34.57% 증가한 20.32억 달러를 기록했다. 2026년 7월 8일 이사회는 2대1 액면분할(주식배당 형태, 8월 10일 배포 예정)을 승인했고, 주가는 7월 1일 52주 신고가를 기록하며 최근 12개월간 약 51% 상승했다.",
       "catalysts": [
-        "G7 15일 센서 메디케어 적용 확대 및 Stelo OTC CGM 출시에 따른 매출 성장 모멘텀",
-        "국제 매출 확대(프랑스·캐나다 등 상환 확대, 2026년 1분기 기준 26% 성장)",
-        "비인슐린 2형 당뇨 환자군으로의 CGM 채택 확대라는 장기 성장 동력"
+        "2026년 7월 8일 이사회가 2대1 액면분할(주식배당 형태) 승인, 8월 10일 배포 예정",
+        "2026년 1분기 실적 서프라이즈: EPS $0.58(예상 $0.53 상회), 매출 9.3% 상회",
+        "TTM 매출 18.06%, 순이익 34.57% 증가 등 견조한 성장세, 52주 신고가 경신"
       ],
       "risks": [
-        "Abbott FreeStyle Libre·Medtronic 등 경쟁 심화 및 가격 압박(Barclays는 Underweight로 하향)",
-        "GLP-1 약물 확산에 따른 인슐린 집중 치료 시장 축소 우려",
-        "밸류에이션 부담(PER 약 31배, 2026년 6월 초 기준 Macrotrends 데이터)"
+        "PE 비율 44.66배로 밸류에이션 부담이 존재함(2026-07-07 기준)",
+        "애널리스트 목표주가 편차가 큼(TipRanks 평균 $92.31 vs Zacks 단기 목표 평균 $54.45) — 소스간 시점·기준 불일치 가능성"
       ],
-      "institutionalActivity": "2026년 1분기(Q1) 13F 기준 기관투자자 보유비중이 약 67.69%(Vanguard, BlackRock, State Street 등이 주요 보유자)로 나타났으며, 동시에 Goodman Advisory Group·Leonteq Securities 등 일부 기관은 최근 보유 물량을 축소한 것으로 확인된다.",
-      "analystView": "2026년 7월 10일 수집 시점 기준 TipRanks 컨센서스는 47 Buy·1 Hold·2 Sell(평균 목표주가 약 $81~86)로 매수 우위이며, Zacks Rank도 #2(Buy) 등급으로 이익 추정치 상향 흐름을 반영하고 있다.",
+      "institutionalActivity": "Nasdaq/Fintel 집계(접근일 2026-07-10, 정확한 13F 제출 분기 미명시) 기준 기관 투자자 약 1,239곳이 총 638,364,805주를 보유 중이며, 주요 보유자는 Vanguard Group, BlackRock, State Street 등 대형 인덱스·자산운용사이다.",
+      "analystView": "TipRanks 기준(접근일 2026-07-10) 최근 1개월간 매수 24건, 보유 12건, 매도 0건이며 최근 3개월 평균 목표주가는 $92.31. Zacks/MarketScreener 데이터는 단기 목표주가를 $54.45~$79.09 범위로 제시해 소스간 차이가 있음.",
+      "origin": "userRequested",
       "sources": [
         {
-          "title": "DexCom (DXCM) Institutional Ownership 2026",
-          "url": "https://www.marketbeat.com/stocks/NASDAQ/DXCM/institutional-ownership/",
-          "date": "2026-07-10",
-          "operatorProvided": false
+          "title": "Monster Beverage Revenue 2012-2026 | MNST | MacroTrends",
+          "url": "https://www.macrotrends.net/stocks/charts/MNST/monster-beverage/revenue",
+          "date": "2026-07-10"
         },
         {
-          "title": "DXCM 13F Hedge Fund & Institutional Ownership | HedgeFollow",
-          "url": "https://hedgefollow.com/stocks/DXCM",
-          "date": "2026-07-10",
-          "operatorProvided": false
+          "title": "Monster Beverage PE Ratio 2012-2026 | MNST | MacroTrends",
+          "url": "https://www.macrotrends.net/stocks/charts/MNST/monster-beverage/pe-ratio",
+          "date": "2026-07-10"
         },
         {
-          "title": "Goodman Advisory Group LLC Trims Stock Position in DexCom, Inc.",
-          "url": "https://www.dailypolitical.com/2026/06/28/goodman-advisory-group-llc-trims-stock-position-in-dexcom-inc-dxcm.html",
-          "date": "2026-06-28",
-          "operatorProvided": false
+          "title": "Monster Beverage (MNST) Stock Forecast, Price Targets and Analysts Predictions | TipRanks.com",
+          "url": "https://www.tipranks.com/stocks/mnst/forecast",
+          "date": "2026-07-10"
         },
         {
-          "title": "Leonteq Securities AG Sells 16,391 Shares of DexCom, Inc.",
-          "url": "https://www.dailypolitical.com/2026/07/04/leonteq-securities-ag-sells-16391-shares-of-dexcom-inc-dxcm.html",
-          "date": "2026-07-04",
-          "operatorProvided": false
+          "title": "MNST - Monster Beverage Corporation Stock - Institutional Ownership, Shareholders | Fintel.io",
+          "url": "https://fintel.io/so/us/mnst",
+          "date": "2026-07-10"
         },
         {
-          "title": "Dexcom (DXCM) Stock Forecast, Price Targets and Analysts Predictions - TipRanks",
-          "url": "https://www.tipranks.com/stocks/dxcm/forecast",
-          "date": "2026-07-10",
-          "operatorProvided": false
+          "title": "Monster Beverage Declares Two-for-One Stock Split | GlobeNewswire",
+          "url": "https://www.globenewswire.com/news-release/2026/07/08/3324442/10193/en/Monster-Beverage-Declares-Two-for-One-Stock-Split.html",
+          "date": "2026-07-10"
         },
         {
-          "title": "Here's Why DexCom (DXCM) is a Strong Value Stock - Zacks",
-          "url": "https://www.zacks.com/stock/news/2921922/heres-why-dexcom-dxcm-is-a-strong-value-stock",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "Here's Why You Should Retain DexCom Stock in Your Portfolio for Now (Zacks via TradingView)",
-          "url": "https://www.tradingview.com/news/zacks:93c03c163094b:0-here-s-why-you-should-retain-dexcom-stock-in-your-portfolio-for-now/",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "DexCom Revenue 2012-2026 | Macrotrends",
-          "url": "https://www.macrotrends.net/stocks/charts/DXCM/dexcom/revenue",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "DexCom PE Ratio 2012-2026 | Macrotrends",
-          "url": "https://www.macrotrends.net/stocks/charts/DXCM/dexcom/pe-ratio",
-          "date": "2026-06-05",
-          "operatorProvided": false
-        },
-        {
-          "title": "DexCom earnings up next: Can G7 rollout offset Abbott competition? - Investing.com",
-          "url": "https://www.investing.com/news/earnings/dexcom-earnings-up-next-can-g7-rollout-offset-abbott-competition-93CH-4503348",
-          "date": "2026-07-10",
-          "operatorProvided": false
-        },
-        {
-          "title": "Abbott vs. DexCom: Which CGM Stock Is the Better Option Right Now? - Yahoo Finance",
-          "url": "https://finance.yahoo.com/healthcare/articles/abbott-vs-dexcom-cgm-stock-123500822.html",
-          "date": "2026-07-10",
-          "operatorProvided": false
+          "title": "Earnings call transcript: Monster Beverage beats Q1 2026 earnings forecast | Investing.com",
+          "url": "https://www.investing.com/news/transcripts/earnings-call-transcript-monster-beverage-beats-q1-2026-earnings-forecast-93CH-4677200",
+          "date": "2026-07-10"
         }
       ],
-      "signalPassed": true,
-      "origin": "recommended"
+      "riskFlags": [
+        {
+          "type": "earnings_imminent",
+          "description": "2026년 7월 30일 장 마감 후 다음 분기 실적 발표 예정."
+        }
+      ]
+    },
+    {
+      "ticker": "CSX",
+      "sentiment": "positive",
+      "summary": "CSX Corporation은 2026년 1분기(4월 22일 발표)에 매출 34.8억 달러(전년 대비 +2%), 영업이익 12.5억 달러를 기록했으며, 실적 성장은 복합운송 물량 증가와 국내 석탄 매출 상승, 연료할증료 증가가 견인했다. 최근 여러 애널리스트(BofA, Barclays, Evercore ISI)가 목표주가를 상향 조정한 반면 Morgan Stanley는 비중축소 의견을 유지하는 등 시각이 엇갈린다. Union Pacific-Norfolk Southern 대륙횡단 합병이 규제 검토 절차를 진행 중이다.",
+      "catalysts": [
+        "BofA(목표주가 51→53달러), Barclays(47→55달러), Evercore ISI(47달러)가 목표주가 상향",
+        "BNSF와 공동 마케팅·복합운송 제휴를 통한 전략적 대응",
+        "업계 내 M&A 옵션 관련 투자은행과의 논의가 보도됨(FreightWaves)"
+      ],
+      "risks": [
+        "Morgan Stanley는 비중축소(Underweight) 의견 유지, 목표주가 30→32달러로 소폭 상향에 그침",
+        "경쟁사 Union Pacific-Norfolk Southern 대륙횡단 합병이 규제기관(STB) 심사를 통과하면 더 큰 단일 경쟁 철도망 형성으로 경쟁 구도에 부담 가능",
+        "수출 석탄 매출 감소 추세가 1분기 실적에서 이미 확인됨"
+      ],
+      "institutionalActivity": null,
+      "analystView": "2026년 7월 10일 기준 다수 애널리스트가 매수 계열 의견을 유지하며 목표주가를 상향 조정하는 추세(BofA $53, Barclays $55, Evercore ISI $47)이나, Morgan Stanley는 비중축소 의견과 낮은 목표주가($32)를 제시해 시각이 엇갈린다.",
+      "origin": "userRequested",
+      "sources": [
+        {
+          "title": "CSX Corp Q1 2026 Press Release (SEC 8-K)",
+          "url": "https://www.sec.gov/Archives/edgar/data/0000277948/000027794826000013/pressrelease_q12026.htm",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "What You Need To Know Ahead of CSX Corporation's Earnings Release (Barchart)",
+          "url": "https://www.barchart.com/story/news/3029682/what-you-need-to-know-ahead-of-csx-corporation-s-earnings-release",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "BofA Raises its Price Target on CSX Corporation (Insider Monkey)",
+          "url": "https://www.insidermonkey.com/blog/bofa-raises-its-price-target-on-csx-corporation-csx-1788810/",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "CSX Maintains Underweight Rating by Morgan Stanley -- Price Target Raised to $32 (GuruFocus)",
+          "url": "https://www.gurufocus.com/news/8945663/csx-maintains-underweight-rating-by-morgan-stanley-price-target-raised-to-32",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "As Union Pacific and Norfolk Southern Confirm Merger Talks, CSX Won't Rule Out M&A",
+          "url": "https://wwd.com/sourcing-journal/logistics/union-pacific-norfolk-southern-confirm-merger-talks-csx-bnsf-acquisition-rail-railroads-volumes-regulations-1238854431/",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Union Pacific and Norfolk Southern Respond to STB's Request for Supplemental Information",
+          "url": "https://www.up-nstranscontinental.com/news-details/union-pacific-and-norfolk-southern-respond-to-stbs-request-for-supplemental-information-submitting-first-round-of-their-responses",
+          "date": "2026-07-10"
+        }
+      ],
+      "riskFlags": [
+        {
+          "type": "earnings_imminent",
+          "description": "CSX는 2026년 7월 22일 장 마감 후 2분기 실적 발표 예정이며, 애널리스트 컨센서스 EPS는 0.48달러(전년 동기 대비 +9.1%)로 추정됨."
+        },
+        {
+          "type": "regulatory",
+          "description": "경쟁사 Union Pacific과 Norfolk Southern의 대륙횡단 합병 신청이 2026년 1월 16일 STB에 의해 불완전 서류로 반려되었으나, 2026년 5월 28일 수정 신청서가 접수되어 심사가 진행 중임."
+        }
+      ]
+    },
+    {
+      "ticker": "SBUX",
+      "sentiment": "positive",
+      "summary": "2026 회계연도 2분기(4월 발표) 실적에서 스타벅스는 순매출이 전년 대비 약 9% 증가한 95.3억 달러를 기록했고, 글로벌 동일매장매출이 6.2%(미국 7.1%) 늘어나며 2년여 만에 처음으로 매출과 이익이 동반 성장했다. 회사는 2026 회계연도 가이던스를 상향해 동일매장매출 성장률 전망을 5% 이상으로 높였다. 다만 총마진은 21.63%로 하락 압력을 받고 있고 PE 비율은 약 47배로 높은 밸류에이션 수준을 유지하고 있다.",
+      "catalysts": [
+        "2026 회계연도 가이던스 상향 조정(동일매장매출 5%+, 조정 EPS $2.25~2.45)",
+        "Green Apron Service 등 서비스 개선을 통한 미국 매장 방문객수 회복(거래건수 +4.3%)",
+        "애널리스트 목표주가 상향(TD Cowen, 2026-05-14 $120으로 상향)"
+      ],
+      "risks": [
+        "총마진 하락 등 수익성 압박이 매출 회복 속도를 따라가지 못하는 모습",
+        "밸류에이션(PE 약 47배)이 역사적 평균 대비 높은 수준",
+        "노조(Starbucks Workers United)와의 장기화된 갈등으로 인한 파업·인력 리스크"
+      ],
+      "institutionalActivity": "SEC 13F 집계 기준(Fintel, 최신 분기) 약 2,380개 기관이 SBUX 주식 약 9억 1,100만 주를 보유 중이며, Vanguard, Capital World Investors, BlackRock, State Street, Geode Capital 등이 최대 주주로 나타난다.",
+      "analystView": "2026년 7월 10일 기준 23명의 애널리스트 컨센서스는 Moderate Buy(매수 17, 보유 10, 매도 0)이며, 평균 목표주가는 약 $106~$112 범위(최고 $137, 최저 $80)로 제시됨.",
+      "origin": "userRequested",
+      "sources": [
+        {
+          "title": "Starbucks (SBUX) Stock Forecast, Price Targets and Analysts Predictions",
+          "url": "https://www.tipranks.com/stocks/sbux/forecast",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Starbucks (SBUX) Stock Forecast 2026",
+          "url": "https://www.marketbeat.com/stocks/NASDAQ/SBUX/forecast/",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Starbucks Financial Ratios for Analysis",
+          "url": "https://www.macrotrends.net/stocks/charts/SBUX/starbucks/financial-ratios",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "SBUX Institutional Ownership",
+          "url": "https://fintel.io/so/us/sbux",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Starbucks (SBUX) Q2 2026 earnings",
+          "url": "https://www.cnbc.com/2026/04/28/starbucks-sbux-q2-2026-earnings.html",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "STARBUCKS CORP - Form 8-K FY2026 (Q2 earnings release)",
+          "url": "https://www.sec.gov/Archives/edgar/data/0000829224/000082922426000078/sbux-03292026xearningsrele.htm",
+          "date": "2026-07-10"
+        },
+        {
+          "title": "Starbucks Lawsuit 2026: Payouts, Eligibility & Deadlines",
+          "url": "https://lawfold.com/starbucks-lawsuit-2026/",
+          "date": "2026-07-10"
+        }
+      ],
+      "riskFlags": [
+        {
+          "type": "earnings_imminent",
+          "description": "다음 실적 발표가 2026년 7월 28일~8월 4일경(출처별 상이)으로 예정되어 있어 조회 시점 기준 약 2~4주 내 실적 발표가 임박함."
+        },
+        {
+          "type": "litigation",
+          "description": "스타벅스가 2026년 6월 18일 노조(Starbucks Workers United)의 \"사이렌\" 로고 사용을 문제 삼아 연방 상표권 소송을 제기했으며, 이 외 최소 8건의 집단소송이 진행 중이고 뉴욕시 공정근무시간법 위반 관련 3,890만 달러 합의가 있었음(2025년 12월)."
+        }
+      ]
     }
   ],
   "skipped": []
