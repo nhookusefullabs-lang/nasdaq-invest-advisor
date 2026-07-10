@@ -25,6 +25,7 @@ export async function loadResearch() {
  * research.json → 티커별 리서치 항목 맵. 유니버스에 없는 티커의 항목은 조용히 무시한다.
  * research가 null이거나(파일 없음/검증 실패) datasetGeneratedAt이 없으면 빈 맵을 반환한다.
  * datasetGeneratedAt과 research.basedOnDataOf가 다르면 각 항목에 stale:true를 표시한다.
+ * v1 문서(riskFlags 필드 없음)는 riskFlags:[]로 정규화한다 (US-8, 하위 호환).
  */
 export function buildResearchMap(research, datasetGeneratedAt, validTickerSet) {
   const map = new Map()
@@ -34,7 +35,12 @@ export function buildResearchMap(research, datasetGeneratedAt, validTickerSet) {
 
   for (const item of research.items) {
     if (validTickerSet && !validTickerSet.has(item.ticker)) continue
-    map.set(item.ticker, { ...item, stale, researchedAt: research.researchedAt })
+    map.set(item.ticker, {
+      ...item,
+      riskFlags: item.riskFlags ?? [],
+      stale,
+      researchedAt: research.researchedAt,
+    })
   }
 
   return map

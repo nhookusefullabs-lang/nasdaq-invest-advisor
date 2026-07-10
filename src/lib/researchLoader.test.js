@@ -74,3 +74,22 @@ describe('buildResearchMap - universe filtering', () => {
     expect(map.size).toBe(0)
   })
 })
+
+describe('buildResearchMap - riskFlags normalization (US-8)', () => {
+  const validTickerSet = new Set(['AXON'])
+
+  it('normalizes a v1 item (no riskFlags field) to an empty array', () => {
+    const map = buildResearchMap(VALID_RESEARCH, '2026-07-08', validTickerSet)
+    expect(map.get('AXON').riskFlags).toEqual([])
+  })
+
+  it('preserves a v2 item riskFlags array as-is', () => {
+    const v2 = {
+      ...VALID_RESEARCH,
+      schemaVersion: 2,
+      items: [{ ...VALID_RESEARCH.items[0], riskFlags: [{ type: 'litigation', description: '소송 진행 중' }] }],
+    }
+    const map = buildResearchMap(v2, '2026-07-08', validTickerSet)
+    expect(map.get('AXON').riskFlags).toEqual([{ type: 'litigation', description: '소송 진행 중' }])
+  })
+})

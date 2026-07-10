@@ -53,7 +53,8 @@ description: 나스닥100 추천 종목 리서치 서브에이전트 — researc
 `sources[]`에 `operatorProvided: true`와 열람일·URL(가능한 경우)을 함께 기록한다.
 
 ### ⑤ US-2 검증기로 원자적 저장
-수집한 항목을 `research.json` 스키마(버전 1, `PRD_Nasdaq6.md` §4.2)에 맞춰 조립한 뒤
+수집한 항목을 `research.json` 스키마(버전 1, `PRD_Nasdaq6.md` §4.2 — 리스크 플래그를
+함께 기록할 경우 버전 2, `PRD_Nasdaq8.md` §4.5)에 맞춰 조립한 뒤
 `scripts/research/validate-research.mjs`(또는 `atomicWriteResearch` 헬퍼)로 검증하고
 저장한다. 검증 실패 시 기존 `research.json`은 훼손되지 않는다 (임시 파일에 먼저 쓰고
 통과 시에만 rename). 출처가 하나도 확보되지 않은 종목은 `items`가 아니라 `skipped`에
@@ -78,6 +79,24 @@ description: 나스닥100 추천 종목 리서치 서브에이전트 — researc
 8. **유료·회원 콘텐츠 원문을 복사하지 않는다** — 재서술 요약만 담고 인용은 출처 링크로
    대체한다.
 9. **1회 세션 리서치 대상은 최대 15종목**을 넘지 않는다.
+
+## 리스크 플래그(riskFlags) 작성 규칙 (스키마 버전 2, US-8)
+
+계층 A/B 조사 중 중대한 리스크(실적 발표 임박, 소송, 규제 이슈, 가이던스 하향 등)를
+발견하면 `items[].riskFlags`에 `{ type, description }` 형태로 구조화해 기록한다.
+`schemaVersion`을 2로 올려야만 `riskFlags`가 검증을 통과한다 — 리스크 플래그를 전혀
+기록하지 않는 세션은 기존대로 `schemaVersion: 1`(빈 배열 없이도 통과)을 유지해도 된다.
+
+- **`type`은 다음 5개 값 중 하나만 사용**한다: `earnings_imminent`(실적 발표 임박) ·
+  `litigation`(소송) · `regulatory`(규제) · `guidance_cut`(가이던스 하향) · `other`(기타).
+- **`description`은 출처 근거가 있는 사실만 담는다** — 위 규칙 1(매수/매도 권유 표현
+  금지)이 리스크 플래그에도 그대로 적용된다. "위험하니 매도 검토" 같은 판단·권유
+  문구는 금지하고, "10/22 실적 발표 예정" · "특허 침해 소송 1심 진행 중(2026-06 접수)"처럼
+  **사실 기술**만 남긴다.
+- 근거를 확보하지 못한 추측성 리스크는 플래그로 남기지 않는다 — 규칙 7(출처 없는
+  종목은 skipped 처리)과 동일한 원칙으로, 근거 없는 리스크 플래그도 기록하지 않는다.
+- `riskFlags`는 화면에서 "리서치 점검 배지"로 노출될 예정(US-8 이후 스토리)이므로,
+  운영자가 한눈에 리스크 종류를 식별할 수 있도록 `type`을 실제 성격에 맞게 고른다.
 
 ## Out of Scope
 

@@ -156,7 +156,7 @@
 ---
 
 ### US-8. research.json 스키마 v2 (riskFlags)
-- [ ] **운영자로서, 리서치 시 발견한 중대 리스크를 구조화해 기록하고 화면에 전달하고 싶다.**
+- [x] **운영자로서, 리서치 시 발견한 중대 리스크를 구조화해 기록하고 화면에 전달하고 싶다.**
 
 **구현:** `src/lib/researchSchema.js` 확장 + `.claude/commands/research.md` 1개 절 추가
 - 스키마 v2: item에 `riskFlags: [{type, description}]` (type enum:

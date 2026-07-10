@@ -1,8 +1,10 @@
-// research.json 스키마 검증 (PRD_Nasdaq6.md §4.2, 버전 1)
+// research.json 스키마 검증 (PRD_Nasdaq6.md §4.2, 버전 1 + PRD_Nasdaq8 §4.5, 버전 2 riskFlags)
 // 의존성 없이 손으로 구현 — ajv 등 신규 npm 의존성 추가는 US-2 범위 밖 (prd-research-agent.md Out of Scope).
 
 const SENTIMENT_VALUES = ['positive', 'neutral', 'negative']
 const ORIGIN_VALUES = ['recommended', 'userRequested']
+const RISK_FLAG_TYPES = ['earnings_imminent', 'litigation', 'regulatory', 'guidance_cut', 'other']
+const SUPPORTED_SCHEMA_VERSIONS = [1, 2]
 const SCHEMA_VERSION = 1
 
 const isNonEmptyString = (v) => typeof v === 'string' && v.length > 0
@@ -22,7 +24,18 @@ function validateSource(source, path, errors) {
   }
 }
 
-function validateItem(item, path, errors) {
+function validateRiskFlag(flag, path, errors) {
+  if (typeof flag !== 'object' || flag === null) {
+    errors.push(`${path}: riskFlag는 객체여야 합니다`)
+    return
+  }
+  if (!RISK_FLAG_TYPES.includes(flag.type)) {
+    errors.push(`${path}.type: ${RISK_FLAG_TYPES.join('/')} 중 하나여야 합니다`)
+  }
+  if (!isNonEmptyString(flag.description)) errors.push(`${path}.description: 필수 문자열입니다`)
+}
+
+function validateItem(item, path, errors, schemaVersion) {
   if (typeof item !== 'object' || item === null) {
     errors.push(`${path}: item은 객체여야 합니다`)
     return
@@ -58,6 +71,16 @@ function validateItem(item, path, errors) {
   } else {
     item.sources.forEach((s, i) => validateSource(s, `${path}.sources[${i}]`, errors))
   }
+
+  // riskFlags(v2, US-8): v1 문서에는 없는 필드이므로 schemaVersion===2일 때만 검증한다.
+  // v1은 하위 호환을 위해 riskFlags 존재 여부와 무관하게 검증하지 않음(researchLoader가 []로 정규화).
+  if (schemaVersion === 2) {
+    if (!Array.isArray(item.riskFlags)) {
+      errors.push(`${path}.riskFlags: 배열이어야 합니다`)
+    } else {
+      item.riskFlags.forEach((f, i) => validateRiskFlag(f, `${path}.riskFlags[${i}]`, errors))
+    }
+  }
 }
 
 function validateSkipped(skipped, path, errors) {
@@ -69,15 +92,15 @@ function validateSkipped(skipped, path, errors) {
   if (!isNonEmptyString(skipped.reason)) errors.push(`${path}.reason: 필수 문자열입니다`)
 }
 
-/** research.json(버전 1) 구조를 검증한다. 반환: { valid, errors } */
+/** research.json(버전 1 또는 2) 구조를 검증한다. 반환: { valid, errors } */
 export function validateResearch(data) {
   const errors = []
 
   if (typeof data !== 'object' || data === null) {
     return { valid: false, errors: ['data: 객체여야 합니다'] }
   }
-  if (data.schemaVersion !== SCHEMA_VERSION) {
-    errors.push(`schemaVersion: ${SCHEMA_VERSION}이어야 합니다 (받은 값: ${data.schemaVersion})`)
+  if (!SUPPORTED_SCHEMA_VERSIONS.includes(data.schemaVersion)) {
+    errors.push(`schemaVersion: ${SUPPORTED_SCHEMA_VERSIONS.join(' 또는 ')}이어야 합니다 (받은 값: ${data.schemaVersion})`)
   }
   if (!isNonEmptyString(data.researchedAt)) errors.push('researchedAt: 필수 문자열입니다')
   if (!isNonEmptyString(data.basedOnDataOf)) errors.push('basedOnDataOf: 필수 문자열입니다')
@@ -85,7 +108,7 @@ export function validateResearch(data) {
   if (!Array.isArray(data.items)) {
     errors.push('items: 배열이어야 합니다')
   } else {
-    data.items.forEach((item, i) => validateItem(item, `items[${i}]`, errors))
+    data.items.forEach((item, i) => validateItem(item, `items[${i}]`, errors, data.schemaVersion))
   }
 
   if (data.skipped !== undefined) {
@@ -99,4 +122,4 @@ export function validateResearch(data) {
   return { valid: errors.length === 0, errors }
 }
 
-export { SCHEMA_VERSION as RESEARCH_SCHEMA_VERSION }
+export { SCHEMA_VERSION as RESEARCH_SCHEMA_VERSION, RISK_FLAG_TYPES }

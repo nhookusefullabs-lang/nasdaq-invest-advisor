@@ -74,8 +74,8 @@ describe('validateResearch - individual failure cases', () => {
     expect(valid).toBe(true)
   })
 
-  it('rejects a wrong schemaVersion', () => {
-    const doc = { ...validDoc([validItem()]), schemaVersion: 2 }
+  it('rejects an unsupported schemaVersion', () => {
+    const doc = { ...validDoc([validItem()]), schemaVersion: 3 }
     const { valid, errors } = validateResearch(doc)
     expect(valid).toBe(false)
     expect(errors.some((e) => e.includes('schemaVersion'))).toBe(true)
@@ -92,5 +92,56 @@ describe('validateResearch - individual failure cases', () => {
     const item = validItem({ institutionalActivity: null, analystView: null })
     const { valid } = validateResearch(validDoc([item]))
     expect(valid).toBe(true)
+  })
+})
+
+describe('validateResearch - v2 riskFlags (US-8)', () => {
+  function v2Doc(items, overrides = {}) {
+    return { ...validDoc(items), schemaVersion: 2, ...overrides }
+  }
+
+  it('accepts a v1 document with no riskFlags field at all (backward compat)', () => {
+    const { valid, errors } = validateResearch(validDoc([validItem()]))
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('passes a v2 document whose items carry valid riskFlags', () => {
+    const item = validItem({
+      riskFlags: [
+        { type: 'earnings_imminent', description: '실적 발표 임박(7/15)' },
+        { type: 'litigation', description: '특허 소송 진행 중' },
+      ],
+    })
+    const { valid, errors } = validateResearch(v2Doc([item]))
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('passes a v2 document whose items carry an empty riskFlags array', () => {
+    const { valid } = validateResearch(v2Doc([validItem({ riskFlags: [] })]))
+    expect(valid).toBe(true)
+  })
+
+  it('rejects a v2 item with an invalid riskFlags type value', () => {
+    const item = validItem({ riskFlags: [{ type: 'bankruptcy', description: '설명' }] })
+    const { valid, errors } = validateResearch(v2Doc([item]))
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('riskFlags') && e.includes('type'))).toBe(true)
+  })
+
+  it('rejects a v2 item whose riskFlags entry is missing a description', () => {
+    const item = validItem({ riskFlags: [{ type: 'regulatory' }] })
+    const { valid, errors } = validateResearch(v2Doc([item]))
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('riskFlags') && e.includes('description'))).toBe(true)
+  })
+
+  it('rejects a v2 item missing the riskFlags field entirely', () => {
+    const item = validItem()
+    delete item.riskFlags
+    const { valid, errors } = validateResearch(v2Doc([item]))
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('riskFlags'))).toBe(true)
   })
 })
