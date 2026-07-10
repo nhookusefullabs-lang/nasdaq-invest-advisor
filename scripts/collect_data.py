@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 """
 나스닥100 데이터 수집 스크립트 (PRD_Nasdaq4 §7)
-12개월 수집 — 52주 신고가/신저가 지표용 (PRD_Nasdaq7 §2)
+2년 수집 — 미너비니 트렌드 템플릿(SMA200·52주 고저)과 v9 백테스트용 (PRD_Nasdaq8 §7, US-1)
 
-- yfinance로 나스닥100 종목의 12개월치 일별 OHLCV를 1회 수집한다.
-- 지표(RSI/MACD)의 워밍업(~35거래일)과 52주 신고가/신저가(252거래일)를 확보하기 위해
-  12개월치를 받고, 시뮬레이션·화면 표시는 웹앱에서 최근 63거래일만 사용한다.
+- yfinance로 나스닥100 종목의 2년치 일별 OHLCV를 1회 수집한다.
+- 지표(RSI/MACD)의 워밍업(~35거래일), 52주 신고가/신저가(252거래일), SMA200 워밍업,
+  v9 백테스트 대비 여유 기간을 확보하기 위해 2년치를 받고, 시뮬레이션·화면 표시는
+  웹앱에서 최근 63거래일만 사용한다.
 - 데이터 부족·결측으로 지표 계산이 불안정한 종목은 제외하고 사유를 로그로 남긴다.
 - 결과를 public/data/nasdaq100.json 으로 저장한다.
 
@@ -46,14 +47,16 @@ except ImportError as e:  # pragma: no cover
 # ---------------------------------------------------------------------------
 
 # 수집 기간: MACD(26 EMA)+시그널(9 EMA) 워밍업(~35거래일) + 최근 63거래일 표시분 +
-# 52주 신고가/신저가(252거래일) 확보.
-# "12mo"(="1y")는 실측상 251거래일만 반환해 252거래일 문턱을 1일 못 채운다(캘린더 정렬에
-# 따라 250~251로 흔들림) — "13mo"로 여유를 둬 항상 252거래일을 넘기게 한다.
-PERIOD = "13mo"
+# 52주 신고가/신저가(252거래일) + 미너비니 SMA200 워밍업(200거래일) + v9 백테스트 여유분
+# 확보를 위해 "2y"(약 504거래일)로 확대한다 (PRD_Nasdaq8 §7, US-1).
+# 참고: "12mo"(="1y")는 실측상 251거래일만 반환해 252거래일 문턱을 1일 못 채우는 문제가
+# 있었다(캘린더 정렬에 따라 250~251로 흔들림) — "2y"는 이 문제에서도 안전하게 벗어난다.
+PERIOD = "2y"
 INTERVAL = "1d"
 
-# 지표 계산이 안정적으로 가능한 최소 거래일 수.
-# 52주 신고가/신저가(252거래일)를 안전하게 덮는 하한.
+# 지표 계산이 안정적으로 가능한 최소 거래일 수 — v7과 동일하게 유지한다 (PRD_Nasdaq8 US-1:
+# "수집 제외 기준은 v7과 동일하게 유지". 미너비니 모드가 요구하는 252거래일 미만 판정은
+# 수집 단계에서 종목을 제외하지 않고, 클라이언트의 hasFullYearData()가 개별 처리한다).
 MIN_TRADING_DAYS = 200
 
 # 배치 다운로드 크기 (yfinance rate-limit 완화)
@@ -378,7 +381,11 @@ def main() -> int:
     if excluded:
         log("제외 목록: " + ", ".join(f"{t}({r.split(':')[0]})" for t, r in excluded))
     log(f"데이터 기준일(generatedAt): {generated_at}")
-    log(f"저장: {OUT_PATH.relative_to(ROOT)}  (크기 {OUT_PATH.stat().st_size:,} bytes)")
+    out_size_bytes = OUT_PATH.stat().st_size
+    out_size_mb = out_size_bytes / (1024 * 1024)
+    log(f"저장: {OUT_PATH.relative_to(ROOT)}  (크기 {out_size_bytes:,} bytes, {out_size_mb:.2f} MB)")
+    if out_size_mb > 10:
+        log(f"[WARN] 파일 크기가 10MB를 초과했습니다 ({out_size_mb:.2f} MB) — GitHub Pages 전송량 확인 필요")
     flush_log()
     return 0
 
