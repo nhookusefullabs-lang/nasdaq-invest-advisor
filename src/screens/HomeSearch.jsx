@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ResearchRequestToggle from '../components/ResearchRequestToggle.jsx'
 
 export default function HomeSearch({
   searchQuery,
@@ -7,6 +8,8 @@ export default function HomeSearch({
   onFiltersChange,
   filteredTickers,
   week52ExcludedCount = 0,
+  researchRequests = [],
+  onToggleResearchRequest,
   onGoToRecommend,
 }) {
   const update = (patch) => onFiltersChange({ ...filters, ...patch })
@@ -166,10 +169,17 @@ export default function HomeSearch({
               <span className="text-gray-500">{t.name}</span>
               <span className="text-gray-400"> · {t.sector}</span>
             </div>
-            <div className="flex gap-1">
+            <div className="flex items-center gap-1">
               {t.isLeadingSector && <Badge color="blue">주도섹터</Badge>}
               {t.indicators.rsi14 >= 70 && <Badge color="red">과열</Badge>}
               {t.indicators.rsi14 <= 30 && <Badge color="green">과매도</Badge>}
+              {onToggleResearchRequest && (
+                <ResearchRequestToggle
+                  ticker={t.ticker}
+                  requested={researchRequests.includes(t.ticker)}
+                  onToggle={onToggleResearchRequest}
+                />
+              )}
             </div>
           </div>
         ))}

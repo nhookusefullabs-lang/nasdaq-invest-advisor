@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest'
 import { describe, it, expect, afterEach } from 'vitest'
-import { render, screen, cleanup } from '@testing-library/react'
+import { render, screen, within, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import Recommend from './Recommend.jsx'
 
@@ -145,5 +145,57 @@ describe('Recommend - preset segment (US-9)', () => {
     )
     expect(screen.getByText(/공격형 기준 매수 신호 통과 종목이 부족해/)).toBeInTheDocument()
     expect(screen.getByText(/공격형 기준 매수 신호가 충분치 않습니다/)).toBeInTheDocument()
+  })
+})
+
+describe('Recommend - research request toggle (US-11)', () => {
+  it('renders a research-request toggle on every card and calls onToggleResearchRequest with the ticker', async () => {
+    const user = userEvent.setup()
+    let toggled = null
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeRecommendation()}
+        researchRequests={[]}
+        onToggleResearchRequest={(t) => (toggled = t)}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    expect(screen.getAllByText('리서치 요청').length).toBe(2) // one per card in makeRecommendation()
+    const axonCard = screen.getByText('AXON').closest('.border')
+    await user.click(within(axonCard).getByRole('button', { name: '리서치 요청' }))
+    expect(toggled).toBe('AXON')
+  })
+
+  it('clicking the toggle does not also select the ticker checkbox (label click-bubbling regression)', async () => {
+    const user = userEvent.setup()
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeRecommendation()}
+        researchRequests={[]}
+        onToggleResearchRequest={noop}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    await user.click(screen.getAllByRole('button', { name: '리서치 요청' })[0])
+    expect(screen.getAllByRole('checkbox').every((cb) => !cb.checked)).toBe(true)
+  })
+
+  it('does not render a toggle when onToggleResearchRequest is not passed (regression)', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeRecommendation()}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    expect(screen.queryByText('리서치 요청')).not.toBeInTheDocument()
   })
 })

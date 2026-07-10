@@ -6,6 +6,7 @@ import { recommend } from './lib/recommend.js'
 import { PRESETS, DEFAULT_PRESET_KEY } from './lib/presets.js'
 import { loadPersistedState, savePersistedState, DEFAULT_UI_STATE } from './lib/persistence.js'
 import NavTabs from './components/NavTabs.jsx'
+import ResearchRequestList from './components/ResearchRequestList.jsx'
 import HomeSearch from './screens/HomeSearch.jsx'
 import Recommend from './screens/Recommend.jsx'
 import Simulation from './screens/Simulation.jsx'
@@ -128,6 +129,21 @@ export default function App() {
   const resetWeightsToEqual = () =>
     setUiState((s) => ({ ...s, weights: equalSplit(s.selectedTickers) }))
 
+  // 리서치 요청 목록 (US-11, v6 연계 절충안 A) — 담기/해제 토글, 중복 자동 방지 (배열 필터/추가)
+  const toggleResearchRequest = (ticker) =>
+    setUiState((s) => {
+      const isRequested = s.researchRequests.includes(ticker)
+      const researchRequests = isRequested
+        ? s.researchRequests.filter((t) => t !== ticker)
+        : [...s.researchRequests, ticker]
+      return { ...s, researchRequests }
+    })
+
+  const removeResearchRequest = (ticker) =>
+    setUiState((s) => ({ ...s, researchRequests: s.researchRequests.filter((t) => t !== ticker) }))
+
+  const clearResearchRequests = () => setUiState((s) => ({ ...s, researchRequests: [] }))
+
   if (loadError) {
     return <CenteredMessage>데이터 로드 실패: {loadError}</CenteredMessage>
   }
@@ -144,6 +160,12 @@ export default function App() {
 
       <NavTabs current={uiState.currentScreen} onChange={setScreen} />
 
+      <ResearchRequestList
+        tickers={uiState.researchRequests}
+        onRemove={removeResearchRequest}
+        onClearAll={clearResearchRequests}
+      />
+
       {uiState.currentScreen === 'home' && (
         <HomeSearch
           searchQuery={uiState.searchQuery}
@@ -152,6 +174,8 @@ export default function App() {
           onFiltersChange={(filters) => setUiState((s) => ({ ...s, filters }))}
           filteredTickers={filteredTickers}
           week52ExcludedCount={week52ExcludedCount}
+          researchRequests={uiState.researchRequests}
+          onToggleResearchRequest={toggleResearchRequest}
           onGoToRecommend={() => setScreen('recommend')}
         />
       )}
@@ -166,6 +190,8 @@ export default function App() {
           customParams={uiState.customParams}
           onCustomParamChange={changeCustomParam}
           onResetToDefault={() => changePreset(DEFAULT_PRESET_KEY)}
+          researchRequests={uiState.researchRequests}
+          onToggleResearchRequest={toggleResearchRequest}
           selectedTickers={uiState.selectedTickers}
           onToggleSelect={toggleSelectedTicker}
           onGoToSimulation={() => setScreen('simulation')}
@@ -177,6 +203,8 @@ export default function App() {
           generatedAt={dataset.generatedAt}
           allTickerData={availableTickerData}
           researchMap={researchMap}
+          researchRequests={uiState.researchRequests}
+          onToggleResearchRequest={toggleResearchRequest}
           selectedTickers={uiState.selectedTickers}
           selectedTickerData={selectedTickerData}
           onToggleTicker={toggleSelectedTicker}

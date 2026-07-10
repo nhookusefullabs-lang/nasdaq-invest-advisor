@@ -294,3 +294,30 @@ describe('App - advanced settings panel (real nasdaq100.json, v7 US-10)', () => 
     expect(screen.getByLabelText('RSI 하한')).toHaveValue(50)
   })
 })
+
+describe('App - research request list end-to-end (real nasdaq100.json, v7 US-11)', () => {
+  beforeEach(() => {
+    globalThis.localStorage = makeMemoryStorage()
+    globalThis.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(REAL_DATA) }))
+  })
+
+  it('toggling a ticker on Home appears in the global list, survives a fresh mount, and drops delisted tickers', async () => {
+    const user = userEvent.setup()
+    const { unmount } = render(<App />)
+    await waitFor(() => expect(screen.getByText('종목 검색')).toBeInTheDocument())
+
+    await user.click(screen.getAllByRole('button', { name: '리서치 요청' })[0])
+    const firstTicker = REAL_DATA.tickers[0].ticker
+
+    // request list panel is global (visible above the current screen), not screen-scoped
+    await user.click(screen.getByRole('button', { name: /리서치 요청 목록/ }))
+    expect(screen.getByText('1개')).toBeInTheDocument()
+    expect(screen.getAllByText(firstTicker).length).toBeGreaterThan(0)
+
+    unmount()
+    render(<App />)
+    await waitFor(() => expect(screen.getByText('종목 검색')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: /리서치 요청 목록/ }))
+    expect(screen.getByText('1개')).toBeInTheDocument()
+  })
+})

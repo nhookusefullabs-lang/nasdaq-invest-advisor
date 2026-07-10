@@ -1,6 +1,7 @@
 import Disclaimer from '../components/Disclaimer.jsx'
 import ResearchSection from '../components/ResearchSection.jsx'
 import AdvancedSettingsPanel from '../components/AdvancedSettingsPanel.jsx'
+import ResearchRequestToggle from '../components/ResearchRequestToggle.jsx'
 import { PRESETS, PRESET_KEYS } from '../lib/presets.js'
 
 // preset 상태 문자열 -> 배너·보조 문구에 쓰는 표시 라벨. 'custom'은 US-10(고급 설정)에서
@@ -18,6 +19,8 @@ export default function Recommend({
   customParams,
   onCustomParamChange,
   onResetToDefault,
+  researchRequests = [],
+  onToggleResearchRequest,
   selectedTickers,
   onToggleSelect,
   onGoToSimulation,
@@ -106,6 +109,15 @@ export default function Recommend({
                 <p className="text-sm font-bold">{r.score.toFixed(1)}점</p>
               </div>
             </label>
+            {onToggleResearchRequest && (
+              <div className="mt-1">
+                <ResearchRequestToggle
+                  ticker={r.ticker}
+                  requested={researchRequests.includes(r.ticker)}
+                  onToggle={onToggleResearchRequest}
+                />
+              </div>
+            )}
             {researchMap?.get(r.ticker) && isNonDefaultPreset && (
               <p className="text-xs text-gray-400 mt-1">리서치 풀은 기본형 기준으로 선정되었습니다.</p>
             )}

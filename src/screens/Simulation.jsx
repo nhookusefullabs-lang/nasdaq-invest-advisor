@@ -2,11 +2,14 @@ import Disclaimer from '../components/Disclaimer.jsx'
 import TickerPicker from '../components/TickerPicker.jsx'
 import PriceSparkline from '../components/PriceSparkline.jsx'
 import ResearchSection from '../components/ResearchSection.jsx'
+import ResearchRequestToggle from '../components/ResearchRequestToggle.jsx'
 
 export default function Simulation({
   generatedAt,
   allTickerData,
   researchMap,
+  researchRequests = [],
+  onToggleResearchRequest,
   selectedTickers,
   selectedTickerData,
   onToggleTicker,
@@ -32,6 +35,13 @@ export default function Simulation({
                   {t.ticker} <span className="text-gray-500 font-normal">{t.name}</span>
                 </p>
                 <div className="flex items-center gap-3">
+                  {onToggleResearchRequest && (
+                    <ResearchRequestToggle
+                      ticker={t.ticker}
+                      requested={researchRequests.includes(t.ticker)}
+                      onToggle={onToggleResearchRequest}
+                    />
+                  )}
                   <p className={`font-bold text-sm ${positive ? 'text-red-600' : 'text-blue-600'}`}>
                     {positive ? '+' : ''}
                     {sim.returnPct.toFixed(2)}%

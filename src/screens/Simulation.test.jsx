@@ -2,6 +2,7 @@
 import '@testing-library/jest-dom/vitest'
 import { describe, it, expect, afterEach } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import Simulation from './Simulation.jsx'
 
 afterEach(() => cleanup())
@@ -93,5 +94,40 @@ describe('Simulation - research integration (US-7)', () => {
       />
     )
     expect(screen.queryByText('AI 리서치')).not.toBeInTheDocument()
+  })
+})
+
+describe('Simulation - research request toggle (US-11)', () => {
+  it('renders a research-request toggle for each ticker card and calls onToggleResearchRequest', async () => {
+    const user = userEvent.setup()
+    let toggled = null
+    render(
+      <Simulation
+        generatedAt="2026-07-08"
+        allTickerData={[makeTickerData()]}
+        researchRequests={[]}
+        onToggleResearchRequest={(t) => (toggled = t)}
+        selectedTickers={['NVDA']}
+        selectedTickerData={[makeTickerData()]}
+        onToggleTicker={noop}
+        onGoToPortfolio={noop}
+      />
+    )
+    await user.click(screen.getByRole('button', { name: '리서치 요청' }))
+    expect(toggled).toBe('NVDA')
+  })
+
+  it('does not render a toggle (or crash) when onToggleResearchRequest is not passed (regression)', () => {
+    render(
+      <Simulation
+        generatedAt="2026-07-08"
+        allTickerData={[makeTickerData()]}
+        selectedTickers={['NVDA']}
+        selectedTickerData={[makeTickerData()]}
+        onToggleTicker={noop}
+        onGoToPortfolio={noop}
+      />
+    )
+    expect(screen.queryByText('리서치 요청')).not.toBeInTheDocument()
   })
 })

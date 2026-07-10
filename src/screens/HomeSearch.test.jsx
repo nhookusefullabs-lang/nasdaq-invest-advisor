@@ -137,3 +137,39 @@ describe('HomeSearch - filter groups (US-7)', () => {
     expect(screen.getByText('2개 종목 표시 중')).toBeInTheDocument()
   })
 })
+
+describe('HomeSearch - research request toggle (US-11)', () => {
+  it('renders a toggle per ticker row and calls onToggleResearchRequest with the ticker', async () => {
+    const user = userEvent.setup()
+    let toggled = null
+    render(
+      <HomeSearch
+        searchQuery=""
+        onSearchQueryChange={noop}
+        filters={DEFAULT_FILTER_STATE}
+        onFiltersChange={noop}
+        filteredTickers={[makeTicker('AAPL'), makeTicker('MSFT')]}
+        researchRequests={[]}
+        onToggleResearchRequest={(t) => (toggled = t)}
+        onGoToRecommend={noop}
+      />
+    )
+    expect(screen.getAllByText('리서치 요청').length).toBe(2)
+    await user.click(screen.getAllByRole('button', { name: '리서치 요청' })[0])
+    expect(toggled).toBe('AAPL')
+  })
+
+  it('does not render a toggle when onToggleResearchRequest is not passed (regression)', () => {
+    render(
+      <HomeSearch
+        searchQuery=""
+        onSearchQueryChange={noop}
+        filters={DEFAULT_FILTER_STATE}
+        onFiltersChange={noop}
+        filteredTickers={[makeTicker('AAPL')]}
+        onGoToRecommend={noop}
+      />
+    )
+    expect(screen.queryByText('리서치 요청')).not.toBeInTheDocument()
+  })
+})
