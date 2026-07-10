@@ -52,3 +52,27 @@
 - 다음 스토리 메모: US-5 (constants.js 임계 상수 + filters.js 판정 함수 5종.
   ATR 백분위는 유니버스 dataSufficient 종목 전체 분포 기준 — 개별 종목 함수가 아니라
   풀 단위 계산이 필요함에 유의. 52주 필터는 제외 종목 수도 함께 반환해야 함).
+
+## Iteration 5 — US-5. 필터 판정 로직 + 임계 상수
+- 완료 스토리: US-5
+- 변경 파일: src/lib/constants.js(신규, 7개 상수), src/lib/filters.js(passesBollinger,
+  passesWeek52, countWeek52Excluded, passesStochastic, passesAtrPercentile, passesObv 추가
+  — 기존 applyFilters·DEFAULT_FILTER_STATE 무수정), src/lib/filters.test.js(17개 테스트 추가)
+- 설계 결정: 판정 함수는 티커 전체 객체가 아니라 **이미 계산된 지표 값**(bands, week52,
+  stoch, atrPercentValue, obvArray)을 인자로 받는 순수 함수로 설계 — deriveTickerData.js에
+  이 v7 지표들을 실제로 채워 넣는 배선(스크리닝 UI와 실데이터 연결)은 아직 어느 스토리에도
+  명시돼 있지 않으므로, 이후 US-7(화면1 UI 재편) 시점에 필요하면 그때 추가하기로 하고
+  이번 스토리에서는 손대지 않음(범위 최소화). ATR 백분위는 percentileRank(value,population)
+  = (value 이하 개수)/전체×100 방식으로 계산 — population=[1..10]일 때 value=3→30,
+  value=7→70이 정확히 경계에 오는 성질을 이용해 경계 테스트를 구성함.
+- 테스트 수 변화: 121 → 138 (+17), 전체 통과. npm run build 통과(번들 크기 변화 없음 —
+  아직 App에서 import되지 않는 순수 라이브러리 코드이므로 트리셰이킹됨, 정상).
+- 운영자 액션 필요: 없음
+- ⚠ 다음 스토리(US-6) 착수 전 확인사항: deriveTickerData.js에 v7 지표(bollinger/week52/
+  stochastic/atrPercent/obv) 필드가 아직 없다는 점을 인지할 것. US-6은 localStorage
+  스키마 v2(필터 상태 모델)만 다루므로 이 갭과 무관하게 진행 가능하지만, US-7(화면1 UI)
+  구현 시점에는 반드시 deriveTickerData.js 확장이 선행되어야 신규 필터가 실제로 동작함
+  — U-7 스토리 안에서 처리하거나, 필요시 진행 기록에 새 서브 작업으로 남길 것.
+- 다음 스토리 메모: US-6 (필터 state에 신규 5종 추가 + persistence.js 스키마 v1→v2
+  마이그레이션. 기존 선택종목/비중/필터 보존 + customParams 범위검증 + researchRequests
+  유니버스 필터링).
