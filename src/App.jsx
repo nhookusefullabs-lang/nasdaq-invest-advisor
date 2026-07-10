@@ -122,6 +122,7 @@ export default function App() {
         <Recommend
           generatedAt={dataset.generatedAt}
           recommendation={recommendation}
+          researchMap={researchMap}
           selectedTickers={uiState.selectedTickers}
           onToggleSelect={toggleSelectedTicker}
           onGoToSimulation={() => setScreen('simulation')}

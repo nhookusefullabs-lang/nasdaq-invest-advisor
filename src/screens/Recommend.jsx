@@ -1,6 +1,7 @@
 import Disclaimer from '../components/Disclaimer.jsx'
+import ResearchSection from '../components/ResearchSection.jsx'
 
-export default function Recommend({ generatedAt, recommendation, selectedTickers, onToggleSelect, onGoToSimulation }) {
+export default function Recommend({ generatedAt, recommendation, researchMap, selectedTickers, onToggleSelect, onGoToSimulation }) {
   const { list, relaxationApplied, insufficientSignal } = recommendation
 
   return (
@@ -25,30 +26,30 @@ export default function Recommend({ generatedAt, recommendation, selectedTickers
 
       <div className="space-y-2 mb-4">
         {list.map((r) => (
-          <label
-            key={r.ticker}
-            className="flex items-center justify-between border border-gray-200 rounded px-3 py-2 cursor-pointer hover:bg-gray-50"
-          >
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                checked={selectedTickers.includes(r.ticker)}
-                onChange={() => onToggleSelect(r.ticker)}
-              />
-              <div>
-                <p className="font-semibold text-sm flex items-center gap-1.5">
-                  {r.ticker} <span className="text-gray-500 font-normal">{r.name}</span>
-                  {!r.signalPassed && (
-                    <span className="px-1.5 py-0.5 rounded text-xs bg-purple-100 text-purple-700">고득점 편입</span>
-                  )}
-                </p>
-                <p className="text-xs text-gray-500">{r.reasons}</p>
+          <div key={r.ticker} className="border border-gray-200 rounded px-3 py-2 hover:bg-gray-50">
+            <label className="flex items-center justify-between cursor-pointer">
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={selectedTickers.includes(r.ticker)}
+                  onChange={() => onToggleSelect(r.ticker)}
+                />
+                <div>
+                  <p className="font-semibold text-sm flex items-center gap-1.5">
+                    {r.ticker} <span className="text-gray-500 font-normal">{r.name}</span>
+                    {!r.signalPassed && (
+                      <span className="px-1.5 py-0.5 rounded text-xs bg-purple-100 text-purple-700">고득점 편입</span>
+                    )}
+                  </p>
+                  <p className="text-xs text-gray-500">{r.reasons}</p>
+                </div>
               </div>
-            </div>
-            <div className="text-right">
-              <p className="text-sm font-bold">{r.score.toFixed(1)}점</p>
-            </div>
-          </label>
+              <div className="text-right">
+                <p className="text-sm font-bold">{r.score.toFixed(1)}점</p>
+              </div>
+            </label>
+            <ResearchSection research={researchMap?.get(r.ticker)} />
+          </div>
         ))}
         {list.length === 0 && (
           <p className="text-sm text-gray-400 py-6 text-center">추천 가능한 종목이 없습니다.</p>
