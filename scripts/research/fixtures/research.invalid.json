@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "researchedAt": "2026-07-11",
+  "basedOnDataOf": "2026-07-08",
+  "items": [
+    {
+      "ticker": "AXON",
+      "sentiment": "very-positive",
+      "summary": "",
+      "catalysts": ["신규 계약"],
+      "risks": ["밸류에이션 부담"],
+      "sources": [],
+      "signalPassed": false,
+      "origin": "recommended"
+    }
+  ],
+  "skipped": []
+}

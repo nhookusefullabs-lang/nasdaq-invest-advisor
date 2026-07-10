@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "researchedAt": "2026-07-11",
+  "basedOnDataOf": "2026-07-08",
+  "items": [
+    {
+      "ticker": "AXON",
+      "sentiment": "positive",
+      "summary": "최근 신규 계약 발표와 실적 기대감으로 상승세를 보이고 있다.",
+      "catalysts": ["신규 정부기관 계약 체결", "차기 제품 발표 예정"],
+      "risks": ["밸류에이션 부담", "경쟁사 신제품 출시"],
+      "institutionalActivity": "1분기 13F 기준 일부 기관 신규 편입 확인",
+      "analystView": "2026-07-10 기준 TipRanks 컨센서스 '매수 우위'",
+      "sources": [
+        { "title": "Axon Q2 실적 발표", "url": "https://example.com/axon-q2", "date": "2026-07-09", "operatorProvided": false }
+      ],
+      "signalPassed": false,
+      "origin": "recommended"
+    },
+    {
+      "ticker": "NVDA",
+      "sentiment": "neutral",
+      "summary": "관심 종목으로 직접 추가되어 리서치되었다.",
+      "catalysts": [],
+      "risks": ["단기 변동성 확대"],
+      "institutionalActivity": null,
+      "analystView": null,
+      "sources": [
+        { "title": "NVDA 뉴스 요약", "url": "https://example.com/nvda-news", "date": "2026-07-09" }
+      ],
+      "origin": "userRequested"
+    }
+  ],
+  "skipped": [
+    { "ticker": "XXXX", "reason": "검색 결과 부족" }
+  ]
+}
