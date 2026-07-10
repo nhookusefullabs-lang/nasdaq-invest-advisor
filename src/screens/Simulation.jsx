@@ -1,10 +1,12 @@
 import Disclaimer from '../components/Disclaimer.jsx'
 import TickerPicker from '../components/TickerPicker.jsx'
 import PriceSparkline from '../components/PriceSparkline.jsx'
+import ResearchSection from '../components/ResearchSection.jsx'
 
 export default function Simulation({
   generatedAt,
   allTickerData,
+  researchMap,
   selectedTickers,
   selectedTickerData,
   onToggleTicker,
@@ -55,6 +57,7 @@ export default function Simulation({
                 <PriceSparkline label="3개월" points={t.chart.threeMonth} />
                 <PriceSparkline label="6개월" points={t.chart.sixMonth} />
               </div>
+              <ResearchSection research={researchMap?.get(t.ticker)} />
             </div>
           )
         })}

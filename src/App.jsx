@@ -133,6 +133,7 @@ export default function App() {
         <Simulation
           generatedAt={dataset.generatedAt}
           allTickerData={availableTickerData}
+          researchMap={researchMap}
           selectedTickers={uiState.selectedTickers}
           selectedTickerData={selectedTickerData}
           onToggleTicker={toggleSelectedTicker}
