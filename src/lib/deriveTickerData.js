@@ -1,4 +1,19 @@
-import { sma, ema, rsiWilder, macd, disparity, volumeTrend, goldenCrossWithin, dailyReturns, stddev } from './indicators.js'
+import {
+  sma,
+  ema,
+  rsiWilder,
+  macd,
+  disparity,
+  volumeTrend,
+  goldenCrossWithin,
+  dailyReturns,
+  stddev,
+  bollingerBands,
+  week52HighLow,
+  stochastic,
+  atrPercent,
+  obv,
+} from './indicators.js'
 
 // 3개월 시뮬레이션·화면 표시 창 (PRD §4.3, §7): 최근 63거래일
 const SIM_WINDOW = 63
@@ -82,6 +97,12 @@ export function deriveTickerData(raw) {
       goldenCross5: goldenCrossWithin(macdLine, signalLine, 5),
       goldenCross10: goldenCrossWithin(macdLine, signalLine, 10),
       volatility,
+      // v7 신규 필터 5종 지표 (PRD_Nasdaq7 §4.1, US-7) — 추천 스코어링에는 사용하지 않는다.
+      bollinger: bollingerBands(series),
+      week52: week52HighLow(series), // 252거래일 미만이면 null (US-5 countWeek52Excluded 참고)
+      stochastic: stochastic(series),
+      atrPercent: atrPercent(series),
+      obv: obv(series),
     },
     simulation: {
       anchorDate: anchor.date,

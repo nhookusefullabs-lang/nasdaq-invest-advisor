@@ -71,6 +71,79 @@ describe('applyFilters', () => {
   })
 })
 
+// --- applyFilters × v7 신규 필터 5종 통합 (US-7) ---
+
+function tv7(ticker, overrides = {}) {
+  return t(ticker, ticker, {
+    indicators: {
+      disparity: 0,
+      volTrend: 0,
+      rsi14: 50,
+      currentClose: 100,
+      bollinger: { middle: 100, upper: 110, lower: 90 },
+      week52: { high: 200, low: 50 },
+      stochastic: { slowK: 50, slowD: 50 },
+      atrPercent: 5,
+      obv: Array.from({ length: 20 }, () => 0),
+    },
+    ...overrides,
+  })
+}
+
+describe('applyFilters - v7 filters wired in (US-7)', () => {
+  it('regression: all-off state (default) returns the same set as before v7 (unaffected by new indicator fields)', () => {
+    const tickers = [tv7('A'), tv7('B')]
+    expect(applyFilters(tickers, DEFAULT_FILTER_STATE).map((r) => r.ticker)).toEqual(['A', 'B'])
+  })
+
+  it('bollingerState filters tickers by passesBollinger result', () => {
+    const tickers = [
+      tv7('LOWER', { indicators: { ...tv7('LOWER').indicators, currentClose: 91 } }), // <= 90*1.02
+      tv7('MID', { indicators: { ...tv7('MID').indicators, currentClose: 100 } }),
+    ]
+    const result = applyFilters(tickers, { ...DEFAULT_FILTER_STATE, bollingerState: 'lowerProximity' })
+    expect(result.map((r) => r.ticker)).toEqual(['LOWER'])
+  })
+
+  it('week52State filters tickers by passesWeek52 result', () => {
+    const tickers = [
+      tv7('NEARHIGH', { indicators: { ...tv7('NEARHIGH').indicators, currentClose: 195 } }), // >= 200*0.95
+      tv7('MID', { indicators: { ...tv7('MID').indicators, currentClose: 100 } }),
+    ]
+    const result = applyFilters(tickers, { ...DEFAULT_FILTER_STATE, week52State: 'nearHigh' })
+    expect(result.map((r) => r.ticker)).toEqual(['NEARHIGH'])
+  })
+
+  it('stochasticState filters tickers by passesStochastic result', () => {
+    const tickers = [
+      tv7('OVERSOLD', { indicators: { ...tv7('OVERSOLD').indicators, stochastic: { slowK: 15, slowD: 15 } } }),
+      tv7('MID'),
+    ]
+    const result = applyFilters(tickers, { ...DEFAULT_FILTER_STATE, stochasticState: 'oversold' })
+    expect(result.map((r) => r.ticker)).toEqual(['OVERSOLD'])
+  })
+
+  it('atrState filters tickers by universe percentile (universeAtrPercents param)', () => {
+    const tickers = [
+      tv7('LOWVOL', { indicators: { ...tv7('LOWVOL').indicators, atrPercent: 3 } }),
+      tv7('HIVOL', { indicators: { ...tv7('HIVOL').indicators, atrPercent: 9 } }),
+    ]
+    const universeAtrPercents = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    const result = applyFilters(tickers, { ...DEFAULT_FILTER_STATE, atrState: 'low' }, '', universeAtrPercents)
+    expect(result.map((r) => r.ticker)).toEqual(['LOWVOL'])
+  })
+
+  it('obvState filters tickers by passesObv result', () => {
+    const risingObv = Array.from({ length: 19 }, () => 0).concat([1000])
+    const tickers = [
+      tv7('RISING', { indicators: { ...tv7('RISING').indicators, obv: risingObv } }),
+      tv7('FLAT'),
+    ]
+    const result = applyFilters(tickers, { ...DEFAULT_FILTER_STATE, obvState: 'rising' })
+    expect(result.map((r) => r.ticker)).toEqual(['RISING'])
+  })
+})
+
 // --- v7 신규 필터 판정 함수 (PRD_Nasdaq7 §3 Must 1~5, US-5) — 필터×옵션 10케이스 ---
 
 describe('passesBollinger', () => {

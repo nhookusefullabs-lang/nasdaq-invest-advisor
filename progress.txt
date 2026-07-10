@@ -99,3 +99,30 @@
   원래 PRD 기술보다 커질 수 있음 — deriveTickerData에 v7 지표 계산 추가 + applyFilters에
   신규 5종 필터 판정 배선까지 포함해야 "회귀 테스트"와 "판정 함수와 결과 일치" 승인 기준을
   충족 가능. 기존 필터 4종 로직·배치 외 변경 금지 원칙은 유지).
+
+## Iteration 7 — US-7. 화면1 필터 그룹핑 UI 재편 (+ US-5/6에서 남긴 배선 갭 해소)
+- 완료 스토리: US-7
+- 변경 파일:
+  - src/lib/deriveTickerData.js: indicators에 bollinger/week52/stochastic/atrPercent/obv
+    5개 필드 추가(기존 필드 무수정, 추가만) — v7 지표를 실제로 각 종목에 채워 넣는 배선.
+  - src/lib/buildDataset.js: dataset.universeAtrPercents(유니버스 dataSufficient 종목의
+    ATR% 모집단) 추가 — ATR 백분위 필터가 풀 단위 계산이 필요하기 때문.
+  - src/lib/filters.js: applyFilters()에 신규 5종 필터를 기존 4종 뒤에 이어 붙임
+    (4번째 인자 universeAtrPercents 추가, 기본값 [] — 기존 호출부 하위 호환).
+  - src/App.jsx: applyFilters 호출에 dataset.universeAtrPercents 전달, week52ExcludedCount
+    계산(countWeek52Excluded) 추가해 HomeSearch에 전달.
+  - src/screens/HomeSearch.jsx: 필터 영역을 PRD §4.2 표 그대로 5개 접이식 그룹(모멘텀/
+    추세·가격위치/거래량/변동성/시장구조)으로 재편. 그룹 헤더에 활성 필터 개수 배지.
+    52주 필터 켜짐 시 "데이터 12개월 미만 종목 N개 제외됨" 안내.
+  - 신규 테스트: filters.test.js에 applyFilters×v7필터 통합 6개, HomeSearch.test.jsx
+    신설 7개.
+- 갭 해소 확인: US-5/US-6에서 남긴 "deriveTickerData에 v7 지표 필드 없음" 갭을 이번
+  스토리에서 해소함 — 더 이상 진행 기록에 남길 갭 없음.
+- 테스트 수 변화: 142 → 155 (+13), 전체 통과(실데이터 e2e 포함 — week52는 현재 123일
+  데이터라 전부 null, 정상). npm run build 통과(번들 178.68kB→185.71kB, 신규 UI 반영).
+- 운영자 액션 필요: 없음 (52주 필터는 12개월 데이터가 실제로 재수집되기 전까지는 모든
+  종목이 제외 상태로 동작 — US-1에서 이미 기록한 운영자 액션과 동일 건).
+- 다음 스토리 메모: US-8 (recommend.js 설정 객체화 + presets.js 신설. 핵심 회귀 기준:
+  기본형 설정 실행 결과가 리팩터링 전과 완전 동일해야 함 — 실데이터 스냅샷 비교 테스트
+  필수. 2단계 배점(60/30/10)은 설정 대상 아님, v6 US-1 CLI도 계속 기본형으로 동일 결과
+  내야 함에 유의).

@@ -25,7 +25,11 @@ export const DEFAULT_FILTER_STATE = {
   obvState: 'off', // 'off' | 'rising' | 'falling'
 }
 
-export function applyFilters(tickers, filters, query = '') {
+/**
+ * universeAtrPercents: buildDataset()이 만든 유니버스 전체의 ATR% 모집단 (ATR 필터 백분위 계산용).
+ * 기존 필터 4종의 판정 로직·순서는 변경하지 않았다 — 신규 5종은 그 뒤에 이어 붙였다.
+ */
+export function applyFilters(tickers, filters, query = '', universeAtrPercents = []) {
   const q = query.trim().toLowerCase()
   return tickers
     .filter((t) => t.dataSufficient)
@@ -38,6 +42,25 @@ export function applyFilters(tickers, filters, query = '') {
       if (filters.rsiState === 'oversold') return t.indicators.rsi14 <= 30
       return true
     })
+    .filter(
+      (t) =>
+        filters.bollingerState === 'off' ||
+        passesBollinger(t.indicators.currentClose, t.indicators.bollinger, filters.bollingerState)
+    )
+    .filter(
+      (t) =>
+        filters.week52State === 'off' ||
+        passesWeek52(t.indicators.currentClose, t.indicators.week52, filters.week52State)
+    )
+    .filter(
+      (t) => filters.stochasticState === 'off' || passesStochastic(t.indicators.stochastic, filters.stochasticState)
+    )
+    .filter(
+      (t) =>
+        filters.atrState === 'off' ||
+        passesAtrPercentile(t.indicators.atrPercent, universeAtrPercents, filters.atrState)
+    )
+    .filter((t) => filters.obvState === 'off' || passesObv(t.indicators.obv, filters.obvState))
 }
 
 // --- v7 신규 필터 판정 함수 (PRD_Nasdaq7 §3 Must 1~5, §4.1) ---

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { loadNasdaq100 } from './lib/loadData.js'
 import { loadResearch, buildResearchMap } from './lib/researchLoader.js'
-import { applyFilters } from './lib/filters.js'
+import { applyFilters, countWeek52Excluded } from './lib/filters.js'
 import { recommend } from './lib/recommend.js'
 import { loadPersistedState, savePersistedState, DEFAULT_UI_STATE } from './lib/persistence.js'
 import NavTabs from './components/NavTabs.jsx'
@@ -46,8 +46,16 @@ export default function App() {
 
   const filteredTickers = useMemo(() => {
     if (!dataset) return []
-    return applyFilters(dataset.tickers, uiState.filters, uiState.searchQuery)
+    return applyFilters(dataset.tickers, uiState.filters, uiState.searchQuery, dataset.universeAtrPercents)
   }, [dataset, uiState.filters, uiState.searchQuery])
+
+  // 52주 필터가 켜져 있을 때 안내할, 252거래일 미만이라 판정 대상에서 제외된 종목 수
+  const week52ExcludedCount = useMemo(() => {
+    if (!dataset) return 0
+    return countWeek52Excluded(
+      dataset.tickers.filter((t) => t.dataSufficient).map((t) => t.indicators.week52)
+    )
+  }, [dataset])
 
   const recommendation = useMemo(() => recommend(filteredTickers), [filteredTickers])
 
@@ -114,6 +122,7 @@ export default function App() {
           filters={uiState.filters}
           onFiltersChange={(filters) => setUiState((s) => ({ ...s, filters }))}
           filteredTickers={filteredTickers}
+          week52ExcludedCount={week52ExcludedCount}
           onGoToRecommend={() => setScreen('recommend')}
         />
       )}
