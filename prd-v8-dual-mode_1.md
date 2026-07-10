@@ -137,7 +137,7 @@
 ---
 
 ### US-7. 펀더멘털 허들 판정 + 로더
-- [ ] **사용자로서, 추천 종목이 미너비니 원전 재무 기준을 얼마나 충족하는지 근거와 함께 보고 싶다.**
+- [x] **사용자로서, 추천 종목이 미너비니 원전 재무 기준을 얼마나 충족하는지 근거와 함께 보고 싶다.**
 
 **구현:** `src/lib/fundamentals.js` + `src/lib/fundamentalsLoader.js` 신규
 - 로더: `public/data/fundamentals.json` fetch — 404/파싱실패/스키마 불일치 시 null (에러 UI 없음,
