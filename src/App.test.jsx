@@ -219,3 +219,30 @@ describe('App - real research.json integration (v6 smoke test)', () => {
     expect(within(axonCard).queryByText(/이전 데이터 기준/)).not.toBeInTheDocument()
   })
 })
+
+describe('App - preset switching recomputes the recommendation (real nasdaq100.json, v7 US-9)', () => {
+  beforeEach(() => {
+    globalThis.localStorage = makeMemoryStorage()
+    globalThis.fetch = vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(REAL_DATA) }))
+  })
+
+  it('switching the preset segment changes the rendered recommend list', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await waitFor(() => expect(screen.getByText('종목 검색')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: /이 조건으로 추천 보기/ }))
+    await waitFor(() => expect(screen.getByText('추천 결과')).toBeInTheDocument())
+
+    expect(screen.getByRole('button', { name: '기본형' })).toHaveAttribute('aria-pressed', 'true')
+    const defaultReasons = screen.getAllByText(/RSI \d+/).map((el) => el.textContent)
+
+    await user.click(screen.getByRole('button', { name: '보수형' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: '보수형' })).toHaveAttribute('aria-pressed', 'true'))
+    expect(screen.getByText('더 강한 신호만 통과시킵니다')).toBeInTheDocument()
+
+    // conservative (RSI>=55, threshold 80) is strictly stricter than default (RSI>=50, threshold 70)
+    // on this real dataset, so the recomputed reason list must differ from the default one.
+    const conservativeReasons = screen.getAllByText(/RSI \d+/).map((el) => el.textContent)
+    expect(conservativeReasons).not.toEqual(defaultReasons)
+  })
+})

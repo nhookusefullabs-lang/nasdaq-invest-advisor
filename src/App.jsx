@@ -3,6 +3,7 @@ import { loadNasdaq100 } from './lib/loadData.js'
 import { loadResearch, buildResearchMap } from './lib/researchLoader.js'
 import { applyFilters, countWeek52Excluded } from './lib/filters.js'
 import { recommend } from './lib/recommend.js'
+import { PRESETS, DEFAULT_PRESET_KEY } from './lib/presets.js'
 import { loadPersistedState, savePersistedState, DEFAULT_UI_STATE } from './lib/persistence.js'
 import NavTabs from './components/NavTabs.jsx'
 import HomeSearch from './screens/HomeSearch.jsx'
@@ -57,7 +58,11 @@ export default function App() {
     )
   }, [dataset])
 
-  const recommendation = useMemo(() => recommend(filteredTickers), [filteredTickers])
+  // preset='custom'은 US-10(고급 설정 패널)에서 실제로 선택 가능해진다 — 그 전까지는
+  // 3개 프리셋 세그먼트(US-9)만으로 preset이 결정되므로 여기서는 프리셋 조회만 한다.
+  // (custom 연동 시 recommend.js의 골든크로스 창 매핑도 함께 일반화해야 함 — progress.txt 참고)
+  const activeConfig = PRESETS[uiState.preset] ?? PRESETS[DEFAULT_PRESET_KEY]
+  const recommendation = useMemo(() => recommend(filteredTickers, activeConfig), [filteredTickers, activeConfig])
 
   const availableTickerData = useMemo(() => {
     if (!dataset) return []
@@ -132,6 +137,8 @@ export default function App() {
           generatedAt={dataset.generatedAt}
           recommendation={recommendation}
           researchMap={researchMap}
+          preset={uiState.preset}
+          onPresetChange={(preset) => setUiState((s) => ({ ...s, preset }))}
           selectedTickers={uiState.selectedTickers}
           onToggleSelect={toggleSelectedTicker}
           onGoToSimulation={() => setScreen('simulation')}

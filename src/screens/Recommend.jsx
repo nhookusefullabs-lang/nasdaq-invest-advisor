@@ -1,8 +1,26 @@
 import Disclaimer from '../components/Disclaimer.jsx'
 import ResearchSection from '../components/ResearchSection.jsx'
+import { PRESETS, PRESET_KEYS } from '../lib/presets.js'
 
-export default function Recommend({ generatedAt, recommendation, researchMap, selectedTickers, onToggleSelect, onGoToSimulation }) {
+// preset 상태 문자열 -> 배너·보조 문구에 쓰는 표시 라벨. 'custom'은 US-10(고급 설정)에서
+// 실제로 도달 가능해진다 — 그 전까지는 세그먼트가 이 라벨을 그릴 일이 없다.
+function presetLabel(preset) {
+  return preset === 'custom' ? '사용자 설정' : (PRESETS[preset]?.label ?? PRESETS.default.label)
+}
+
+export default function Recommend({
+  generatedAt,
+  recommendation,
+  researchMap,
+  preset,
+  onPresetChange,
+  selectedTickers,
+  onToggleSelect,
+  onGoToSimulation,
+}) {
   const { list, relaxationApplied, insufficientSignal } = recommendation
+  const label = presetLabel(preset)
+  const isNonDefaultPreset = (preset ?? 'default') !== 'default'
 
   return (
     <div>
@@ -12,15 +30,43 @@ export default function Recommend({ generatedAt, recommendation, researchMap, se
         못했어도 점수 70점 이상인 종목은 고득점 특별 편입으로 함께 보여줍니다.
       </p>
 
+      <div className="flex items-center gap-2 mb-1" role="group" aria-label="추천 프리셋">
+        {PRESET_KEYS.map((key) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => onPresetChange(key)}
+            aria-pressed={preset === key}
+            className={`px-3 py-1.5 rounded text-sm font-semibold border ${
+              preset === key
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            {PRESETS[key].label}
+          </button>
+        ))}
+        {preset === 'custom' && (
+          <span className="px-3 py-1.5 rounded text-sm font-semibold border bg-purple-50 text-purple-700 border-purple-200">
+            사용자 설정
+          </span>
+        )}
+      </div>
+      <p className="text-xs text-gray-500 mb-4">
+        {preset === 'custom'
+          ? '고급 설정에서 직접 조정한 파라미터를 사용 중입니다'
+          : (PRESETS[preset] ?? PRESETS.default).description}
+      </p>
+
       {relaxationApplied && (
         <div className="mb-4 rounded bg-amber-50 border border-amber-200 text-amber-800 text-sm px-3 py-2">
-          조건 완화 적용됨 — 매수 신호 통과 종목이 부족해 기준을 완화했습니다.
+          조건 완화 적용됨 — {label} 기준 매수 신호 통과 종목이 부족해 조건을 완화했습니다.
         </div>
       )}
 
       {insufficientSignal && (
         <div className="mb-4 rounded bg-red-50 border border-red-200 text-red-800 text-sm px-3 py-2">
-          매수 신호가 충분치 않습니다. (조건 완화 후에도 5개 미만)
+          {label} 기준 매수 신호가 충분치 않습니다. (조건 완화 후에도 5개 미만)
         </div>
       )}
 
@@ -48,6 +94,9 @@ export default function Recommend({ generatedAt, recommendation, researchMap, se
                 <p className="text-sm font-bold">{r.score.toFixed(1)}점</p>
               </div>
             </label>
+            {researchMap?.get(r.ticker) && isNonDefaultPreset && (
+              <p className="text-xs text-gray-400 mt-1">리서치 풀은 기본형 기준으로 선정되었습니다.</p>
+            )}
             <ResearchSection research={researchMap?.get(r.ticker)} />
           </div>
         ))}

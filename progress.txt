@@ -155,3 +155,34 @@
   필요 — 단 preset='custom'인 경우의 실제 파라미터 소스는 US-10의 customParams이므로,
   US-9 시점에는 3개 프리셋 전환만 우선 배선하고 custom 연동은 US-10에서 완성하는 편이
   자연스러움. "리서치 풀은 기본형 기준" 보조 문구도 이 스토리 범위).
+
+## Iteration 9 — US-9. 화면2 프리셋 세그먼트 + 배너 연동
+- 완료 스토리: US-9
+- 변경 파일:
+  - src/screens/Recommend.jsx: 상단에 보수형/기본형/공격형 세그먼트(버튼 3개, 클릭 시
+    onPresetChange(key)) + 프리셋 한 줄 설명 + "사용자 설정" 상태 배지(preset==='custom'일
+    때만 표시 — US-10 전까지는 도달 불가능한 상태). 완화 폴백/신호부족 배너 문구에
+    프리셋 라벨(또는 "사용자 설정") 삽입. 리서치 섹션이 있는 카드에 preset이 기본형이
+    아니면 "리서치 풀은 기본형 기준으로 선정되었습니다" 보조 문구 추가.
+  - src/App.jsx: `activeConfig = PRESETS[uiState.preset] ?? PRESETS.default`를 계산해
+    recommend(filteredTickers, activeConfig)로 전달 — recommendation useMemo 의존성에
+    activeConfig 추가. onPresetChange로 uiState.preset을 갱신(US-6 스키마 필드,
+    자동으로 localStorage에 저장됨).
+  - 설계 결정: preset==='custom' 분기는 App.jsx에 아직 만들지 않음(US-10 전까지 UI로
+    도달 불가능한 상태이므로) — uiState.preset이 'custom'이어도 PRESETS['custom']이
+    undefined라 `?? PRESETS.default`로 안전하게 기본형 폴백됨. US-10에서 고급 설정
+    패널을 추가할 때 이 분기와, recommend.js의 GOLDEN_CROSS_FIELDS 이산 매핑을
+    임의 창(1~20) 계산으로 일반화하는 작업을 함께 처리해야 함(US-8에서 남긴 메모와 동일).
+  - 신규 테스트: Recommend.test.jsx에 세그먼트 클릭/회귀/보조문구/배너문구 4개,
+    App.test.jsx에 실데이터 기반 프리셋 전환 시 추천 결과(RSI 사유 텍스트)가 실제로
+    달라지는 통합 테스트 1개.
+- 테스트 수 변화: 162 → 167 (+5), 전체 통과(실데이터 e2e 포함). npm run build 통과
+  (186.51kB→187.75kB).
+- 운영자 액션 필요: 없음
+- 다음 스토리 메모: US-10 (고급 설정 패널 — RSI 하한/골든크로스 창/편입임계 자유 입력,
+  범위 강제 30~70/1~20/50~95). ⚠ 이번에 남긴 갭: 골든크로스 창이 임의값(예:7,13)이 되면
+  recommend.js의 GOLDEN_CROSS_FIELDS 이산 매핑({3,5,6,10,20}만 지원)이 깨진다 — US-10은
+  반드시 (a) deriveTickerData에 macdLine/signalLine 원본 배열을 추가로 저장하고
+  recommend.js가 goldenCrossWithin()을 그 배열로 직접 즉석 계산하도록 일반화하거나,
+  (b) 다른 방식으로 임의 창을 지원해야 함. App.jsx의 activeConfig 계산에도
+  preset==='custom'일 때 customParams를 사용하는 분기를 추가해야 함.
