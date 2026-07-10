@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-09",
+  "tickers": [
+    {
+      "ticker": "AAPL",
+      "epsGrowthQoQ_yoy": 24.1,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 18.3,
+      "marginImproving": true,
+      "roe": "0.312",
+      "quarters": [
+        { "period": "2026-Q2", "eps": 1.52, "revenue": 111184000000, "operatingMargin": 0.302 }
+      ],
+      "missing": ["F1", "F9"]
+    }
+  ],
+  "excluded": []
+}

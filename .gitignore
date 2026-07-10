@@ -3,3 +3,5 @@ dist/
 scripts/collect_data.log
 scripts/run.err
 .DS_Store
+__pycache__/
+*.pyc

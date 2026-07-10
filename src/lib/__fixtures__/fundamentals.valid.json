@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-09",
+  "tickers": [
+    {
+      "ticker": "AAPL",
+      "epsGrowthQoQ_yoy": 24.1,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 18.3,
+      "marginImproving": true,
+      "roe": 0.312,
+      "quarters": [
+        { "period": "2026-Q2", "eps": 1.52, "revenue": 111184000000, "operatingMargin": 0.302 },
+        { "period": "2026-Q1", "eps": 1.44, "revenue": 105300000000, "operatingMargin": 0.298 },
+        { "period": "2025-Q4", "eps": 2.1, "revenue": 124500000000, "operatingMargin": 0.335 },
+        { "period": "2025-Q3", "eps": 1.4, "revenue": 94900000000, "operatingMargin": 0.301 },
+        { "period": "2025-Q2", "eps": 1.22, "revenue": 94000000000, "operatingMargin": 0.289 }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "DXCM",
+      "epsGrowthQoQ_yoy": null,
+      "epsAccelerating": null,
+      "revenueGrowthQoQ_yoy": 12.4,
+      "marginImproving": false,
+      "roe": null,
+      "quarters": [
+        { "period": "2026-Q2", "eps": null, "revenue": 1150000000, "operatingMargin": 0.11 },
+        { "period": "2026-Q1", "eps": null, "revenue": 1020000000, "operatingMargin": 0.14 }
+      ],
+      "missing": ["F1", "F2", "F5"]
+    }
+  ],
+  "excluded": [
+    { "ticker": "MSTR", "reason": "분기 데이터 부족: 1개 < 최소 2개" }
+  ]
+}

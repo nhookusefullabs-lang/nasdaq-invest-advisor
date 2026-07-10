@@ -67,6 +67,13 @@ BATCH_SLEEP_SEC = 1.0
 ROOT = Path(__file__).resolve().parent.parent
 OUT_PATH = ROOT / "public" / "data" / "nasdaq100.json"
 LOG_PATH = ROOT / "scripts" / "collect_data.log"
+FUNDAMENTALS_OUT_PATH = ROOT / "public" / "data" / "fundamentals.json"
+FUNDAMENTALS_SCHEMA_VERSION = 1
+# 펀더멘털 허들 판정에 최소 필요한 분기 수 (전년 동기 비교에 4분기 전 데이터가 필요하므로
+# 5개 미만이면 F1/F3 성장률은 계산 불가하지만, 종목 자체를 제외하는 하한은 2개로 낮게 둔다
+# — PRD_Nasdaq8 §4.4 "missing[]" 결측 처리 원칙: 계산 불가 항목은 판정불가로만 표시하고
+# 종목 전체를 배제하지 않는다).
+FUNDAMENTALS_MIN_QUARTERS = 2
 
 
 # ---------------------------------------------------------------------------
@@ -291,6 +298,142 @@ def build_series(df: pd.DataFrame) -> tuple[list[dict] | None, str | None]:
     return series, None
 
 
+# ---------------------------------------------------------------------------
+# 펀더멘털 수집 (PRD_Nasdaq8 §3 Must-2, §7, US-2)
+# 가격 수집과 같은 스크립트에서, 같은 주기(토요일 1회)로 동시 수집한다 — 운영 단순화.
+# ---------------------------------------------------------------------------
+
+def _row_value(row, col):
+    """pandas Series에서 col 위치 값을 안전하게 float로. 결측/미존재면 None."""
+    if row is None or col not in row.index:
+        return None
+    v = row[col]
+    if v is None or (isinstance(v, float) and math.isnan(v)):
+        return None
+    return float(v)
+
+
+def fetch_fundamentals(ticker: str) -> tuple[dict | None, str | None]:
+    """단일 티커의 펀더멘털 스냅샷 계산. 실패 시 (None, 사유)."""
+    try:
+        tk = yf.Ticker(ticker)
+        qf = tk.quarterly_financials  # DataFrame: index=계정과목, columns=분기말 날짜(내림차순)
+        info = tk.info or {}
+    except Exception as e:
+        return None, f"yfinance 조회 실패: {e}"
+
+    if qf is None or qf.empty:
+        return None, "분기 재무제표 없음"
+
+    cols = sorted(qf.columns, reverse=True)  # 최신 분기가 먼저
+    if len(cols) < FUNDAMENTALS_MIN_QUARTERS:
+        return None, f"분기 데이터 부족: {len(cols)}개 < 최소 {FUNDAMENTALS_MIN_QUARTERS}개"
+
+    revenue_row = qf.loc["Total Revenue"] if "Total Revenue" in qf.index else None
+    net_income_row = qf.loc["Net Income"] if "Net Income" in qf.index else None
+    operating_income_row = qf.loc["Operating Income"] if "Operating Income" in qf.index else None
+    shares_outstanding = info.get("sharesOutstanding")
+
+    quarters: list[dict] = []
+    for col in cols[:5]:
+        period_label = f"{col.year}-Q{(col.month - 1) // 3 + 1}"
+        revenue = _row_value(revenue_row, col)
+        operating_income = _row_value(operating_income_row, col)
+        operating_margin = (operating_income / revenue) if (operating_income is not None and revenue) else None
+
+        # yfinance의 quarterly_financials에는 분기 EPS가 직접 없어, 순이익/발행주식수로 근사한다
+        # (§7 스키마의 eps는 "근사 EPS"임을 명시 — 정밀 EPS가 필요하면 v9에서 별도 소스 검토).
+        net_income = _row_value(net_income_row, col)
+        eps = (net_income / shares_outstanding) if (net_income is not None and shares_outstanding) else None
+
+        quarters.append({
+            "period": period_label,
+            "eps": round(eps, 4) if eps is not None else None,
+            "revenue": round(revenue, 2) if revenue is not None else None,
+            "operatingMargin": round(operating_margin, 4) if operating_margin is not None else None,
+        })
+
+    missing: list[str] = []
+
+    # F1: 분기 EPS 성장률(전년 동기 대비, 4분기 전과 비교)
+    eps_growth_yoy = None
+    if len(quarters) >= 5 and quarters[0]["eps"] is not None and quarters[4]["eps"]:
+        eps_growth_yoy = (quarters[0]["eps"] / quarters[4]["eps"] - 1) * 100
+    if eps_growth_yoy is None:
+        missing.append("F1")
+
+    # F2: EPS 성장 가속 (최근 분기 EPS가 직전 분기보다 큼 — 간이 근사)
+    eps_accelerating = None
+    if len(quarters) >= 2 and quarters[0]["eps"] is not None and quarters[1]["eps"] is not None:
+        eps_accelerating = quarters[0]["eps"] > quarters[1]["eps"]
+    if eps_accelerating is None:
+        missing.append("F2")
+
+    # F3: 분기 매출 성장률(전년 동기 대비)
+    revenue_growth_yoy = None
+    if len(quarters) >= 5 and quarters[0]["revenue"] is not None and quarters[4]["revenue"]:
+        revenue_growth_yoy = (quarters[0]["revenue"] / quarters[4]["revenue"] - 1) * 100
+    if revenue_growth_yoy is None:
+        missing.append("F3")
+
+    # F4: 영업마진 개선 추세 (최근 분기 >= 직전 분기)
+    margin_improving = None
+    if len(quarters) >= 2 and quarters[0]["operatingMargin"] is not None and quarters[1]["operatingMargin"] is not None:
+        margin_improving = quarters[0]["operatingMargin"] >= quarters[1]["operatingMargin"]
+    if margin_improving is None:
+        missing.append("F4")
+
+    # F5: ROE
+    roe = info.get("returnOnEquity")
+    if roe is None:
+        missing.append("F5")
+
+    return {
+        "ticker": ticker,
+        "epsGrowthQoQ_yoy": round(eps_growth_yoy, 2) if eps_growth_yoy is not None else None,
+        "epsAccelerating": eps_accelerating,
+        "revenueGrowthQoQ_yoy": round(revenue_growth_yoy, 2) if revenue_growth_yoy is not None else None,
+        "marginImproving": margin_improving,
+        "roe": round(float(roe), 4) if roe is not None else None,
+        "quarters": quarters,
+        "missing": missing,
+    }, None
+
+
+def collect_fundamentals(tickers: list[str]) -> None:
+    """가격 수집과 동일 실행에서 펀더멘털 스냅샷을 수집해 원자적으로 저장한다."""
+    log("-" * 60)
+    log(f"펀더멘털 수집 시작: 후보 {len(tickers)}종목")
+
+    included: list[dict] = []
+    excluded: list[dict] = []
+    for t in tickers:
+        data, reason = fetch_fundamentals(t)
+        if data is None:
+            excluded.append({"ticker": t, "reason": reason})
+            log(f"[펀더멘털 제외] {t}: {reason}")
+        else:
+            included.append(data)
+        time.sleep(0.3)
+
+    payload = {
+        "schemaVersion": FUNDAMENTALS_SCHEMA_VERSION,
+        "generatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "tickers": included,
+        "excluded": excluded,
+    }
+
+    # 원자적 쓰기: 임시 파일에 먼저 쓰고 rename — 도중 실패해도 기존 fundamentals.json은
+    # 훼손되지 않는다 (v6 research.json atomicWriteResearch 패턴 재사용, PRD_Nasdaq8 US-2).
+    FUNDAMENTALS_OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = FUNDAMENTALS_OUT_PATH.with_suffix(".json.tmp")
+    tmp_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp_path.replace(FUNDAMENTALS_OUT_PATH)
+
+    log(f"펀더멘털 수집 완료: 포함 {len(included)}종목 / 제외 {len(excluded)}종목")
+    log(f"저장: {FUNDAMENTALS_OUT_PATH.relative_to(ROOT)}")
+
+
 def main() -> int:
     log(f"수집 시작: 나스닥100 후보 {len(NASDAQ100)}종목, 기간={PERIOD}, 간격={INTERVAL}")
 
@@ -386,6 +529,10 @@ def main() -> int:
     log(f"저장: {OUT_PATH.relative_to(ROOT)}  (크기 {out_size_bytes:,} bytes, {out_size_mb:.2f} MB)")
     if out_size_mb > 10:
         log(f"[WARN] 파일 크기가 10MB를 초과했습니다 ({out_size_mb:.2f} MB) — GitHub Pages 전송량 확인 필요")
+
+    # 가격 수집과 같은 실행에서 펀더멘털도 동시 수집한다 (PRD_Nasdaq8 §3 Must-2, US-2)
+    collect_fundamentals(all_tickers)
+
     flush_log()
     return 0
 
