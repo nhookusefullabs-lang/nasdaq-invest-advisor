@@ -1,0 +1,13 @@
+# v7 Ralph 루프 진행 기록 (prd-v7-filters-presets.md)
+
+## Iteration 1 — US-1. 데이터 수집 스크립트 12개월 전환
+- 완료 스토리: US-1
+- 변경 파일: scripts/collect_data.py (PERIOD "6mo"→"12mo", MIN_TRADING_DAYS 110→200, 주석 갱신)
+- 테스트 수 변화: 없음 (Python 스크립트는 vitest 대상 아님, npm run test 102개 유지 확인)
+- 운영자 액션 필요: collect_data.py 재실행 후 nasdaq100.json 재수집·커밋 필요 (12개월치로 갱신).
+  이 루프는 스크립트를 실행하지 않음 — python 환경(yfinance/pandas)이 있는 별도 세션에서
+  `python scripts/collect_data.py` 실행 후 결과 JSON을 커밋해야 US-2 이후 스토리가
+  실데이터 기준으로 검증 가능해짐. 단, US-2~US-8은 순수 함수/픽스처 테스트라 재수집 없이도
+  구현·검증 가능하므로 루프는 계속 진행함.
+- 다음 스토리 메모: US-2 (sixMonth 차트 정의를 "전체 기간" → "최근 126거래일"로 변경,
+  deriveTickerData.js 수정 + 200일/120일 픽스처 테스트).
