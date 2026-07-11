@@ -3,13 +3,15 @@
 // (dataSufficient 전체) 등가중 평균 수익률. 청산일이 데이터 범위를 벗어나는 신호는 그
 // 보유기간 집계에서만 제외한다(표본 수에 반영, 다른 보유기간은 영향 없음).
 
-const round4 = (x) => Math.round(x * 10000) / 10000
+// v9.1 US-2: scripts/lib/exits.mjs(경로 의존 청산 변형)가 아래 소함수들을 재구현 없이
+// 그대로 재사용할 수 있도록 export만 보강한다 — 동작 불변.
+export const round4 = (x) => Math.round(x * 10000) / 10000
 
-function average(arr) {
+export function average(arr) {
   return arr.reduce((s, v) => s + v, 0) / arr.length
 }
 
-function median(arr) {
+export function median(arr) {
   if (!arr.length) return null
   const sorted = [...arr].sort((a, b) => a - b)
   const mid = Math.floor(sorted.length / 2)
@@ -27,7 +29,7 @@ export function buildPriceIndex(tickers) {
   return map
 }
 
-function entryPoint(priceIndex, ticker, date) {
+export function entryPoint(priceIndex, ticker, date) {
   const entry = priceIndex.get(ticker)
   if (!entry) return null
   const idx = entry.dateIndex.get(date)
@@ -56,7 +58,7 @@ export function universeBenchmarkReturn(priceIndex, entryDate, holdingDays) {
   return returns.length ? average(returns) : null
 }
 
-function maxDrawdown(closes) {
+export function maxDrawdown(closes) {
   let peak = closes[0]
   let mdd = 0
   for (const c of closes) {

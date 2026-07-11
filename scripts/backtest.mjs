@@ -12,6 +12,7 @@ import { sliceUniverseAsOf, buildEvaluationDates, getCalendarDates } from './lib
 import { buildPriceIndex, aggregatePerformance } from './lib/performance.mjs'
 import { buildFundamentalAxis } from './lib/fundamentalHistory.mjs'
 import { VARIANTS, evaluateVariant } from './lib/variants.mjs'
+import { EXIT_RULES, aggregateExitPerformance, EXIT_LIMITATION_NOTE } from './lib/exits.mjs'
 import { atomicWriteBacktest } from './validate-backtest.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -204,6 +205,7 @@ export function runBacktest(
   const calendarDates = getCalendarDates(rawUniverse)
   const fundamentalAxis = buildFundamentalAxis(fundamentalsData, records, priceIndex, holdingDays)
   const variants = VARIANTS.map((v) => evaluateVariant(rawUniverse, v, { evaluationDates, splitDate, mainRecords: records, priceIndex }))
+  const exitVariants = evaluateExitVariants(outRecords, strategies, priceIndex)
 
   return {
     schemaVersion: 2,
@@ -220,8 +222,31 @@ export function runBacktest(
     },
     strategies,
     fundamentalAxis,
-    variants,
+    variants: [...variants, ...exitVariants],
   }
+}
+
+// v9.1 US-2 가설 ②: trend/top5 Out 신호에 경로 의존 청산(변형 D) 2종을 적용해, 현행
+// 60거래일 고정 보유(all·signalQuality) 대비 성과 델타를 계산한다. 채택 결정은 하지 않는다
+// (adopted 항상 false — 손절·트레일링 채택은 운영자 몫).
+function evaluateExitVariants(outRecords, strategies, priceIndex) {
+  const outTrendTop5 = outRecords.filter((r) => r.strategyKey === 'trend' && r.basis === 'top5')
+  const baseline = strategies.find((s) => s.key === 'trend' && s.basis === 'top5' && s.sample === 'out' && s.signalQuality === 'all')
+  const baseline60 = baseline?.byHolding?.find((h) => h.days === 60) ?? null
+
+  return Object.values(EXIT_RULES).map((rule) => {
+    const outDetail = aggregateExitPerformance(outTrendTop5, priceIndex, rule)
+    const bothMeasurable = outDetail.avgExcess != null && outDetail.winRate != null && baseline60?.avgExcess != null && baseline60?.winRate != null
+    const outVsBaseline = {
+      avgExcessDelta: bothMeasurable ? round4(outDetail.avgExcess - baseline60.avgExcess) : null,
+      winRateDelta: bothMeasurable ? round4(outDetail.winRate - baseline60.winRate) : null,
+    }
+    const note = [
+      `Out 표본 ${outDetail.signals}건 (trend·top5 기준) vs 현행 60거래일 고정 보유(표본 ${baseline60?.signals ?? 0}건)`,
+      EXIT_LIMITATION_NOTE,
+    ].join(' / ')
+    return { name: rule.name, adopted: false, outVsBaseline, outDetail, note }
+  })
 }
 
 function formatInOutSummary(backtest) {

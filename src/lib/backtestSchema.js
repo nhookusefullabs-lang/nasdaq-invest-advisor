@@ -117,6 +117,24 @@ function validateVariant(variant, path, errors) {
     if (!isNullableNumber(variant.outVsBaseline.winRateDelta)) errors.push(`${path}.outVsBaseline.winRateDelta: 숫자 또는 null이어야 합니다`)
   }
   if (!isNonEmptyString(variant.note) && variant.note !== '') errors.push(`${path}.note: 문자열이어야 합니다`)
+
+  // outDetail(v9.1 US-2, 변형 D 전용): 선택 필드 — 있으면만 검증(경로 의존 청산의
+  // 실현 보유일수·손절 도달률까지 담는다. 다른 변형은 이 필드를 쓰지 않는다).
+  if (variant.outDetail !== undefined) {
+    if (typeof variant.outDetail !== 'object' || variant.outDetail === null) {
+      errors.push(`${path}.outDetail: 객체여야 합니다`)
+    } else {
+      const d = variant.outDetail
+      if (!isNumber(d.signals)) errors.push(`${path}.outDetail.signals: 숫자여야 합니다`)
+      if (!isNullableNumber(d.winRate)) errors.push(`${path}.outDetail.winRate: 숫자 또는 null이어야 합니다`)
+      if (!isNullableNumber(d.avgExcess)) errors.push(`${path}.outDetail.avgExcess: 숫자 또는 null이어야 합니다`)
+      if (!isNullableNumber(d.medianExcess)) errors.push(`${path}.outDetail.medianExcess: 숫자 또는 null이어야 합니다`)
+      if (!isNullableNumber(d.avgReturn)) errors.push(`${path}.outDetail.avgReturn: 숫자 또는 null이어야 합니다`)
+      if (!isNullableNumber(d.mdd)) errors.push(`${path}.outDetail.mdd: 숫자 또는 null이어야 합니다`)
+      if (!isNullableNumber(d.avgHoldingDays)) errors.push(`${path}.outDetail.avgHoldingDays: 숫자 또는 null이어야 합니다`)
+      if (!isNullableNumber(d.stopHitRate)) errors.push(`${path}.outDetail.stopHitRate: 숫자 또는 null이어야 합니다`)
+    }
+  }
 }
 
 /** backtest.json(버전 1 또는 2) 구조를 검증한다. 반환: { valid, errors } */

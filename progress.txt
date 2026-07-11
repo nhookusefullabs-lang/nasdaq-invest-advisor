@@ -857,3 +857,23 @@
   임시 경로에만 저장, public/data/backtest.json은 아직 갱신 안 함(US-6 마감 후 재생성 예정).
 - 다음 스토리 메모: US-2 (변형 D 청산 규칙 — scripts/lib/exits.mjs 신규, performance.mjs
   확장, 손절−8%+시간/트레일링 두 변형, 손계산 픽스처 테스트).
+
+## Iteration 2 — US-2. 변형 D 청산 규칙 (경로 의존 성과 계산)
+- 완료 스토리: US-2
+- 변경 파일: scripts/lib/exits.mjs(신규 — walkExit/computeExitPerformance/aggregateExitPerformance,
+  EXIT_RULES={exit_stop8_time60, exit_stop8_trail15}), scripts/lib/performance.mjs(entryPoint/
+  maxDrawdown/average/median/round4에 export만 보강 — 동작 불변, exits.mjs가 재구현 없이
+  재사용), scripts/backtest.mjs(evaluateExitVariants 추가, variants[]에 A/B/C 뒤에 D 2종
+  덧붙임), src/lib/backtestSchema.js(validateVariant에 선택 필드 outDetail 검증 추가),
+  scripts/lib/exits.test.js(신규, 11개), scripts/backtest.test.js(+4, 기존 US-7 3종
+  단언을 arrayContaining으로 완화).
+- 테스트 수 변화: 442 → 457 (+15)
+- 실데이터 검증: node scripts/backtest.mjs 실행 — Out 표본 215건(trend·top5) 기준
+  exit_stop8_time60(avgHoldingDays 44.0, stopHitRate 40.5%, avgExcess 6.85%p) /
+  exit_stop8_trail15(avgHoldingDays 39.5, stopHitRate 59.1%, avgExcess 3.72%p) 모두
+  현행 60일 고정 보유 대비 avgExcessDelta·winRateDelta가 음수 — 가설 ②("60일 엣지
+  보존 + MDD 개선") 미충족으로 실측됨(이번 실데이터 스냅샷 기준. 손절·트레일링 채택은
+  운영자 판단, adopted 항상 false 유지). 임시 경로에만 저장, public/data/backtest.json은
+  아직 갱신 안 함(US-6 마감 후 재생성 예정).
+- 다음 스토리 메모: US-3 (stepDays 파라미터화 — --step/--out CLI 인자, overlapFactor,
+  step≠5 시 --out 필수).

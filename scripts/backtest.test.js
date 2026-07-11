@@ -162,8 +162,10 @@ describe('runBacktest — US-5 In/Out 분할 + backtest.json 발행', () => {
     expect(backtest.fundamentalAxis).toBeNull()
   })
 
-  it('variants[]에 3종(A/B/C)이 등록·실행되고 adopted는 전부 false다 (US-7 연동)', () => {
-    expect(backtest.variants.map((v) => v.name).sort()).toEqual(['adx_gate', 'consensus_weighted', 'disparity_inverted_u'])
+  it('variants[]에 A/B/C 3종이 등록·실행되고 adopted는 전부 false다 (US-7 연동, 청산 변형 D는 v9.1 US-2가 추가)', () => {
+    expect(backtest.variants.map((v) => v.name)).toEqual(
+      expect.arrayContaining(['adx_gate', 'consensus_weighted', 'disparity_inverted_u'])
+    )
     expect(backtest.variants.every((v) => v.adopted === false)).toBe(true)
     expect(backtest.variants.every((v) => typeof v.note === 'string' && v.note.length > 0)).toBe(true)
   })
@@ -251,5 +253,37 @@ describe('runBacktest — v9.1 US-1 완화/정상 분리 집계 (schemaVersion v
   it('각 (key,basis,sample) 조합마다 all/normal/relaxed 3종 signalQuality가 모두 존재한다', () => {
     const qualities = new Set(backtest.strategies.filter((s) => s.key === 'trend' && s.basis === 'top5' && s.sample === 'out').map((s) => s.signalQuality))
     expect(qualities).toEqual(new Set(['all', 'normal', 'relaxed']))
+  })
+})
+
+describe('runBacktest — v9.1 US-2 변형 D 청산 규칙 (경로 의존 성과)', () => {
+  const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
+  const backtest = runBacktest(raw)
+  const exitVariantNames = ['exit_stop8_time60', 'exit_stop8_trail15']
+
+  it('기존 변형 A/B/C 3종 + 청산 변형 D 2종, 총 5종이 variants[]에 있다', () => {
+    expect(backtest.variants.map((v) => v.name).sort()).toEqual(
+      ['adx_gate', 'consensus_weighted', 'disparity_inverted_u', 'exit_stop8_time60', 'exit_stop8_trail15'].sort()
+    )
+  })
+
+  it('청산 변형 D 2종은 adopted:false, outDetail(avgHoldingDays·stopHitRate 포함), 한계 고지 문구를 갖는다', () => {
+    for (const name of exitVariantNames) {
+      const v = backtest.variants.find((x) => x.name === name)
+      expect(v.adopted).toBe(false)
+      expect(v.outDetail).toHaveProperty('avgHoldingDays')
+      expect(v.outDetail).toHaveProperty('stopHitRate')
+      expect(v.note).toContain('종가 기준 판정')
+    }
+  })
+
+  it('src/(앱 추천 로직)는 청산 변형으로 인해 수정되지 않는다 — constants/v8.js 값 불변 확인', () => {
+    const constants = readFileSync(path.resolve(__dirname, '../src/lib/constants/v8.js'), 'utf-8')
+    expect(constants).toContain('RS_MAX: 40')
+    expect(constants).toContain('CONTRACTION_MAX: 25')
+  })
+
+  it('전체 스키마 검증을 통과한다(outDetail 필드 포함)', () => {
+    expect(validateBacktest(backtest).valid).toBe(true)
   })
 })
