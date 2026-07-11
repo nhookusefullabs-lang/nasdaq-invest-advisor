@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "generatedAt": "2026-07-10",
   "config": {
     "dataFrom": "2023-07-11",
@@ -13,13 +13,19 @@
     "warmupDays": 252,
     "splitDate": "2025-05-28",
     "benchmark": "universe_equal_weight",
-    "topN": 5
+    "topN": 5,
+    "overlapFactor": {
+      "5": 1,
+      "20": 4,
+      "60": 12
+    }
   },
   "strategies": [
     {
       "key": "trend",
       "sample": "in",
       "basis": "top5",
+      "signalQuality": "all",
       "byHolding": [
         {
           "days": 5,
@@ -53,8 +59,81 @@
     },
     {
       "key": "trend",
+      "sample": "in",
+      "basis": "top5",
+      "signalQuality": "normal",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 150,
+          "winRate": 0.4867,
+          "avgExcess": -0.0014,
+          "medianExcess": -0.0009,
+          "avgReturn": -0.002,
+          "mdd": 0.0377
+        },
+        {
+          "days": 20,
+          "signals": 150,
+          "winRate": 0.5,
+          "avgExcess": -0.0011,
+          "medianExcess": 0,
+          "avgReturn": 0.0088,
+          "mdd": 0.0955
+        },
+        {
+          "days": 60,
+          "signals": 150,
+          "winRate": 0.3533,
+          "avgExcess": -0.0022,
+          "medianExcess": -0.055,
+          "avgReturn": 0.0454,
+          "mdd": 0.1736
+        }
+      ],
+      "relaxedShare": 0
+    },
+    {
+      "key": "trend",
+      "sample": "in",
+      "basis": "top5",
+      "signalQuality": "relaxed",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 67,
+          "winRate": 0.5373,
+          "avgExcess": 0.0048,
+          "medianExcess": 0.0092,
+          "avgReturn": 0.0129,
+          "mdd": 0.0354
+        },
+        {
+          "days": 20,
+          "signals": 67,
+          "winRate": 0.4776,
+          "avgExcess": -0.0106,
+          "medianExcess": -0.0021,
+          "avgReturn": 0.0098,
+          "mdd": 0.094
+        },
+        {
+          "days": 60,
+          "signals": 67,
+          "winRate": 0.403,
+          "avgExcess": -0.0395,
+          "medianExcess": -0.0545,
+          "avgReturn": 0.0068,
+          "mdd": 0.1989
+        }
+      ],
+      "relaxedShare": 1
+    },
+    {
+      "key": "trend",
       "sample": "out",
       "basis": "top5",
+      "signalQuality": "all",
       "byHolding": [
         {
           "days": 5,
@@ -88,8 +167,81 @@
     },
     {
       "key": "trend",
+      "sample": "out",
+      "basis": "top5",
+      "signalQuality": "normal",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 175,
+          "winRate": 0.4971,
+          "avgExcess": 0.0121,
+          "medianExcess": -0.0012,
+          "avgReturn": 0.0138,
+          "mdd": 0.0343
+        },
+        {
+          "days": 20,
+          "signals": 175,
+          "winRate": 0.5086,
+          "avgExcess": 0.0336,
+          "medianExcess": 0.0022,
+          "avgReturn": 0.0447,
+          "mdd": 0.0864
+        },
+        {
+          "days": 60,
+          "signals": 175,
+          "winRate": 0.5429,
+          "avgExcess": 0.1053,
+          "medianExcess": 0.0197,
+          "avgReturn": 0.1597,
+          "mdd": 0.1548
+        }
+      ],
+      "relaxedShare": 0
+    },
+    {
+      "key": "trend",
+      "sample": "out",
+      "basis": "top5",
+      "signalQuality": "relaxed",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 40,
+          "winRate": 0.375,
+          "avgExcess": -0.0054,
+          "medianExcess": -0.0131,
+          "avgReturn": 0.0037,
+          "mdd": 0.0414
+        },
+        {
+          "days": 20,
+          "signals": 40,
+          "winRate": 0.35,
+          "avgExcess": 0.008,
+          "medianExcess": -0.0387,
+          "avgReturn": 0.0357,
+          "mdd": 0.105
+        },
+        {
+          "days": 60,
+          "signals": 40,
+          "winRate": 0.55,
+          "avgExcess": 0.147,
+          "medianExcess": 0.0385,
+          "avgReturn": 0.1944,
+          "mdd": 0.1713
+        }
+      ],
+      "relaxedShare": 1
+    },
+    {
+      "key": "trend",
       "sample": "in",
       "basis": "allSignals",
+      "signalQuality": "all",
       "byHolding": [
         {
           "days": 5,
@@ -123,8 +275,81 @@
     },
     {
       "key": "trend",
+      "sample": "in",
+      "basis": "allSignals",
+      "signalQuality": "normal",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 226,
+          "winRate": 0.5177,
+          "avgExcess": 0.0034,
+          "medianExcess": 0.0019,
+          "avgReturn": 0.0009,
+          "mdd": 0.035
+        },
+        {
+          "days": 20,
+          "signals": 226,
+          "winRate": 0.5,
+          "avgExcess": 0.0007,
+          "medianExcess": 0,
+          "avgReturn": 0.0092,
+          "mdd": 0.0896
+        },
+        {
+          "days": 60,
+          "signals": 226,
+          "winRate": 0.3628,
+          "avgExcess": -0.0131,
+          "medianExcess": -0.0515,
+          "avgReturn": 0.0327,
+          "mdd": 0.1652
+        }
+      ],
+      "relaxedShare": 0
+    },
+    {
+      "key": "trend",
+      "sample": "in",
+      "basis": "allSignals",
+      "signalQuality": "relaxed",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 119,
+          "winRate": 0.5126,
+          "avgExcess": 0.0029,
+          "medianExcess": 0.0002,
+          "avgReturn": 0.0103,
+          "mdd": 0.0343
+        },
+        {
+          "days": 20,
+          "signals": 119,
+          "winRate": 0.5042,
+          "avgExcess": -0.0009,
+          "medianExcess": 0.0031,
+          "avgReturn": 0.0211,
+          "mdd": 0.0856
+        },
+        {
+          "days": 60,
+          "signals": 119,
+          "winRate": 0.4454,
+          "avgExcess": -0.0125,
+          "medianExcess": -0.0165,
+          "avgReturn": 0.0273,
+          "mdd": 0.1805
+        }
+      ],
+      "relaxedShare": 1
+    },
+    {
+      "key": "trend",
       "sample": "out",
       "basis": "allSignals",
+      "signalQuality": "all",
       "byHolding": [
         {
           "days": 5,
@@ -157,9 +382,82 @@
       "relaxedShare": 0.2188
     },
     {
+      "key": "trend",
+      "sample": "out",
+      "basis": "allSignals",
+      "signalQuality": "normal",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 257,
+          "winRate": 0.4981,
+          "avgExcess": 0.0079,
+          "medianExcess": -0.0007,
+          "avgReturn": 0.0093,
+          "mdd": 0.0343
+        },
+        {
+          "days": 20,
+          "signals": 257,
+          "winRate": 0.4864,
+          "avgExcess": 0.0182,
+          "medianExcess": -0.0022,
+          "avgReturn": 0.0299,
+          "mdd": 0.0873
+        },
+        {
+          "days": 60,
+          "signals": 257,
+          "winRate": 0.5253,
+          "avgExcess": 0.0757,
+          "medianExcess": 0.0153,
+          "avgReturn": 0.1262,
+          "mdd": 0.1542
+        }
+      ],
+      "relaxedShare": 0
+    },
+    {
+      "key": "trend",
+      "sample": "out",
+      "basis": "allSignals",
+      "signalQuality": "relaxed",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 72,
+          "winRate": 0.4444,
+          "avgExcess": 0.0007,
+          "medianExcess": -0.0086,
+          "avgReturn": 0.0094,
+          "mdd": 0.0346
+        },
+        {
+          "days": 20,
+          "signals": 72,
+          "winRate": 0.4028,
+          "avgExcess": 0.0056,
+          "medianExcess": -0.0188,
+          "avgReturn": 0.0339,
+          "mdd": 0.094
+        },
+        {
+          "days": 60,
+          "signals": 72,
+          "winRate": 0.5556,
+          "avgExcess": 0.0857,
+          "medianExcess": 0.0438,
+          "avgReturn": 0.1321,
+          "mdd": 0.1666
+        }
+      ],
+      "relaxedShare": 1
+    },
+    {
       "key": "minervini",
       "sample": "in",
       "basis": "top5",
+      "signalQuality": "all",
       "byHolding": [
         {
           "days": 5,
@@ -193,8 +491,81 @@
     },
     {
       "key": "minervini",
+      "sample": "in",
+      "basis": "top5",
+      "signalQuality": "normal",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 215,
+          "winRate": 0.5628,
+          "avgExcess": 0.0073,
+          "medianExcess": 0.0061,
+          "avgReturn": 0.0088,
+          "mdd": 0.0378
+        },
+        {
+          "days": 20,
+          "signals": 215,
+          "winRate": 0.5581,
+          "avgExcess": 0.0302,
+          "medianExcess": 0.0126,
+          "avgReturn": 0.0423,
+          "mdd": 0.1007
+        },
+        {
+          "days": 60,
+          "signals": 215,
+          "winRate": 0.4837,
+          "avgExcess": 0.0806,
+          "medianExcess": -0.0066,
+          "avgReturn": 0.1256,
+          "mdd": 0.1906
+        }
+      ],
+      "relaxedShare": 0
+    },
+    {
+      "key": "minervini",
+      "sample": "in",
+      "basis": "top5",
+      "signalQuality": "relaxed",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 5,
+          "winRate": 0.2,
+          "avgExcess": -0.0208,
+          "medianExcess": -0.0169,
+          "avgReturn": 0.0454,
+          "mdd": 0.0196
+        },
+        {
+          "days": 20,
+          "signals": 5,
+          "winRate": 0.2,
+          "avgExcess": -0.0801,
+          "medianExcess": -0.0769,
+          "avgReturn": 0.0478,
+          "mdd": 0.0664
+        },
+        {
+          "days": 60,
+          "signals": 5,
+          "winRate": 0,
+          "avgExcess": -0.2023,
+          "medianExcess": -0.2153,
+          "avgReturn": 0.0796,
+          "mdd": 0.0896
+        }
+      ],
+      "relaxedShare": 1
+    },
+    {
+      "key": "minervini",
       "sample": "out",
       "basis": "top5",
+      "signalQuality": "all",
       "byHolding": [
         {
           "days": 5,
@@ -228,8 +599,81 @@
     },
     {
       "key": "minervini",
+      "sample": "out",
+      "basis": "top5",
+      "signalQuality": "normal",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 225,
+          "winRate": 0.5156,
+          "avgExcess": 0.0007,
+          "medianExcess": 0.0008,
+          "avgReturn": 0.004,
+          "mdd": 0.0384
+        },
+        {
+          "days": 20,
+          "signals": 225,
+          "winRate": 0.4711,
+          "avgExcess": 0.0164,
+          "medianExcess": -0.0037,
+          "avgReturn": 0.0306,
+          "mdd": 0.0936
+        },
+        {
+          "days": 60,
+          "signals": 225,
+          "winRate": 0.5556,
+          "avgExcess": 0.0867,
+          "medianExcess": 0.0275,
+          "avgReturn": 0.1386,
+          "mdd": 0.1689
+        }
+      ],
+      "relaxedShare": 0
+    },
+    {
+      "key": "minervini",
+      "sample": "out",
+      "basis": "top5",
+      "signalQuality": "relaxed",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 0,
+          "winRate": null,
+          "avgExcess": null,
+          "medianExcess": null,
+          "avgReturn": null,
+          "mdd": null
+        },
+        {
+          "days": 20,
+          "signals": 0,
+          "winRate": null,
+          "avgExcess": null,
+          "medianExcess": null,
+          "avgReturn": null,
+          "mdd": null
+        },
+        {
+          "days": 60,
+          "signals": 0,
+          "winRate": null,
+          "avgExcess": null,
+          "medianExcess": null,
+          "avgReturn": null,
+          "mdd": null
+        }
+      ],
+      "relaxedShare": null
+    },
+    {
+      "key": "minervini",
       "sample": "in",
       "basis": "allSignals",
+      "signalQuality": "all",
       "byHolding": [
         {
           "days": 5,
@@ -263,8 +707,81 @@
     },
     {
       "key": "minervini",
+      "sample": "in",
+      "basis": "allSignals",
+      "signalQuality": "normal",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 829,
+          "winRate": 0.5054,
+          "avgExcess": 0.002,
+          "medianExcess": 0.0005,
+          "avgReturn": 0.0027,
+          "mdd": 0.0364
+        },
+        {
+          "days": 20,
+          "signals": 829,
+          "winRate": 0.497,
+          "avgExcess": 0.0101,
+          "medianExcess": -0.0009,
+          "avgReturn": 0.0201,
+          "mdd": 0.0924
+        },
+        {
+          "days": 60,
+          "signals": 829,
+          "winRate": 0.4282,
+          "avgExcess": 0.0168,
+          "medianExcess": -0.0286,
+          "avgReturn": 0.054,
+          "mdd": 0.1807
+        }
+      ],
+      "relaxedShare": 0
+    },
+    {
+      "key": "minervini",
+      "sample": "in",
+      "basis": "allSignals",
+      "signalQuality": "relaxed",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 8,
+          "winRate": 0.25,
+          "avgExcess": -0.0143,
+          "medianExcess": -0.0087,
+          "avgReturn": 0.0519,
+          "mdd": 0.0179
+        },
+        {
+          "days": 20,
+          "signals": 8,
+          "winRate": 0.25,
+          "avgExcess": -0.0467,
+          "medianExcess": -0.0735,
+          "avgReturn": 0.0811,
+          "mdd": 0.0555
+        },
+        {
+          "days": 60,
+          "signals": 8,
+          "winRate": 0.125,
+          "avgExcess": -0.1638,
+          "medianExcess": -0.2328,
+          "avgReturn": 0.1181,
+          "mdd": 0.0804
+        }
+      ],
+      "relaxedShare": 1
+    },
+    {
+      "key": "minervini",
       "sample": "out",
       "basis": "allSignals",
+      "signalQuality": "all",
       "byHolding": [
         {
           "days": 5,
@@ -297,9 +814,82 @@
       "relaxedShare": 0
     },
     {
+      "key": "minervini",
+      "sample": "out",
+      "basis": "allSignals",
+      "signalQuality": "normal",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 876,
+          "winRate": 0.492,
+          "avgExcess": 0.0042,
+          "medianExcess": -0.0007,
+          "avgReturn": 0.0071,
+          "mdd": 0.0349
+        },
+        {
+          "days": 20,
+          "signals": 876,
+          "winRate": 0.4966,
+          "avgExcess": 0.0187,
+          "medianExcess": -0.0009,
+          "avgReturn": 0.0283,
+          "mdd": 0.0881
+        },
+        {
+          "days": 60,
+          "signals": 876,
+          "winRate": 0.5068,
+          "avgExcess": 0.0543,
+          "medianExcess": 0.0044,
+          "avgReturn": 0.0979,
+          "mdd": 0.1633
+        }
+      ],
+      "relaxedShare": 0
+    },
+    {
+      "key": "minervini",
+      "sample": "out",
+      "basis": "allSignals",
+      "signalQuality": "relaxed",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 0,
+          "winRate": null,
+          "avgExcess": null,
+          "medianExcess": null,
+          "avgReturn": null,
+          "mdd": null
+        },
+        {
+          "days": 20,
+          "signals": 0,
+          "winRate": null,
+          "avgExcess": null,
+          "medianExcess": null,
+          "avgReturn": null,
+          "mdd": null
+        },
+        {
+          "days": 60,
+          "signals": 0,
+          "winRate": null,
+          "avgExcess": null,
+          "medianExcess": null,
+          "avgReturn": null,
+          "mdd": null
+        }
+      ],
+      "relaxedShare": null
+    },
+    {
       "key": "consensus_2star",
       "sample": "in",
       "basis": "top5",
+      "signalQuality": "all",
       "byHolding": [
         {
           "days": 5,
@@ -333,8 +923,81 @@
     },
     {
       "key": "consensus_2star",
+      "sample": "in",
+      "basis": "top5",
+      "signalQuality": "normal",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 112,
+          "winRate": 0.5714,
+          "avgExcess": 0.007,
+          "medianExcess": 0.0095,
+          "avgReturn": 0.0033,
+          "mdd": 0.0396
+        },
+        {
+          "days": 20,
+          "signals": 112,
+          "winRate": 0.5982,
+          "avgExcess": 0.032,
+          "medianExcess": 0.018,
+          "avgReturn": 0.036,
+          "mdd": 0.1003
+        },
+        {
+          "days": 60,
+          "signals": 112,
+          "winRate": 0.4821,
+          "avgExcess": 0.075,
+          "medianExcess": -0.0105,
+          "avgReturn": 0.1111,
+          "mdd": 0.1909
+        }
+      ],
+      "relaxedShare": 0
+    },
+    {
+      "key": "consensus_2star",
+      "sample": "in",
+      "basis": "top5",
+      "signalQuality": "relaxed",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 45,
+          "winRate": 0.4667,
+          "avgExcess": 0.0021,
+          "medianExcess": -0.0084,
+          "avgReturn": 0.0081,
+          "mdd": 0.0444
+        },
+        {
+          "days": 20,
+          "signals": 45,
+          "winRate": 0.4889,
+          "avgExcess": 0.0122,
+          "medianExcess": -0.0001,
+          "avgReturn": 0.0337,
+          "mdd": 0.0957
+        },
+        {
+          "days": 60,
+          "signals": 45,
+          "winRate": 0.4222,
+          "avgExcess": -0.0253,
+          "medianExcess": -0.0271,
+          "avgReturn": 0.0026,
+          "mdd": 0.229
+        }
+      ],
+      "relaxedShare": 1
+    },
+    {
+      "key": "consensus_2star",
       "sample": "out",
       "basis": "top5",
+      "signalQuality": "all",
       "byHolding": [
         {
           "days": 5,
@@ -368,8 +1031,81 @@
     },
     {
       "key": "consensus_2star",
+      "sample": "out",
+      "basis": "top5",
+      "signalQuality": "normal",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 136,
+          "winRate": 0.4779,
+          "avgExcess": 0.0124,
+          "medianExcess": -0.0013,
+          "avgReturn": 0.0152,
+          "mdd": 0.0387
+        },
+        {
+          "days": 20,
+          "signals": 136,
+          "winRate": 0.5294,
+          "avgExcess": 0.0431,
+          "medianExcess": 0.0129,
+          "avgReturn": 0.0546,
+          "mdd": 0.1009
+        },
+        {
+          "days": 60,
+          "signals": 136,
+          "winRate": 0.5956,
+          "avgExcess": 0.1164,
+          "medianExcess": 0.0736,
+          "avgReturn": 0.1693,
+          "mdd": 0.1744
+        }
+      ],
+      "relaxedShare": 0
+    },
+    {
+      "key": "consensus_2star",
+      "sample": "out",
+      "basis": "top5",
+      "signalQuality": "relaxed",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 30,
+          "winRate": 0.4667,
+          "avgExcess": 0.0121,
+          "medianExcess": -0.0019,
+          "avgReturn": 0.0227,
+          "mdd": 0.0421
+        },
+        {
+          "days": 20,
+          "signals": 30,
+          "winRate": 0.4667,
+          "avgExcess": 0.0369,
+          "medianExcess": -0.0067,
+          "avgReturn": 0.064,
+          "mdd": 0.0925
+        },
+        {
+          "days": 60,
+          "signals": 30,
+          "winRate": 0.5333,
+          "avgExcess": 0.0848,
+          "medianExcess": 0.025,
+          "avgReturn": 0.1277,
+          "mdd": 0.1738
+        }
+      ],
+      "relaxedShare": 1
+    },
+    {
+      "key": "consensus_2star",
       "sample": "in",
       "basis": "allSignals",
+      "signalQuality": "all",
       "byHolding": [
         {
           "days": 5,
@@ -403,8 +1139,81 @@
     },
     {
       "key": "consensus_2star",
+      "sample": "in",
+      "basis": "allSignals",
+      "signalQuality": "normal",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 129,
+          "winRate": 0.5736,
+          "avgExcess": 0.0107,
+          "medianExcess": 0.0101,
+          "avgReturn": 0.0063,
+          "mdd": 0.039
+        },
+        {
+          "days": 20,
+          "signals": 129,
+          "winRate": 0.5736,
+          "avgExcess": 0.0274,
+          "medianExcess": 0.0131,
+          "avgReturn": 0.0296,
+          "mdd": 0.1
+        },
+        {
+          "days": 60,
+          "signals": 129,
+          "winRate": 0.4419,
+          "avgExcess": 0.0521,
+          "medianExcess": -0.0341,
+          "avgReturn": 0.0871,
+          "mdd": 0.1928
+        }
+      ],
+      "relaxedShare": 0
+    },
+    {
+      "key": "consensus_2star",
+      "sample": "in",
+      "basis": "allSignals",
+      "signalQuality": "relaxed",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 55,
+          "winRate": 0.4545,
+          "avgExcess": 0.0013,
+          "medianExcess": -0.0027,
+          "avgReturn": 0.0047,
+          "mdd": 0.0417
+        },
+        {
+          "days": 20,
+          "signals": 55,
+          "winRate": 0.4727,
+          "avgExcess": 0.0079,
+          "medianExcess": -0.0016,
+          "avgReturn": 0.0297,
+          "mdd": 0.0882
+        },
+        {
+          "days": 60,
+          "signals": 55,
+          "winRate": 0.4364,
+          "avgExcess": -0.0236,
+          "medianExcess": -0.0271,
+          "avgReturn": -0.0036,
+          "mdd": 0.2164
+        }
+      ],
+      "relaxedShare": 1
+    },
+    {
+      "key": "consensus_2star",
       "sample": "out",
       "basis": "allSignals",
+      "signalQuality": "all",
       "byHolding": [
         {
           "days": 5,
@@ -437,9 +1246,82 @@
       "relaxedShare": 0.1859
     },
     {
+      "key": "consensus_2star",
+      "sample": "out",
+      "basis": "allSignals",
+      "signalQuality": "normal",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 162,
+          "winRate": 0.4877,
+          "avgExcess": 0.013,
+          "medianExcess": -0.0012,
+          "avgReturn": 0.0161,
+          "mdd": 0.0376
+        },
+        {
+          "days": 20,
+          "signals": 162,
+          "winRate": 0.5185,
+          "avgExcess": 0.0434,
+          "medianExcess": 0.0063,
+          "avgReturn": 0.0549,
+          "mdd": 0.0967
+        },
+        {
+          "days": 60,
+          "signals": 162,
+          "winRate": 0.5741,
+          "avgExcess": 0.1028,
+          "medianExcess": 0.0633,
+          "avgReturn": 0.1545,
+          "mdd": 0.173
+        }
+      ],
+      "relaxedShare": 0
+    },
+    {
+      "key": "consensus_2star",
+      "sample": "out",
+      "basis": "allSignals",
+      "signalQuality": "relaxed",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 37,
+          "winRate": 0.4865,
+          "avgExcess": 0.0104,
+          "medianExcess": -0.0001,
+          "avgReturn": 0.0207,
+          "mdd": 0.0405
+        },
+        {
+          "days": 20,
+          "signals": 37,
+          "winRate": 0.5135,
+          "avgExcess": 0.0316,
+          "medianExcess": 0.0047,
+          "avgReturn": 0.0545,
+          "mdd": 0.0965
+        },
+        {
+          "days": 60,
+          "signals": 37,
+          "winRate": 0.5676,
+          "avgExcess": 0.0804,
+          "medianExcess": 0.0723,
+          "avgReturn": 0.1126,
+          "mdd": 0.1768
+        }
+      ],
+      "relaxedShare": 1
+    },
+    {
       "key": "consensus_1star",
       "sample": "in",
       "basis": "top5",
+      "signalQuality": "all",
       "byHolding": [
         {
           "days": 5,
@@ -473,8 +1355,81 @@
     },
     {
       "key": "consensus_1star",
+      "sample": "in",
+      "basis": "top5",
+      "signalQuality": "normal",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 49,
+          "winRate": 0.4286,
+          "avgExcess": -0.0085,
+          "medianExcess": -0.0076,
+          "avgReturn": 0.0011,
+          "mdd": 0.0374
+        },
+        {
+          "days": 20,
+          "signals": 49,
+          "winRate": 0.551,
+          "avgExcess": 0.0284,
+          "medianExcess": 0.0092,
+          "avgReturn": 0.0532,
+          "mdd": 0.0979
+        },
+        {
+          "days": 60,
+          "signals": 49,
+          "winRate": 0.4286,
+          "avgExcess": 0.0644,
+          "medianExcess": -0.051,
+          "avgReturn": 0.1435,
+          "mdd": 0.1729
+        }
+      ],
+      "relaxedShare": 0
+    },
+    {
+      "key": "consensus_1star",
+      "sample": "in",
+      "basis": "top5",
+      "signalQuality": "relaxed",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 14,
+          "winRate": 0.4286,
+          "avgExcess": -0.006,
+          "medianExcess": -0.0027,
+          "avgReturn": 0.0177,
+          "mdd": 0.0265
+        },
+        {
+          "days": 20,
+          "signals": 14,
+          "winRate": 0.3571,
+          "avgExcess": -0.0591,
+          "medianExcess": -0.071,
+          "avgReturn": -0.0147,
+          "mdd": 0.1024
+        },
+        {
+          "days": 60,
+          "signals": 14,
+          "winRate": 0.3571,
+          "avgExcess": -0.0709,
+          "medianExcess": -0.1234,
+          "avgReturn": 0.0659,
+          "mdd": 0.1633
+        }
+      ],
+      "relaxedShare": 1
+    },
+    {
+      "key": "consensus_1star",
       "sample": "out",
       "basis": "top5",
+      "signalQuality": "all",
       "byHolding": [
         {
           "days": 5,
@@ -508,8 +1463,81 @@
     },
     {
       "key": "consensus_1star",
+      "sample": "out",
+      "basis": "top5",
+      "signalQuality": "normal",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 55,
+          "winRate": 0.6364,
+          "avgExcess": -0.0021,
+          "medianExcess": 0.006,
+          "avgReturn": -0.0019,
+          "mdd": 0.041
+        },
+        {
+          "days": 20,
+          "signals": 55,
+          "winRate": 0.4909,
+          "avgExcess": 0.0272,
+          "medianExcess": -0.0016,
+          "avgReturn": 0.0384,
+          "mdd": 0.0875
+        },
+        {
+          "days": 60,
+          "signals": 55,
+          "winRate": 0.5273,
+          "avgExcess": 0.1175,
+          "medianExcess": 0.0209,
+          "avgReturn": 0.1689,
+          "mdd": 0.1784
+        }
+      ],
+      "relaxedShare": 0
+    },
+    {
+      "key": "consensus_1star",
+      "sample": "out",
+      "basis": "top5",
+      "signalQuality": "relaxed",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 4,
+          "winRate": 0.5,
+          "avgExcess": 0.0048,
+          "medianExcess": 0.0055,
+          "avgReturn": 0.0114,
+          "mdd": 0.0413
+        },
+        {
+          "days": 20,
+          "signals": 4,
+          "winRate": 0.75,
+          "avgExcess": 0.219,
+          "medianExcess": 0.2302,
+          "avgReturn": 0.266,
+          "mdd": 0.0951
+        },
+        {
+          "days": 60,
+          "signals": 4,
+          "winRate": 0.75,
+          "avgExcess": 0.7735,
+          "medianExcess": 0.8416,
+          "avgReturn": 0.8678,
+          "mdd": 0.2222
+        }
+      ],
+      "relaxedShare": 1
+    },
+    {
+      "key": "consensus_1star",
       "sample": "in",
       "basis": "allSignals",
+      "signalQuality": "all",
       "byHolding": [
         {
           "days": 5,
@@ -543,8 +1571,81 @@
     },
     {
       "key": "consensus_1star",
+      "sample": "in",
+      "basis": "allSignals",
+      "signalQuality": "normal",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 786,
+          "winRate": 0.486,
+          "avgExcess": -0.0019,
+          "medianExcess": -0.0016,
+          "avgReturn": -0.0006,
+          "mdd": 0.0365
+        },
+        {
+          "days": 20,
+          "signals": 786,
+          "winRate": 0.472,
+          "avgExcess": 0.0012,
+          "medianExcess": -0.0038,
+          "avgReturn": 0.0122,
+          "mdd": 0.0925
+        },
+        {
+          "days": 60,
+          "signals": 786,
+          "winRate": 0.402,
+          "avgExcess": -0.0001,
+          "medianExcess": -0.0377,
+          "avgReturn": 0.0414,
+          "mdd": 0.174
+        }
+      ],
+      "relaxedShare": 0
+    },
+    {
+      "key": "consensus_1star",
+      "sample": "in",
+      "basis": "allSignals",
+      "signalQuality": "relaxed",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 78,
+          "winRate": 0.5385,
+          "avgExcess": 0.0045,
+          "medianExcess": 0.0016,
+          "avgReturn": 0.0205,
+          "mdd": 0.0265
+        },
+        {
+          "days": 20,
+          "signals": 78,
+          "winRate": 0.5128,
+          "avgExcess": -0.0057,
+          "medianExcess": 0.0031,
+          "avgReturn": 0.0268,
+          "mdd": 0.0786
+        },
+        {
+          "days": 60,
+          "signals": 78,
+          "winRate": 0.4231,
+          "avgExcess": -0.0212,
+          "medianExcess": -0.0325,
+          "avgReturn": 0.0579,
+          "mdd": 0.1452
+        }
+      ],
+      "relaxedShare": 1
+    },
+    {
+      "key": "consensus_1star",
       "sample": "out",
       "basis": "allSignals",
+      "signalQuality": "all",
       "byHolding": [
         {
           "days": 5,
@@ -575,6 +1676,78 @@
         }
       ],
       "relaxedShare": 0.0434
+    },
+    {
+      "key": "consensus_1star",
+      "sample": "out",
+      "basis": "allSignals",
+      "signalQuality": "normal",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 860,
+          "winRate": 0.5023,
+          "avgExcess": 0.002,
+          "medianExcess": 0.0001,
+          "avgReturn": 0.0042,
+          "mdd": 0.0341
+        },
+        {
+          "days": 20,
+          "signals": 860,
+          "winRate": 0.4849,
+          "avgExcess": 0.0093,
+          "medianExcess": -0.0032,
+          "avgReturn": 0.0183,
+          "mdd": 0.0865
+        },
+        {
+          "days": 60,
+          "signals": 860,
+          "winRate": 0.493,
+          "avgExcess": 0.0426,
+          "medianExcess": -0.0018,
+          "avgReturn": 0.0857,
+          "mdd": 0.1599
+        }
+      ],
+      "relaxedShare": 0
+    },
+    {
+      "key": "consensus_1star",
+      "sample": "out",
+      "basis": "allSignals",
+      "signalQuality": "relaxed",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 39,
+          "winRate": 0.4103,
+          "avgExcess": -0.0064,
+          "medianExcess": -0.009,
+          "avgReturn": 0.001,
+          "mdd": 0.0288
+        },
+        {
+          "days": 20,
+          "signals": 39,
+          "winRate": 0.3333,
+          "avgExcess": -0.0143,
+          "medianExcess": -0.0284,
+          "avgReturn": 0.0169,
+          "mdd": 0.0913
+        },
+        {
+          "days": 60,
+          "signals": 39,
+          "winRate": 0.5385,
+          "avgExcess": 0.0841,
+          "medianExcess": 0.0417,
+          "avgReturn": 0.1391,
+          "mdd": 0.16
+        }
+      ],
+      "relaxedShare": 1
     }
   ],
   "fundamentalAxis": {
@@ -706,6 +1879,726 @@
         "winRateDelta": -0.0045
       },
       "note": "Out 표본: 변형 225건 / 현행 225건 (top5·20거래일 기준) / 채택 기준 미충족 / 3격자: 50:50(현행), 60:40(추세추종 가중), 40:60(미너비니 가중) 중 60:40을 대표값으로 채택 비교(나머지 격자는 별도 실행 필요)"
+    },
+    {
+      "name": "exit_stop8_time60",
+      "adopted": false,
+      "outVsBaseline": {
+        "avgExcessDelta": -0.0446,
+        "winRateDelta": -0.1535
+      },
+      "outDetail": {
+        "signals": 215,
+        "winRate": 0.3907,
+        "avgExcess": 0.0685,
+        "medianExcess": -0.0426,
+        "avgReturn": 0.097,
+        "mdd": 0.1313,
+        "avgHoldingDays": 43.9442,
+        "stopHitRate": 0.4047
+      },
+      "note": "Out 표본 215건 (trend·top5 기준) vs 현행 60거래일 고정 보유(표본 215건) / 종가 기준 판정 — 장중 이탈 미반영으로 실제 손절 체결가는 이보다 불리할 수 있음"
+    },
+    {
+      "name": "exit_stop8_trail15",
+      "adopted": false,
+      "outVsBaseline": {
+        "avgExcessDelta": -0.0759,
+        "winRateDelta": -0.1675
+      },
+      "outDetail": {
+        "signals": 215,
+        "winRate": 0.3767,
+        "avgExcess": 0.0372,
+        "medianExcess": -0.0426,
+        "avgReturn": 0.0624,
+        "mdd": 0.1227,
+        "avgHoldingDays": 39.4791,
+        "stopHitRate": 0.5907
+      },
+      "note": "Out 표본 215건 (trend·top5 기준) vs 현행 60거래일 고정 보유(표본 215건) / 종가 기준 판정 — 장중 이탈 미반영으로 실제 손절 체결가는 이보다 불리할 수 있음"
+    }
+  ],
+  "freshnessCohorts": [
+    {
+      "key": "trend",
+      "cohort": "0d",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 57,
+          "winRate": 0.5263,
+          "avgExcess": 0.0032,
+          "medianExcess": 0.0052,
+          "avgReturn": -0.0002,
+          "mdd": 0.0342
+        },
+        {
+          "days": 20,
+          "signals": 57,
+          "winRate": 0.4737,
+          "avgExcess": -0.0125,
+          "medianExcess": -0.0071,
+          "avgReturn": -0.008,
+          "mdd": 0.0965
+        },
+        {
+          "days": 60,
+          "signals": 57,
+          "winRate": 0.3684,
+          "avgExcess": -0.0191,
+          "medianExcess": -0.0545,
+          "avgReturn": 0.0272,
+          "mdd": 0.1609
+        }
+      ],
+      "sample": "in"
+    },
+    {
+      "key": "trend",
+      "cohort": "1-2d",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 92,
+          "winRate": 0.5217,
+          "avgExcess": -0.0014,
+          "medianExcess": 0.0027,
+          "avgReturn": -0.0052,
+          "mdd": 0.0333
+        },
+        {
+          "days": 20,
+          "signals": 92,
+          "winRate": 0.5326,
+          "avgExcess": -0.0019,
+          "medianExcess": 0.0044,
+          "avgReturn": 0.0056,
+          "mdd": 0.0831
+        },
+        {
+          "days": 60,
+          "signals": 92,
+          "winRate": 0.3261,
+          "avgExcess": -0.0285,
+          "medianExcess": -0.0438,
+          "avgReturn": 0.0219,
+          "mdd": 0.1534
+        }
+      ],
+      "sample": "in"
+    },
+    {
+      "key": "trend",
+      "cohort": "3-4d",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 98,
+          "winRate": 0.5102,
+          "avgExcess": 0.0062,
+          "medianExcess": 0.0006,
+          "avgReturn": 0.0061,
+          "mdd": 0.0368
+        },
+        {
+          "days": 20,
+          "signals": 98,
+          "winRate": 0.5,
+          "avgExcess": 0.0067,
+          "medianExcess": 0,
+          "avgReturn": 0.0151,
+          "mdd": 0.0953
+        },
+        {
+          "days": 60,
+          "signals": 98,
+          "winRate": 0.4388,
+          "avgExcess": 0.0052,
+          "medianExcess": -0.0316,
+          "avgReturn": 0.0471,
+          "mdd": 0.1756
+        }
+      ],
+      "sample": "in"
+    },
+    {
+      "key": "trend",
+      "cohort": "5d+",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 70,
+          "winRate": 0.5714,
+          "avgExcess": 0.0123,
+          "medianExcess": 0.0122,
+          "avgReturn": 0.023,
+          "mdd": 0.0329
+        },
+        {
+          "days": 20,
+          "signals": 70,
+          "winRate": 0.4857,
+          "avgExcess": 0.0085,
+          "medianExcess": -0.0035,
+          "avgReturn": 0.0336,
+          "mdd": 0.0813
+        },
+        {
+          "days": 60,
+          "signals": 70,
+          "winRate": 0.4286,
+          "avgExcess": 0.0049,
+          "medianExcess": -0.0168,
+          "avgReturn": 0.0539,
+          "mdd": 0.172
+        }
+      ],
+      "sample": "in"
+    },
+    {
+      "key": "trend",
+      "cohort": "no_recent_breakout",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 28,
+          "winRate": 0.3571,
+          "avgExcess": -0.0146,
+          "medianExcess": -0.0125,
+          "avgReturn": -0.0098,
+          "mdd": 0.0383
+        },
+        {
+          "days": 20,
+          "signals": 28,
+          "winRate": 0.5,
+          "avgExcess": -0.0111,
+          "medianExcess": 0.0068,
+          "avgReturn": 0.025,
+          "mdd": 0.0808
+        },
+        {
+          "days": 60,
+          "signals": 28,
+          "winRate": 0.3929,
+          "avgExcess": -0.0574,
+          "medianExcess": -0.1211,
+          "avgReturn": -0.0469,
+          "mdd": 0.2246
+        }
+      ],
+      "sample": "in"
+    },
+    {
+      "key": "minervini",
+      "cohort": "0d",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 184,
+          "winRate": 0.5598,
+          "avgExcess": 0.0032,
+          "medianExcess": 0.0095,
+          "avgReturn": 0.0018,
+          "mdd": 0.0344
+        },
+        {
+          "days": 20,
+          "signals": 184,
+          "winRate": 0.6033,
+          "avgExcess": 0.0276,
+          "medianExcess": 0.01,
+          "avgReturn": 0.0337,
+          "mdd": 0.0832
+        },
+        {
+          "days": 60,
+          "signals": 184,
+          "winRate": 0.4457,
+          "avgExcess": 0.0617,
+          "medianExcess": -0.0122,
+          "avgReturn": 0.0973,
+          "mdd": 0.1762
+        }
+      ],
+      "sample": "in"
+    },
+    {
+      "key": "minervini",
+      "cohort": "1-2d",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 143,
+          "winRate": 0.5105,
+          "avgExcess": 0.0007,
+          "medianExcess": 0.0019,
+          "avgReturn": 0.0016,
+          "mdd": 0.0331
+        },
+        {
+          "days": 20,
+          "signals": 143,
+          "winRate": 0.4476,
+          "avgExcess": 0.0063,
+          "medianExcess": -0.0066,
+          "avgReturn": 0.0099,
+          "mdd": 0.0884
+        },
+        {
+          "days": 60,
+          "signals": 143,
+          "winRate": 0.4895,
+          "avgExcess": 0.0257,
+          "medianExcess": -0.0053,
+          "avgReturn": 0.0587,
+          "mdd": 0.1663
+        }
+      ],
+      "sample": "in"
+    },
+    {
+      "key": "minervini",
+      "cohort": "3-4d",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 84,
+          "winRate": 0.5238,
+          "avgExcess": 0.0166,
+          "medianExcess": 0.0039,
+          "avgReturn": 0.0264,
+          "mdd": 0.0322
+        },
+        {
+          "days": 20,
+          "signals": 84,
+          "winRate": 0.4881,
+          "avgExcess": 0.0356,
+          "medianExcess": -0.0008,
+          "avgReturn": 0.0624,
+          "mdd": 0.0778
+        },
+        {
+          "days": 60,
+          "signals": 84,
+          "winRate": 0.5119,
+          "avgExcess": 0.0632,
+          "medianExcess": 0.0135,
+          "avgReturn": 0.1272,
+          "mdd": 0.1624
+        }
+      ],
+      "sample": "in"
+    },
+    {
+      "key": "minervini",
+      "cohort": "5d+",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 127,
+          "winRate": 0.4882,
+          "avgExcess": 0.0021,
+          "medianExcess": -0.0012,
+          "avgReturn": 0.002,
+          "mdd": 0.0345
+        },
+        {
+          "days": 20,
+          "signals": 127,
+          "winRate": 0.4961,
+          "avgExcess": 0.0091,
+          "medianExcess": -0.0001,
+          "avgReturn": 0.0215,
+          "mdd": 0.0853
+        },
+        {
+          "days": 60,
+          "signals": 127,
+          "winRate": 0.4094,
+          "avgExcess": 0,
+          "medianExcess": -0.0327,
+          "avgReturn": 0.0462,
+          "mdd": 0.176
+        }
+      ],
+      "sample": "in"
+    },
+    {
+      "key": "minervini",
+      "cohort": "no_recent_breakout",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 299,
+          "winRate": 0.4649,
+          "avgExcess": -0.0028,
+          "medianExcess": -0.0035,
+          "avgReturn": -0.0012,
+          "mdd": 0.0408
+        },
+        {
+          "days": 20,
+          "signals": 299,
+          "winRate": 0.4515,
+          "avgExcess": -0.007,
+          "medianExcess": -0.0071,
+          "avgReturn": 0.0059,
+          "mdd": 0.1062
+        },
+        {
+          "days": 60,
+          "signals": 299,
+          "winRate": 0.3645,
+          "avgExcess": -0.0259,
+          "medianExcess": -0.053,
+          "avgReturn": 0.0096,
+          "mdd": 0.1949
+        }
+      ],
+      "sample": "in"
+    },
+    {
+      "key": "trend",
+      "cohort": "0d",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 62,
+          "winRate": 0.4032,
+          "avgExcess": -0.0055,
+          "medianExcess": -0.0096,
+          "avgReturn": -0.0039,
+          "mdd": 0.0367
+        },
+        {
+          "days": 20,
+          "signals": 62,
+          "winRate": 0.5,
+          "avgExcess": 0.0028,
+          "medianExcess": -0.0009,
+          "avgReturn": 0.0097,
+          "mdd": 0.0956
+        },
+        {
+          "days": 60,
+          "signals": 62,
+          "winRate": 0.4355,
+          "avgExcess": 0.0209,
+          "medianExcess": -0.0177,
+          "avgReturn": 0.0718,
+          "mdd": 0.1584
+        }
+      ],
+      "sample": "out"
+    },
+    {
+      "key": "trend",
+      "cohort": "1-2d",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 106,
+          "winRate": 0.5094,
+          "avgExcess": 0.0162,
+          "medianExcess": 0.0011,
+          "avgReturn": 0.0172,
+          "mdd": 0.032
+        },
+        {
+          "days": 20,
+          "signals": 106,
+          "winRate": 0.5094,
+          "avgExcess": 0.0222,
+          "medianExcess": 0.0021,
+          "avgReturn": 0.038,
+          "mdd": 0.0824
+        },
+        {
+          "days": 60,
+          "signals": 106,
+          "winRate": 0.5377,
+          "avgExcess": 0.0883,
+          "medianExcess": 0.0264,
+          "avgReturn": 0.1298,
+          "mdd": 0.1514
+        }
+      ],
+      "sample": "out"
+    },
+    {
+      "key": "trend",
+      "cohort": "3-4d",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 98,
+          "winRate": 0.5408,
+          "avgExcess": 0.0065,
+          "medianExcess": 0.003,
+          "avgReturn": 0.0089,
+          "mdd": 0.0353
+        },
+        {
+          "days": 20,
+          "signals": 98,
+          "winRate": 0.449,
+          "avgExcess": 0.0228,
+          "medianExcess": -0.0135,
+          "avgReturn": 0.0346,
+          "mdd": 0.089
+        },
+        {
+          "days": 60,
+          "signals": 98,
+          "winRate": 0.5816,
+          "avgExcess": 0.1016,
+          "medianExcess": 0.0436,
+          "avgReturn": 0.1613,
+          "mdd": 0.1535
+        }
+      ],
+      "sample": "out"
+    },
+    {
+      "key": "trend",
+      "cohort": "5d+",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 58,
+          "winRate": 0.4655,
+          "avgExcess": 0.0037,
+          "medianExcess": -0.0029,
+          "avgReturn": 0.0103,
+          "mdd": 0.0356
+        },
+        {
+          "days": 20,
+          "signals": 58,
+          "winRate": 0.431,
+          "avgExcess": 0.0172,
+          "medianExcess": -0.0145,
+          "avgReturn": 0.0376,
+          "mdd": 0.0937
+        },
+        {
+          "days": 60,
+          "signals": 58,
+          "winRate": 0.5862,
+          "avgExcess": 0.1117,
+          "medianExcess": 0.0484,
+          "avgReturn": 0.1415,
+          "mdd": 0.1731
+        }
+      ],
+      "sample": "out"
+    },
+    {
+      "key": "trend",
+      "cohort": "no_recent_breakout",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 5,
+          "winRate": 0.2,
+          "avgExcess": -0.0328,
+          "medianExcess": -0.0283,
+          "avgReturn": 0.0023,
+          "mdd": 0.0195
+        },
+        {
+          "days": 20,
+          "signals": 5,
+          "winRate": 0,
+          "avgExcess": -0.1365,
+          "medianExcess": -0.1209,
+          "avgReturn": -0.0158,
+          "mdd": 0.0761
+        },
+        {
+          "days": 60,
+          "signals": 5,
+          "winRate": 0,
+          "avgExcess": -0.2937,
+          "medianExcess": -0.228,
+          "avgReturn": -0.0541,
+          "mdd": 0.1325
+        }
+      ],
+      "sample": "out"
+    },
+    {
+      "key": "minervini",
+      "cohort": "0d",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 192,
+          "winRate": 0.4635,
+          "avgExcess": 0.0003,
+          "medianExcess": -0.0052,
+          "avgReturn": 0.0024,
+          "mdd": 0.0353
+        },
+        {
+          "days": 20,
+          "signals": 192,
+          "winRate": 0.474,
+          "avgExcess": 0.0044,
+          "medianExcess": -0.0074,
+          "avgReturn": 0.01,
+          "mdd": 0.094
+        },
+        {
+          "days": 60,
+          "signals": 192,
+          "winRate": 0.5417,
+          "avgExcess": 0.0698,
+          "medianExcess": 0.0292,
+          "avgReturn": 0.105,
+          "mdd": 0.1553
+        }
+      ],
+      "sample": "out"
+    },
+    {
+      "key": "minervini",
+      "cohort": "1-2d",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 143,
+          "winRate": 0.5245,
+          "avgExcess": 0.0109,
+          "medianExcess": 0.0015,
+          "avgReturn": 0.013,
+          "mdd": 0.0359
+        },
+        {
+          "days": 20,
+          "signals": 143,
+          "winRate": 0.5315,
+          "avgExcess": 0.035,
+          "medianExcess": 0.0095,
+          "avgReturn": 0.0381,
+          "mdd": 0.0873
+        },
+        {
+          "days": 60,
+          "signals": 143,
+          "winRate": 0.5524,
+          "avgExcess": 0.0499,
+          "medianExcess": 0.0196,
+          "avgReturn": 0.0914,
+          "mdd": 0.1653
+        }
+      ],
+      "sample": "out"
+    },
+    {
+      "key": "minervini",
+      "cohort": "3-4d",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 107,
+          "winRate": 0.4486,
+          "avgExcess": -0.0023,
+          "medianExcess": -0.0036,
+          "avgReturn": 0.0008,
+          "mdd": 0.0406
+        },
+        {
+          "days": 20,
+          "signals": 107,
+          "winRate": 0.4953,
+          "avgExcess": 0.0292,
+          "medianExcess": -0.0008,
+          "avgReturn": 0.0374,
+          "mdd": 0.0834
+        },
+        {
+          "days": 60,
+          "signals": 107,
+          "winRate": 0.5607,
+          "avgExcess": 0.0894,
+          "medianExcess": 0.0414,
+          "avgReturn": 0.131,
+          "mdd": 0.1492
+        }
+      ],
+      "sample": "out"
+    },
+    {
+      "key": "minervini",
+      "cohort": "5d+",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 145,
+          "winRate": 0.4828,
+          "avgExcess": 0.0009,
+          "medianExcess": -0.0013,
+          "avgReturn": 0.0002,
+          "mdd": 0.0331
+        },
+        {
+          "days": 20,
+          "signals": 145,
+          "winRate": 0.5241,
+          "avgExcess": 0.0112,
+          "medianExcess": 0.0047,
+          "avgReturn": 0.0188,
+          "mdd": 0.0859
+        },
+        {
+          "days": 60,
+          "signals": 145,
+          "winRate": 0.4897,
+          "avgExcess": 0.0237,
+          "medianExcess": -0.0055,
+          "avgReturn": 0.0679,
+          "mdd": 0.1652
+        }
+      ],
+      "sample": "out"
+    },
+    {
+      "key": "minervini",
+      "cohort": "no_recent_breakout",
+      "byHolding": [
+        {
+          "days": 5,
+          "signals": 289,
+          "winRate": 0.5156,
+          "avgExcess": 0.0077,
+          "medianExcess": 0.0007,
+          "avgReturn": 0.013,
+          "mdd": 0.0329
+        },
+        {
+          "days": 20,
+          "signals": 289,
+          "winRate": 0.481,
+          "avgExcess": 0.0199,
+          "medianExcess": -0.0045,
+          "avgReturn": 0.0371,
+          "mdd": 0.0874
+        },
+        {
+          "days": 60,
+          "signals": 289,
+          "winRate": 0.4498,
+          "avgExcess": 0.0485,
+          "medianExcess": -0.0149,
+          "avgReturn": 0.0992,
+          "mdd": 0.172
+        }
+      ],
+      "sample": "out"
     }
   ]
 }
