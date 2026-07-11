@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-10",
+  "generatedAt": "2026-07-11",
   "tickers": [
     {
       "ticker": "AAPL",
@@ -783,7 +783,7 @@
     },
     {
       "ticker": "MRVL",
-      "epsGrowthQoQ_yoy": -80.63,
+      "epsGrowthQoQ_yoy": -80.6,
       "epsAccelerating": false,
       "revenueGrowthQoQ_yoy": 27.57,
       "marginImproving": false,
@@ -797,25 +797,25 @@
         },
         {
           "period": "2026-Q1",
-          "eps": 0.4528,
+          "eps": 0.4523,
           "revenue": 2218700000.0,
           "operatingMargin": 0.1866
         },
         {
           "period": "2025-Q4",
-          "eps": 2.1734,
+          "eps": 2.171,
           "revenue": 2074500000.0,
           "operatingMargin": 0.1771
         },
         {
           "period": "2025-Q3",
-          "eps": 0.2227,
+          "eps": 0.2224,
           "revenue": 2006100000.0,
           "operatingMargin": 0.1489
         },
         {
           "period": "2025-Q2",
-          "eps": 0.2034,
+          "eps": 0.2031,
           "revenue": 1895300000.0,
           "operatingMargin": 0.1363
         }

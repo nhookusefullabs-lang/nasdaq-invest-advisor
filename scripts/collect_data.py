@@ -34,6 +34,13 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+# Windows 콘솔의 기본 코드페이지(cp949 등)는 이 스크립트가 출력하는 한글/특수문자
+# (예: em dash '—')를 인코딩하지 못해 UnicodeEncodeError로 죽을 수 있다 — stdout/stderr을
+# UTF-8로 강제해 플랫폼 기본 코드페이지와 무관하게 항상 출력되도록 한다.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+
 try:
     import yfinance as yf
     import pandas as pd
