@@ -6,6 +6,9 @@
 import { PRESETS, DEFAULT_PRESET_KEY } from './presets.js'
 import { goldenCrossWithin } from './indicators.js'
 
+// v9 US-7: 백테스트 후보 변형 비교 프레임(scripts/lib/variants.mjs)이 "변경 대상이 아닌
+// 부분"을 재구현 없이 그대로 재사용할 수 있도록 export 구문만 보강한다 — 동작 불변, 아래
+// export { ... } 외에는 이 파일의 어떤 로직도 수정하지 않는다.
 const SCORE_DISPARITY_MAX = 60
 const SCORE_VOLUME_MAX = 30
 const SCORE_SECTOR_BONUS = 10
@@ -28,7 +31,7 @@ function goldenCrossPass(td, window) {
   return false
 }
 
-function stage1Pass(td, level, config) {
+export function stage1Pass(td, level, config) {
   const rsiOk = td.indicators.rsi14 >= config.rsiMin
   const macdOk = td.indicators.macdLine > 0
   if (level === 'strict') return rsiOk && macdOk && goldenCrossPass(td, config.goldenCrossWindow)
@@ -50,7 +53,7 @@ function runStage1(eligible, config) {
   return { passed, level, relaxationApplied: level !== 'strict' }
 }
 
-function scoreTicker(td) {
+export function scoreTicker(td) {
   const disp = td.indicators.disparity ?? 0
   const vol = td.indicators.volTrend ?? 0
   const dispScore = (Math.max(0, Math.min(disp, 15)) / 15) * SCORE_DISPARITY_MAX
@@ -121,3 +124,5 @@ export function recommend(tickers, config = PRESETS[DEFAULT_PRESET_KEY]) {
     level,
   }
 }
+
+export { SCORE_DISPARITY_MAX, SCORE_VOLUME_MAX, SCORE_SECTOR_BONUS }

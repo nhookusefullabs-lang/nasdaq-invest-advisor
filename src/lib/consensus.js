@@ -4,8 +4,10 @@
 // 척도가 다른 두 점수를 그냥 더하면 "어디서도 1등이 아닌 종목"이 통합 1위가 되는
 // 평균의 함정에 빠지므로, 등급(★★/★)을 백분위보다 우선하는 2단계 정렬을 쓴다.
 
+// v9 US-7: 백테스트 후보 변형(scripts/lib/variants.mjs)이 percentileOf를 재구현 없이 그대로
+// 재사용할 수 있도록 export만 보강한다 — 동작 불변.
 /** population(같은 모드 결과 리스트의 score 배열) 내에서 value가 차지하는 백분위(0~100). */
-function percentileOf(value, population) {
+export function percentileOf(value, population) {
   if (!population.length) return null
   const belowOrEqual = population.filter((v) => v <= value).length
   return (belowOrEqual / population.length) * 100

@@ -11,6 +11,7 @@ import { buildConsensusRanking } from '../src/lib/consensus.js'
 import { sliceUniverseAsOf, buildEvaluationDates, getCalendarDates } from './lib/asOf.mjs'
 import { buildPriceIndex, aggregatePerformance } from './lib/performance.mjs'
 import { buildFundamentalAxis } from './lib/fundamentalHistory.mjs'
+import { VARIANTS, evaluateVariant } from './lib/variants.mjs'
 import { atomicWriteBacktest } from './validate-backtest.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -177,6 +178,7 @@ export function runBacktest(
 
   const calendarDates = getCalendarDates(rawUniverse)
   const fundamentalAxis = buildFundamentalAxis(fundamentalsData, records, priceIndex, holdingDays)
+  const variants = VARIANTS.map((v) => evaluateVariant(rawUniverse, v, { evaluationDates, splitDate, mainRecords: records, priceIndex }))
 
   return {
     schemaVersion: 1,
@@ -193,7 +195,7 @@ export function runBacktest(
     },
     strategies,
     fundamentalAxis,
-    variants: [],
+    variants,
   }
 }
 

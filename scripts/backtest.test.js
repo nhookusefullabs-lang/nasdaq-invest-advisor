@@ -158,9 +158,14 @@ describe('runBacktest — US-5 In/Out 분할 + backtest.json 발행', () => {
     expect(anyOutSignals).toBe(true)
   })
 
-  it('fundamentalsData를 넘기지 않으면 fundamentalAxis는 null이고, variants는 US-7 이전엔 빈 배열이다', () => {
+  it('fundamentalsData를 넘기지 않으면 fundamentalAxis는 null이다', () => {
     expect(backtest.fundamentalAxis).toBeNull()
-    expect(backtest.variants).toEqual([])
+  })
+
+  it('variants[]에 3종(A/B/C)이 등록·실행되고 adopted는 전부 false다 (US-7 연동)', () => {
+    expect(backtest.variants.map((v) => v.name).sort()).toEqual(['adx_gate', 'consensus_weighted', 'disparity_inverted_u'])
+    expect(backtest.variants.every((v) => v.adopted === false)).toBe(true)
+    expect(backtest.variants.every((v) => typeof v.note === 'string' && v.note.length > 0)).toBe(true)
   })
 
   it('fundamentalsData를 넘기면 fundamentalAxis가 채워지고 여전히 스키마를 통과한다 (US-6 연동)', () => {
