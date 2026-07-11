@@ -190,3 +190,27 @@ describe('runBacktest — US-5 In/Out 분할 + backtest.json 발행', () => {
     expect(validateBacktest(withAxis).valid).toBe(true)
   })
 })
+
+describe('runBacktest — US-9 데이터 수집 3년 확대 (2y/3y 픽스처 양쪽에서 엔진 완주)', () => {
+  const raw2y = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
+  const FIXTURE_3Y_PATH = path.resolve(__dirname, '../src/lib/__fixtures__/nasdaq100.3y.sample.json')
+  const raw3y = JSON.parse(readFileSync(FIXTURE_3Y_PATH, 'utf-8'))
+
+  it('2y 픽스처(504거래일)에서 엔진이 완주하고 스키마를 통과한다', () => {
+    const backtest = runBacktest(raw2y)
+    expect(validateBacktest(backtest).valid).toBe(true)
+    expect(backtest.strategies.some((s) => s.byHolding.some((h) => h.signals > 0))).toBe(true)
+  })
+
+  it('3y 픽스처(756거래일)에서도 엔진이 완주하고 스키마를 통과한다', () => {
+    const backtest = runBacktest(raw3y)
+    expect(validateBacktest(backtest).valid).toBe(true)
+    expect(backtest.strategies.some((s) => s.byHolding.some((h) => h.signals > 0))).toBe(true)
+  })
+
+  it('데이터가 길수록(3y > 2y) 평가일 수가 규칙대로 더 많다 (워밍업·말단여유는 고정, 평가 구간만 늘어남)', () => {
+    const evalDates2y = buildEvaluationDates(raw2y)
+    const evalDates3y = buildEvaluationDates(raw3y)
+    expect(evalDates3y.length).toBeGreaterThan(evalDates2y.length)
+  })
+})
