@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { loadNasdaq100 } from './lib/loadData.js'
 import { loadResearch, buildResearchMap } from './lib/researchLoader.js'
 import { loadFundamentals, buildFundamentalsMap } from './lib/fundamentalsLoader.js'
+import { loadBacktest } from './lib/backtestLoader.js'
 import { applyFilters, countWeek52Excluded } from './lib/filters.js'
 import { recommend } from './lib/recommend.js'
 import { runMinerviniRecommend } from './lib/minervini.js'
@@ -31,6 +32,7 @@ export default function App() {
   const [uiState, setUiState] = useState(DEFAULT_UI_STATE)
   const [researchMap, setResearchMap] = useState(new Map())
   const [fundamentalsMap, setFundamentalsMap] = useState(new Map())
+  const [backtest, setBacktest] = useState(null)
 
   useEffect(() => {
     loadNasdaq100()
@@ -39,13 +41,15 @@ export default function App() {
         const validSet = new Set(d.tickers.map((t) => t.ticker))
         setUiState(loadPersistedState(validSet))
 
-        // research.json/fundamentals.json은 선택적 스냅샷 — 없거나 스키마가 안 맞아도
-        // 앱은 정상 동작해야 한다 (US-7/US-11 graceful degradation)
+        // research.json/fundamentals.json/backtest.json은 선택적 스냅샷 — 없거나 스키마가
+        // 안 맞아도 앱은 정상 동작해야 한다 (US-7/US-11/v9 US-8 graceful degradation)
         const research = await loadResearch()
         setResearchMap(buildResearchMap(research, d.generatedAt, validSet))
 
         const fundamentals = await loadFundamentals()
         setFundamentalsMap(buildFundamentalsMap(fundamentals, validSet))
+
+        setBacktest(await loadBacktest())
       })
       .catch((e) => setLoadError(e.message))
   }, [])
@@ -222,6 +226,7 @@ export default function App() {
           selectedTickers={uiState.selectedTickers}
           onToggleSelect={toggleSelectedTicker}
           onGoToSimulation={() => setScreen('simulation')}
+          backtest={backtest}
         />
       )}
 

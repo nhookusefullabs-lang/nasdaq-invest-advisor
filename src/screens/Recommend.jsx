@@ -5,6 +5,7 @@ import ResearchRequestToggle from '../components/ResearchRequestToggle.jsx'
 import FundamentalBadge from '../components/FundamentalBadge.jsx'
 import FundamentalFailSection from '../components/FundamentalFailSection.jsx'
 import ResearchCheckBadge from '../components/ResearchCheckBadge.jsx'
+import BacktestConfidence from '../components/BacktestConfidence.jsx'
 import { PRESETS, PRESET_KEYS } from '../lib/presets.js'
 import { TREND_TEMPLATE, TREND_TEMPLATE_RELAXED_MIN_CONDITIONS } from '../lib/constants/v8.js'
 import { evaluateFundamentalHurdle } from '../lib/fundamentals.js'
@@ -103,8 +104,14 @@ function ModeSegment({ recommendMode, onModeChange }) {
   )
 }
 
-function DesignValueNotice() {
-  return <p className="text-xs text-gray-400 mt-4">배점·기준값은 v9 백테스트로 조정 예정인 설계값입니다.</p>
+// v8에서는 항상 "설계값" 안내였지만, backtest.json이 존재하면(US-8) 실측 검증이 반영되었음을
+// 알리는 문구로 교체한다 — 부재 시(생성 전/그래도 무방한 상태) 기존 v8 문구를 그대로 유지한다.
+function DesignValueNotice({ backtest }) {
+  return (
+    <p className="text-xs text-gray-400 mt-4">
+      {backtest ? `실측 검증 결과 표시 중 (${backtest.generatedAt} 기준)` : '배점·기준값은 v9 백테스트로 조정 예정인 설계값입니다.'}
+    </p>
+  )
 }
 
 function TrendModeView({
@@ -122,6 +129,7 @@ function TrendModeView({
   onToggleResearchRequest,
   selectedTickers,
   onToggleSelect,
+  backtest,
 }) {
   const { relaxationApplied, insufficientSignal } = recommendation
   const { visible: afterFundamentals, failed } = splitByFundamentalVerdict(recommendation.list, fundamentalsMap)
@@ -135,6 +143,8 @@ function TrendModeView({
         1단계 매수 신호(RSI·MACD·골든크로스) 통과 종목을 2단계 점수 순으로 정렬했습니다. 신호를 통과하지
         못했어도 점수 70점 이상인 종목은 고득점 특별 편입으로 함께 보여줍니다.
       </p>
+
+      <BacktestConfidence backtest={backtest} modeKey="trend" />
 
       <div className="flex items-center gap-2 mb-1" role="group" aria-label="추천 프리셋">
         {PRESET_KEYS.map((key) => (
@@ -261,6 +271,7 @@ function MinerviniModeView({
   onToggleResearchRequest,
   selectedTickers,
   onToggleSelect,
+  backtest,
 }) {
   const { relaxationApplied, insufficientSignal } = minerviniResult
   const { visible: afterFundamentals, failed } = splitByFundamentalVerdict(minerviniResult.list, fundamentalsMap)
@@ -272,6 +283,8 @@ function MinerviniModeView({
         미너비니 SEPA 방법론 — 1단계 트렌드 템플릿(8조건) 통과 종목을 2단계 VCP(변동성 수축 패턴) 점수 순으로
         정렬했습니다.
       </p>
+
+      <BacktestConfidence backtest={backtest} modeKey="minervini" />
 
       {relaxationApplied && (
         <div className="mb-4 rounded bg-amber-50 border border-amber-200 text-amber-800 text-sm px-3 py-2">
@@ -323,7 +336,7 @@ function MinerviniModeView({
 
       <FundamentalFailSection failed={failed} />
 
-      <DesignValueNotice />
+      <DesignValueNotice backtest={backtest} />
     </>
   )
 }
@@ -381,6 +394,7 @@ function ConsensusModeView({
   onToggleResearchRequest,
   selectedTickers,
   onToggleSelect,
+  backtest,
 }) {
   const { trendInsufficientSignal, minerviniInsufficientSignal } = consensusResult
   const { visible: afterFundamentals, failed } = splitByFundamentalVerdict(consensusResult.list, fundamentalsMap)
@@ -392,6 +406,8 @@ function ConsensusModeView({
         추세추종과 미너비니 두 관점이 모두 매수 신호를 준 종목(★★)을 우선하고, 한쪽 관점만 통과한 종목(★)도
         함께 보여줍니다.
       </p>
+
+      <BacktestConfidence backtest={backtest} modeKey="consensus" />
 
       {trendInsufficientSignal && minerviniInsufficientSignal && (
         <div className="mb-4 rounded bg-red-50 border border-red-200 text-red-800 text-sm px-3 py-2">
@@ -418,7 +434,7 @@ function ConsensusModeView({
 
       <FundamentalFailSection failed={failed} />
 
-      <DesignValueNotice />
+      <DesignValueNotice backtest={backtest} />
     </>
   )
 }
@@ -444,6 +460,7 @@ export default function Recommend({
   selectedTickers,
   onToggleSelect,
   onGoToSimulation,
+  backtest,
 }) {
   return (
     <div>
@@ -472,6 +489,7 @@ export default function Recommend({
           onToggleResearchRequest={onToggleResearchRequest}
           selectedTickers={selectedTickers}
           onToggleSelect={onToggleSelect}
+          backtest={backtest}
         />
       )}
 
@@ -485,6 +503,7 @@ export default function Recommend({
           onToggleResearchRequest={onToggleResearchRequest}
           selectedTickers={selectedTickers}
           onToggleSelect={onToggleSelect}
+          backtest={backtest}
         />
       )}
 
@@ -498,6 +517,7 @@ export default function Recommend({
           onToggleResearchRequest={onToggleResearchRequest}
           selectedTickers={selectedTickers}
           onToggleSelect={onToggleSelect}
+          backtest={backtest}
         />
       )}
 
