@@ -13,6 +13,7 @@ import { buildPriceIndex, aggregatePerformance } from './lib/performance.mjs'
 import { buildFundamentalAxis } from './lib/fundamentalHistory.mjs'
 import { VARIANTS, evaluateVariant } from './lib/variants.mjs'
 import { EXIT_RULES, aggregateExitPerformance, EXIT_LIMITATION_NOTE } from './lib/exits.mjs'
+import { goldenCrossFreshnessDays, pivotBreakoutFreshnessDays, freshnessCohort, aggregateFreshnessCohorts } from './lib/freshness.mjs'
 import { atomicWriteBacktest } from './validate-backtest.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -68,11 +69,22 @@ function consensusRelaxationApplied(entry, trendResult, minerviniResult) {
 }
 
 /**
+ * datasetTickers(dataset.tickers, deriveTickerData() 산출물 배열)에서 ticker 하나의 파생
+ * 데이터를 찾는다 — 신선도 코호트(US-4) 계산에 필요한 macdLineSeries/signalLineSeries/series를
+ * 얻기 위함. 못 찾으면(픽스처 테스트 등 datasetTickers 미전달) null.
+ */
+function findTickerData(datasetTickers, ticker) {
+  return datasetTickers?.find((t) => t.ticker === ticker) ?? null
+}
+
+/**
  * 평가일 하나의 { trend, minervini, consensus } 결과를 평탄한 신호 레코드 배열로 변환한다.
  * basis: top5(상위 5) / allSignals(1단계 통과 전체, 추세추종·미너비니는 recommend()가 이미
  * 반환한 list 전체를, 컨센서스는 두 모드 통합 리스트 전체를 사용 — 별도 재구현 없음).
+ * datasetTickers(선택)를 넘기면 trend/minervini 레코드에 freshnessCohort(US-4)가 추가된다 —
+ * 이벤트 정의가 모드별로만 존재하므로(PRD) 컨센서스 레코드에는 붙이지 않는다.
  */
-export function buildSignalRecords(date, { trend, minervini, consensus }) {
+export function buildSignalRecords(date, { trend, minervini, consensus }, datasetTickers = null) {
   const records = []
 
   const addBasisPair = (items, mapFn) => {
@@ -81,25 +93,35 @@ export function buildSignalRecords(date, { trend, minervini, consensus }) {
   }
 
   const trendPassed = trend.list.filter((t) => t.signalPassed)
-  addBasisPair(trendPassed, (t, i) => ({
-    date,
-    ticker: t.ticker,
-    strategyKey: 'trend',
-    rank: i + 1,
-    score: t.score,
-    grade: null,
-    relaxationApplied: trend.relaxationApplied,
-  }))
+  addBasisPair(trendPassed, (t, i) => {
+    const td = findTickerData(datasetTickers, t.ticker)
+    const daysAgo = td ? goldenCrossFreshnessDays(td.indicators.macdLineSeries, td.indicators.signalLineSeries) : null
+    return {
+      date,
+      ticker: t.ticker,
+      strategyKey: 'trend',
+      rank: i + 1,
+      score: t.score,
+      grade: null,
+      relaxationApplied: trend.relaxationApplied,
+      ...(td ? { freshnessCohort: freshnessCohort(daysAgo) } : {}),
+    }
+  })
 
-  addBasisPair(minervini.list, (m, i) => ({
-    date,
-    ticker: m.ticker,
-    strategyKey: 'minervini',
-    rank: i + 1,
-    score: m.score,
-    grade: null,
-    relaxationApplied: minervini.relaxationApplied,
-  }))
+  addBasisPair(minervini.list, (m, i) => {
+    const td = findTickerData(datasetTickers, m.ticker)
+    const daysAgo = td ? pivotBreakoutFreshnessDays(td.series) : null
+    return {
+      date,
+      ticker: m.ticker,
+      strategyKey: 'minervini',
+      rank: i + 1,
+      score: m.score,
+      grade: null,
+      relaxationApplied: minervini.relaxationApplied,
+      ...(td ? { freshnessCohort: freshnessCohort(daysAgo) } : {}),
+    }
+  })
 
   addBasisPair(consensus.list, (c, i) => ({
     date,
@@ -122,8 +144,8 @@ export function buildSignalRecords(date, { trend, minervini, consensus }) {
 export function runSignalLoop(rawUniverse, evaluationDates, onProgress = () => {}) {
   const records = []
   evaluationDates.forEach((date, i) => {
-    const { trend, minervini, consensus } = evaluateAsOf(rawUniverse, date)
-    records.push(...buildSignalRecords(date, { trend, minervini, consensus }))
+    const { dataset, trend, minervini, consensus } = evaluateAsOf(rawUniverse, date)
+    records.push(...buildSignalRecords(date, { trend, minervini, consensus }, dataset.tickers))
     onProgress(i + 1, evaluationDates.length)
   })
   return records
@@ -228,6 +250,13 @@ export function runBacktest(
   const variants = VARIANTS.map((v) => evaluateVariant(rawUniverse, v, { evaluationDates, splitDate, mainRecords: records, priceIndex }))
   const exitVariants = evaluateExitVariants(outRecords, strategies, priceIndex)
 
+  // v9.1 US-4 가설 ③: 신선 신호(0~2d)와 지연 신호(3d+/no_recent_breakout)의 성과 차이를
+  // In/Out 양쪽에서 측정한다(basis는 allSignals만 — top5는 코호트별 표본이 너무 작아짐).
+  const freshnessCohorts = [
+    ...aggregateFreshnessCohorts(inRecords, priceIndex, holdingDays).map((f) => ({ ...f, sample: 'in' })),
+    ...aggregateFreshnessCohorts(outRecords, priceIndex, holdingDays).map((f) => ({ ...f, sample: 'out' })),
+  ]
+
   return {
     schemaVersion: 2,
     generatedAt: rawUniverse.generatedAt,
@@ -245,6 +274,7 @@ export function runBacktest(
     strategies,
     fundamentalAxis,
     variants: [...variants, ...exitVariants],
+    freshnessCohorts,
   }
 }
 
@@ -311,6 +341,24 @@ export function formatOverlapFactorNote(backtest) {
   if (!trendOut20 || !factor) return '겹침 보정: 계산 불가'
   const effective = round4(trendOut20.signals / factor)
   return `겹침 보정(20거래일 기준): 명목 표본 ${trendOut20.signals} / 유효 독립 표본 근사 ${effective} (overlapFactor=${factor})`
+}
+
+// v9.1 US-4 가설 ③: Out 구간 코호트별 20일·60일 초과수익 표 — 신선 신호(0d/1-2d)와
+// 지연 신호(3d+/5d+/no_recent_breakout)의 성과 차이가 왕복 거래비용 가정을 넘는지 판정 재료.
+export function formatFreshnessCohortSummary(backtest) {
+  const lines = []
+  for (const key of ['trend', 'minervini']) {
+    for (const cohort of ['0d', '1-2d', '3-4d', '5d+', 'no_recent_breakout']) {
+      const entry = backtest.freshnessCohorts?.find((f) => f.key === key && f.sample === 'out' && f.cohort === cohort)
+      const parts = [20, 60].map((days) => {
+        const h = entry?.byHolding?.find((b) => b.days === days)
+        if (!h || h.signals === 0) return `${days}일 표본 부족`
+        return `${days}일 초과수익 ${(h.avgExcess * 100).toFixed(2)}%p (표본 ${h.signals})`
+      })
+      lines.push(`  ${key}/${cohort}: ${parts.join(' · ')}`)
+    }
+  }
+  return lines.join('\n')
 }
 
 function loadFundamentalsIfPresent(dataPath) {
@@ -393,6 +441,8 @@ function main() {
   console.log('추세추종 신호 품질 비교 (가설 ① 판정 재료, allSignals·20거래일):')
   console.log(formatSignalQualityComparison(backtest))
   console.log(formatOverlapFactorNote(backtest))
+  console.log('신호 신선도 코호트 (가설 ③ 판정 재료, Out·allSignals·20/60거래일):')
+  console.log(formatFreshnessCohortSummary(backtest))
   console.log(backtest.fundamentalAxis ? `펀더멘털 축: coveredFrom=${backtest.fundamentalAxis.coveredFrom}` : '펀더멘털 축: fundamentals.json 없음(생략)')
 
   const result = atomicWriteBacktest(outputPath, backtest)

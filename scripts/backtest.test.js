@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { loadDataset, runSmoke, toMinerviniInput, evaluateAsOf, buildSignalRecords, runSignalLoop, runBacktest, parseArgs, validateCliArgs, formatOverlapFactorNote } from './backtest.mjs'
+import { loadDataset, runSmoke, toMinerviniInput, evaluateAsOf, buildSignalRecords, runSignalLoop, runBacktest, parseArgs, validateCliArgs, formatOverlapFactorNote, formatFreshnessCohortSummary } from './backtest.mjs'
 import { buildDataset } from '../src/lib/buildDataset.js'
 import { recommend } from '../src/lib/recommend.js'
 import { runMinerviniRecommend } from '../src/lib/minervini.js'
@@ -360,5 +360,89 @@ describe('runBacktest — v9.1 US-3 stepDays 파라미터화 (엔진 동작, 승
     runSignalLoop(raw, evaluationDates, (done, total) => calls.push([done, total]))
     expect(calls.length).toBe(evaluationDates.length)
     expect(calls[calls.length - 1]).toEqual([evaluationDates.length, evaluationDates.length])
+  })
+})
+
+describe('buildSignalRecords — freshnessCohort (v9.1 US-4)', () => {
+  const trendResult = { relaxationApplied: false, list: [{ ticker: 'AAA', score: 90, signalPassed: true }] }
+  const minerviniResult = { relaxationApplied: false, list: [{ ticker: 'AAA', score: 60 }] }
+  const consensusResult = buildConsensusRanking(trendResult, minerviniResult)
+
+  // AAA의 골든크로스는 오늘(daysAgo=0), 미너비니 피벗 돌파도 오늘(daysAgo=0) — 둘 다 '0d' 기대.
+  const macdLine = [-1, -1, -1, 1]
+  const signalLine = [0, 0, 0, 0]
+  const series = Array.from({ length: 70 }, (_, i) => ({ close: i === 69 ? 150 : 100 }))
+  const datasetTickers = [{ ticker: 'AAA', indicators: { macdLineSeries: macdLine, signalLineSeries: signalLine }, series }]
+
+  it('datasetTickers를 넘기면 trend/minervini 레코드에 freshnessCohort가 붙는다', () => {
+    const records = buildSignalRecords('2026-01-05', { trend: trendResult, minervini: minerviniResult, consensus: consensusResult }, datasetTickers)
+    const trendRecord = records.find((r) => r.strategyKey === 'trend' && r.basis === 'allSignals')
+    const minerviniRecord = records.find((r) => r.strategyKey === 'minervini' && r.basis === 'allSignals')
+    expect(trendRecord.freshnessCohort).toBe('0d')
+    expect(minerviniRecord.freshnessCohort).toBe('0d')
+  })
+
+  it('컨센서스 레코드에는 freshnessCohort를 붙이지 않는다(이벤트가 모드별로만 정의됨)', () => {
+    const records = buildSignalRecords('2026-01-05', { trend: trendResult, minervini: minerviniResult, consensus: consensusResult }, datasetTickers)
+    const consensusRecord = records.find((r) => r.strategyKey.startsWith('consensus_'))
+    expect(consensusRecord.freshnessCohort).toBeUndefined()
+  })
+
+  it('datasetTickers를 넘기지 않으면(기존 호출부) freshnessCohort 필드 자체가 없다(하위 호환)', () => {
+    const records = buildSignalRecords('2026-01-05', { trend: trendResult, minervini: minerviniResult, consensus: consensusResult })
+    expect(records.every((r) => !('freshnessCohort' in r))).toBe(true)
+  })
+})
+
+describe('runBacktest — v9.1 US-4 신호 신선도 코호트 (승인 기준 1, 실제 픽스처)', () => {
+  const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
+  const backtest = runBacktest(raw)
+
+  it('스키마를 통과하고 freshnessCohorts가 발행된다', () => {
+    expect(validateBacktest(backtest).valid).toBe(true)
+    expect(Array.isArray(backtest.freshnessCohorts)).toBe(true)
+  })
+
+  it('trend/minervini × in/out 조합마다 5개 코호트가 전부 존재한다(표본 유무 무관)', () => {
+    for (const key of ['trend', 'minervini']) {
+      for (const sample of ['in', 'out']) {
+        const cohorts = backtest.freshnessCohorts.filter((f) => f.key === key && f.sample === sample).map((f) => f.cohort)
+        expect(new Set(cohorts)).toEqual(new Set(['0d', '1-2d', '3-4d', '5d+', 'no_recent_breakout']))
+      }
+    }
+  })
+
+  it('완전성: 코호트별 신호 수 합 = 같은 (key,sample,day)의 allSignals·all 전략 신호 수', () => {
+    let checked = 0
+    for (const key of ['trend', 'minervini']) {
+      for (const sample of ['in', 'out']) {
+        for (const days of [5, 20, 60]) {
+          const cohortSum = backtest.freshnessCohorts
+            .filter((f) => f.key === key && f.sample === sample)
+            .reduce((sum, f) => sum + (f.byHolding.find((h) => h.days === days)?.signals ?? 0), 0)
+          const strategyTotal = backtest.strategies.find(
+            (s) => s.key === key && s.sample === sample && s.basis === 'allSignals' && s.signalQuality === 'all'
+          ).byHolding.find((h) => h.days === days).signals
+          expect(cohortSum).toBe(strategyTotal)
+          checked++
+        }
+      }
+    }
+    expect(checked).toBe(2 * 2 * 3)
+  })
+
+  it('배타성: 신호 레코드 하나는 정확히 하나의 코호트에만 속한다(freshnessCohort 필드가 1개 문자열)', () => {
+    const evaluationDates = buildEvaluationDates(raw)
+    const records = runSignalLoop(raw, evaluationDates)
+    const trendAllSignals = records.filter((r) => r.strategyKey === 'trend' && r.basis === 'allSignals')
+    expect(trendAllSignals.length).toBeGreaterThan(0)
+    expect(trendAllSignals.every((r) => typeof r.freshnessCohort === 'string')).toBe(true)
+  })
+
+  it('formatFreshnessCohortSummary가 trend/minervini 각 5개 코호트 줄을 출력한다', () => {
+    const output = formatFreshnessCohortSummary(backtest)
+    expect(output.split('\n').length).toBe(2 * 5)
+    expect(output).toContain('trend/0d')
+    expect(output).toContain('minervini/no_recent_breakout')
   })
 })

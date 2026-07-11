@@ -894,3 +894,33 @@
   길어 사용자가 외출하게 되어 이 스토리까지만 커밋하고 세션 중단.
 - 다음 스토리 메모: US-4 (신호 신선도 코호트 분석 — scripts/lib/freshness.mjs 신규,
   골든크로스/피벗돌파 기반 코호트, backtest.json에 freshnessCohorts[] 추가).
+
+## Iteration 4 — US-4. 신호 신선도 코호트 분석
+- 완료 스토리: US-4
+- 변경 파일: scripts/lib/freshness.mjs(신규 — goldenCrossFreshnessDays는 goldenCrossWithin(N)의
+  창을 하나씩 늘려가며 처음 true가 되는 지점을 daysAgo로 환산, pivotBreakoutFreshnessDays는
+  series를 끝에서부터 하루씩 잘라 pivotProximity(===0이면 그날이 직전 63거래일 신고가)를
+  재호출 — 둘 다 판정 조건 자체는 한 줄도 새로 쓰지 않고 기존 함수 재호출만으로 daysAgo를
+  구함, freshnessCohort()로 0d/1-2d/3-4d/5d+/no_recent_breakout 배정, aggregateFreshnessCohorts로
+  (key,cohort)별 byHolding 집계), scripts/lib/freshness.test.js(신규, +16 — 크로스/돌파일을
+  아는 합성 픽스처로 5개 코호트 전부 검증 + lookback 밖 no_recent_breakout + 63일 미만 가드),
+  scripts/backtest.mjs(buildSignalRecords가 datasetTickers(선택, 하위호환) 인자를 받아
+  trend/minervini 레코드에만 freshnessCohort 부여 — 컨센서스는 이벤트 미정의라 제외,
+  runSignalLoop이 dataset.tickers를 threading, runBacktest가 freshnessCohorts(in/out) 발행,
+  formatFreshnessCohortSummary 콘솔 출력), src/lib/backtestSchema.js(freshnessCohorts 선택
+  필드 검증 — key는 trend/minervini만 허용), scripts/backtest.test.js(+8, 완전성·배타성
+  실데이터 검증 포함), src/lib/backtestSchema.test.js(+4), src/lib/backtestLoader.test.js(+1).
+- 스코프 결정: freshnessCohorts는 trend/minervini 2개 전략만 대상 — PRD가 이벤트를
+  모드별로만 정의했고(추세추종=골든크로스, 미너비니=피벗돌파) 컨센서스는 두 모드 신호가
+  섞여 단일 이벤트를 정의할 근거가 없음. lookback 상한(10거래일)은 미너비니 쪽 PRD 명시값을
+  추세추종에도 대칭 적용(코호트 축을 공유하므로).
+- 테스트 수 변화: 468 → 497 (+29)
+- 실데이터 검증: `node scripts/backtest.mjs public/data/nasdaq100.json --out=<temp>` 실행,
+  Out 구간 코호트별 20/60일 초과수익표 정상 출력 — 예: trend 0d(표본62) 20일 +0.28%p,
+  1-2d(표본106) +2.22%p, 3-4d(표본98) +2.28%p, 5d+(표본58) +1.72%p,
+  no_recent_breakout(표본5, 매우 작음) -13.65%p. minervini는 0d(표본192) +0.44%p ~
+  3-4d(표본107) +2.92%p로 완만한 우상향 경향. 표본 크기 편차가 커서(특히
+  no_recent_breakout) 가설 ③ 최종 판정은 README 판정 기준표(US-6)에서 운영자가 내림 —
+  이 스토리는 측정치 산출까지만.
+- 다음 스토리 메모: US-5 (화면2 신뢰도 표시 — 20일·60일 병기, BacktestConfidence.jsx +
+  getConfidenceSummary 확장, overlapFactor 있으면 유효 표본 주석 병기).

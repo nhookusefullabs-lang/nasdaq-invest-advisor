@@ -15,6 +15,9 @@ const SAMPLE_VALUES = ['in', 'out']
 const BASIS_VALUES = ['top5', 'allSignals']
 const SIGNAL_QUALITY_VALUES = ['all', 'normal', 'relaxed']
 const FUNDAMENTAL_VERDICTS = ['pass', 'partial', 'fail']
+// freshnessCohorts(v9.1 US-4): 이벤트 정의가 모드별로만 있어(PRD) trend/minervini만 대상.
+const FRESHNESS_STRATEGY_KEYS = ['trend', 'minervini']
+const FRESHNESS_COHORT_VALUES = ['0d', '1-2d', '3-4d', '5d+', 'no_recent_breakout']
 
 const isNonEmptyString = (v) => typeof v === 'string' && v.length > 0
 const isNullableString = (v) => v === null || typeof v === 'string'
@@ -146,6 +149,24 @@ function validateVariant(variant, path, errors) {
   }
 }
 
+// freshnessCohorts(v9.1 US-4): { key, cohort, sample, byHolding[] } — byHolding 항목 구조는
+// strategy와 동일(validateByHoldingItem 재사용). 선택 필드 — 없으면(구버전 산출물) 검증 생략,
+// 로더가 undefined 그대로 통과시켜 화면이 신선도 UI를 렌더링하지 않는다(graceful degradation).
+function validateFreshnessCohort(item, path, errors) {
+  if (typeof item !== 'object' || item === null) {
+    errors.push(`${path}: 객체여야 합니다`)
+    return
+  }
+  if (!FRESHNESS_STRATEGY_KEYS.includes(item.key)) errors.push(`${path}.key: ${FRESHNESS_STRATEGY_KEYS.join('/')} 중 하나여야 합니다`)
+  if (!SAMPLE_VALUES.includes(item.sample)) errors.push(`${path}.sample: ${SAMPLE_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!FRESHNESS_COHORT_VALUES.includes(item.cohort)) errors.push(`${path}.cohort: ${FRESHNESS_COHORT_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!Array.isArray(item.byHolding)) {
+    errors.push(`${path}.byHolding: 배열이어야 합니다`)
+  } else {
+    item.byHolding.forEach((h, i) => validateByHoldingItem(h, `${path}.byHolding[${i}]`, errors))
+  }
+}
+
 /** backtest.json(버전 1 또는 2) 구조를 검증한다. 반환: { valid, errors } */
 export function validateBacktest(data) {
   const errors = []
@@ -173,6 +194,14 @@ export function validateBacktest(data) {
       errors.push('variants: 배열이어야 합니다')
     } else {
       data.variants.forEach((v, i) => validateVariant(v, `variants[${i}]`, errors))
+    }
+  }
+
+  if (data.freshnessCohorts !== undefined) {
+    if (!Array.isArray(data.freshnessCohorts)) {
+      errors.push('freshnessCohorts: 배열이어야 합니다')
+    } else {
+      data.freshnessCohorts.forEach((f, i) => validateFreshnessCohort(f, `freshnessCohorts[${i}]`, errors))
     }
   }
 

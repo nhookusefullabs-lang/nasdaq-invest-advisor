@@ -107,3 +107,48 @@ describe('validateBacktest — v2 signalQuality (v9.1 US-1 승인 기준 2)', ()
     expect(errors).toEqual([])
   })
 })
+
+describe('validateBacktest — freshnessCohorts (v9.1 US-4 승인 기준 4)', () => {
+  it('freshnessCohorts 필드 자체가 없어도(구버전 산출물) 통과한다 (하위 호환)', () => {
+    const { valid, errors } = validateBacktest(loadFixture('backtest.valid.json'))
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('유효한 freshnessCohorts 항목은 통과한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      freshnessCohorts: [
+        {
+          key: 'trend',
+          sample: 'out',
+          cohort: '0d',
+          byHolding: [{ days: 20, signals: 3, winRate: 0.6, avgExcess: 0.02, medianExcess: 0.015, avgReturn: 0.03, mdd: 0.01 }],
+        },
+      ],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('key enum 오류(consensus_2star 등 정의되지 않은 전략)를 거부한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      freshnessCohorts: [{ key: 'consensus_2star', sample: 'out', cohort: '0d', byHolding: [] }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('freshnessCohorts[0].key'))).toBe(true)
+  })
+
+  it('cohort enum 오류를 거부한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      freshnessCohorts: [{ key: 'trend', sample: 'out', cohort: '10d', byHolding: [] }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('freshnessCohorts[0].cohort'))).toBe(true)
+  })
+})

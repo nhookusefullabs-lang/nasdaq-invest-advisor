@@ -40,6 +40,12 @@ describe('loadBacktest', () => {
     vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new Error('network down'))))
     expect(await loadBacktest()).toBeNull()
   })
+
+  it('loads normally when freshnessCohorts is absent (v9.1 US-4 승인 기준 4, 구버전 산출물 하위 호환)', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(VALID_BACKTEST) })))
+    const result = await loadBacktest()
+    expect(result.freshnessCohorts).toBeUndefined()
+  })
 })
 
 describe('findStrategy / findHolding', () => {
