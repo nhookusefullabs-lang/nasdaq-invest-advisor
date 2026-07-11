@@ -1049,7 +1049,7 @@
           "signals": 136,
           "winRate": 0.5294,
           "avgExcess": 0.0431,
-          "medianExcess": 0.0129,
+          "medianExcess": 0.0128,
           "avgReturn": 0.0546,
           "mdd": 0.1009
         },
