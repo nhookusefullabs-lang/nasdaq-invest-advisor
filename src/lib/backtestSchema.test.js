@@ -71,3 +71,39 @@ describe('validateBacktest — fundamentalAxis/variants', () => {
     expect(errors.some((e) => e.includes('adopted'))).toBe(true)
   })
 })
+
+describe('validateBacktest — v2 signalQuality (v9.1 US-1 승인 기준 2)', () => {
+  const v2Valid = () => ({
+    ...loadFixture('backtest.valid.json'),
+    schemaVersion: 2,
+    strategies: loadFixture('backtest.valid.json').strategies.map((s) => ({ ...s, signalQuality: 'all' })),
+  })
+
+  it('v2 문서에 signalQuality가 있으면 통과한다', () => {
+    const { valid, errors } = validateBacktest(v2Valid())
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('v2 문서에서 signalQuality enum 오류를 거부한다', () => {
+    const data = v2Valid()
+    data.strategies[0].signalQuality = 'weird'
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('signalQuality'))).toBe(true)
+  })
+
+  it('v2 문서에서 signalQuality 필드 자체가 없으면 거부한다', () => {
+    const data = v2Valid()
+    delete data.strategies[0].signalQuality
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('signalQuality'))).toBe(true)
+  })
+
+  it('v1 문서는 signalQuality가 없어도 통과한다 (하위 호환)', () => {
+    const { valid, errors } = validateBacktest(loadFixture('backtest.valid.json'))
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+})

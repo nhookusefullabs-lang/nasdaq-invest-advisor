@@ -136,11 +136,22 @@ function computeRelaxedShare(records) {
   return round4(count / records.length)
 }
 
+// v9.1 US-1: 완화 폴백 신호(relaxationApplied:true)와 정상 신호를 분리 집계하는 차원.
+// "all"은 기존 v1과 동일한 전체 집계(화면2가 계속 이것만 사용), normal/relaxed는 운영자
+// 분석용으로 추가 발행한다(가설 ① — In 구간 추세추종 붕괴가 완화 신호 탓인지 판정 재료).
+const SIGNAL_QUALITIES = ['all', 'normal', 'relaxed']
+
+function filterByQuality(records, quality) {
+  if (quality === 'all') return records
+  if (quality === 'normal') return records.filter((r) => !r.relaxationApplied)
+  return records.filter((r) => r.relaxationApplied)
+}
+
 /**
  * 전체 백테스트 실행: 평가일 나열 → 신호 재현 → 신호일 기준 In(전반 50%)/Out(후반 50%) 분할
- * → 성과 집계 → PRD_Nasdaq9.md §7 스키마 형태로 조립한다.
+ * → 성과 집계(전체·정상·완화 3중 집계) → backtest.json v2 스키마 형태로 조립한다.
  * 경계 규칙: splitDate 당일 신호는 Out에 귀속된다(splitDate = Out 구간의 첫 평가일).
- * fundamentalAxis는 US-6에서, variants는 US-7에서 채운다 — 여기서는 각각 null/[].
+ * fundamentalAxis는 US-6, variants는 US-7, signalQuality 분리는 v9.1 US-1이 채운다.
  */
 export function runBacktest(
   rawUniverse,
@@ -157,21 +168,35 @@ export function runBacktest(
   const dataset = buildDataset(rawUniverse)
   const priceIndex = buildPriceIndex(dataset.tickers)
 
-  const inGroups = aggregatePerformance(inRecords, priceIndex, holdingDays, { strategyKeys: STRATEGY_KEYS, bases: BASES })
-  const outGroups = aggregatePerformance(outRecords, priceIndex, holdingDays, { strategyKeys: STRATEGY_KEYS, bases: BASES })
+  const aggregateAllQualities = (sampleRecords) =>
+    Object.fromEntries(
+      SIGNAL_QUALITIES.map((quality) => [
+        quality,
+        aggregatePerformance(filterByQuality(sampleRecords, quality), priceIndex, holdingDays, { strategyKeys: STRATEGY_KEYS, bases: BASES }),
+      ])
+    )
+
+  const inGroupsByQuality = aggregateAllQualities(inRecords)
+  const outGroupsByQuality = aggregateAllQualities(outRecords)
 
   const strategies = []
   for (const key of STRATEGY_KEYS) {
     for (const basis of BASES) {
-      for (const [sample, groups, sampleRecords] of [
-        ['in', inGroups, inRecords],
-        ['out', outGroups, outRecords],
+      for (const [sample, groupsByQuality, sampleRecords] of [
+        ['in', inGroupsByQuality, inRecords],
+        ['out', outGroupsByQuality, outRecords],
       ]) {
-        const byHolding = groups
-          .filter((g) => g.strategyKey === key && g.basis === basis)
-          .map((g) => ({ days: g.days, signals: g.signals, winRate: g.winRate, avgExcess: g.avgExcess, medianExcess: g.medianExcess, avgReturn: g.avgReturn, mdd: g.mdd }))
-        const matchingRecords = sampleRecords.filter((r) => r.strategyKey === key && r.basis === basis)
-        strategies.push({ key, sample, basis, byHolding, relaxedShare: computeRelaxedShare(matchingRecords) })
+        for (const signalQuality of SIGNAL_QUALITIES) {
+          const groups = groupsByQuality[signalQuality]
+          const byHolding = groups
+            .filter((g) => g.strategyKey === key && g.basis === basis)
+            .map((g) => ({ days: g.days, signals: g.signals, winRate: g.winRate, avgExcess: g.avgExcess, medianExcess: g.medianExcess, avgReturn: g.avgReturn, mdd: g.mdd }))
+          const matchingRecords = filterByQuality(
+            sampleRecords.filter((r) => r.strategyKey === key && r.basis === basis),
+            signalQuality
+          )
+          strategies.push({ key, sample, basis, signalQuality, byHolding, relaxedShare: computeRelaxedShare(matchingRecords) })
+        }
       }
     }
   }
@@ -181,7 +206,7 @@ export function runBacktest(
   const variants = VARIANTS.map((v) => evaluateVariant(rawUniverse, v, { evaluationDates, splitDate, mainRecords: records, priceIndex }))
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatedAt: rawUniverse.generatedAt,
     config: {
       dataFrom: calendarDates[0] ?? null,
@@ -202,10 +227,29 @@ export function runBacktest(
 function formatInOutSummary(backtest) {
   const lines = []
   for (const s of backtest.strategies) {
-    if (s.basis !== 'top5') continue
+    if (s.basis !== 'top5' || s.signalQuality !== 'all') continue
     const d20 = s.byHolding.find((h) => h.days === 20)
     if (!d20 || d20.signals === 0) continue
     lines.push(`  ${s.key} (${s.sample}): 20거래일 승률 ${(d20.winRate * 100).toFixed(1)}% · 초과수익 ${(d20.avgExcess * 100).toFixed(2)}%p (표본 ${d20.signals})`)
+  }
+  return lines.join('\n')
+}
+
+// v9.1 US-1 가설 ①: In 구간 추세추종 붕괴가 완화 폴백 신호 탓인지 판정하기 위한
+// In/Out × normal/relaxed 비교표 (allSignals 기준 — top5는 완화 신호가 거의 없어 표본이 너무 작음).
+function formatSignalQualityComparison(backtest) {
+  const lines = []
+  for (const sample of ['in', 'out']) {
+    for (const quality of ['normal', 'relaxed']) {
+      const s = backtest.strategies.find((x) => x.key === 'trend' && x.basis === 'allSignals' && x.sample === sample && x.signalQuality === quality)
+      const d20 = s?.byHolding?.find((h) => h.days === 20)
+      const label = `${sample}/${quality}`
+      if (!d20 || d20.signals === 0) {
+        lines.push(`  ${label}: 표본 부족`)
+        continue
+      }
+      lines.push(`  ${label}: 승률 ${(d20.winRate * 100).toFixed(1)}% · 초과수익 ${(d20.avgExcess * 100).toFixed(2)}%p (표본 ${d20.signals})`)
+    }
   }
   return lines.join('\n')
 }
@@ -240,6 +284,8 @@ function main() {
   const backtest = runBacktest(rawUniverse, { fundamentalsData })
   console.log(`In/Out 분할: splitDate=${backtest.config.splitDate}`)
   console.log(formatInOutSummary(backtest))
+  console.log('추세추종 신호 품질 비교 (가설 ① 판정 재료, allSignals·20거래일):')
+  console.log(formatSignalQualityComparison(backtest))
   console.log(backtest.fundamentalAxis ? `펀더멘털 축: coveredFrom=${backtest.fundamentalAxis.coveredFrom}` : '펀더멘털 축: fundamentals.json 없음(생략)')
 
   const result = atomicWriteBacktest(outputPath, backtest)

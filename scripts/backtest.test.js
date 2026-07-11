@@ -214,3 +214,42 @@ describe('runBacktest — US-9 데이터 수집 3년 확대 (2y/3y 픽스처 양
     expect(evalDates3y.length).toBeGreaterThan(evalDates2y.length)
   })
 })
+
+describe('runBacktest — v9.1 US-1 완화/정상 분리 집계 (schemaVersion v2)', () => {
+  const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
+  const backtest = runBacktest(raw)
+
+  it('schemaVersion 2로 발행되고 스키마를 통과한다', () => {
+    expect(backtest.schemaVersion).toBe(2)
+    expect(validateBacktest(backtest).valid).toBe(true)
+  })
+
+  it('전 전략×전 basis×전 sample×전 보유기간에서 normal 신호 수 + relaxed 신호 수 = all 신호 수', () => {
+    const STRATEGY_KEYS = ['trend', 'minervini', 'consensus_2star', 'consensus_1star']
+    const BASES = ['top5', 'allSignals']
+    const SAMPLES = ['in', 'out']
+    const HOLDING_DAYS = [5, 20, 60]
+    let checked = 0
+
+    for (const key of STRATEGY_KEYS) {
+      for (const basis of BASES) {
+        for (const sample of SAMPLES) {
+          for (const days of HOLDING_DAYS) {
+            const findSignals = (quality) => {
+              const s = backtest.strategies.find((x) => x.key === key && x.basis === basis && x.sample === sample && x.signalQuality === quality)
+              return s.byHolding.find((h) => h.days === days).signals
+            }
+            expect(findSignals('normal') + findSignals('relaxed')).toBe(findSignals('all'))
+            checked++
+          }
+        }
+      }
+    }
+    expect(checked).toBe(4 * 2 * 2 * 3)
+  })
+
+  it('각 (key,basis,sample) 조합마다 all/normal/relaxed 3종 signalQuality가 모두 존재한다', () => {
+    const qualities = new Set(backtest.strategies.filter((s) => s.key === 'trend' && s.basis === 'top5' && s.sample === 'out').map((s) => s.signalQuality))
+    expect(qualities).toEqual(new Set(['all', 'normal', 'relaxed']))
+  })
+})

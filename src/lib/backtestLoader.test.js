@@ -12,9 +12,17 @@ afterEach(() => {
 })
 
 describe('loadBacktest', () => {
-  it('returns the parsed backtest on a successful fetch of a valid document', async () => {
+  it('returns the parsed backtest on a successful fetch of a valid v1 document, normalized with signalQuality:"all" (v9.1 US-1)', async () => {
     vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(VALID_BACKTEST) })))
-    expect(await loadBacktest()).toEqual(VALID_BACKTEST)
+    const result = await loadBacktest()
+    expect(result.strategies.every((s) => s.signalQuality === 'all')).toBe(true)
+    expect(result).toEqual({ ...VALID_BACKTEST, strategies: VALID_BACKTEST.strategies.map((s) => ({ ...s, signalQuality: 'all' })) })
+  })
+
+  it('returns a v2 document unmodified (signalQuality already present)', async () => {
+    const v2 = { ...VALID_BACKTEST, schemaVersion: 2, strategies: VALID_BACKTEST.strategies.map((s) => ({ ...s, signalQuality: 'all' })) }
+    vi.stubGlobal('fetch', vi.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(v2) })))
+    expect(await loadBacktest()).toEqual(v2)
   })
 
   it('returns null on a 404 response', async () => {

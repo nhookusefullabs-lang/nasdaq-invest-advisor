@@ -829,3 +829,31 @@
 - 운영자 액션 필요: (1) collect_data.py 3y 재수집, (2) node scripts/backtest.mjs로
   실제 backtest.json 생성, (3) 두 데이터 커밋 여부 확인 후 진행 — 전부 이번 세션
   범위 밖(코드만 완성, 코드 스토리는 픽스처까지만이라는 US 문서의 명시적 원칙).
+
+- 후속(같은 날, 사용자 확인 후): 10개 v9 커밋 푸시·배포 확인. python scripts/collect_data.py
+  실제 실행(3년치, 100/100종목, 707~753거래일, 12.09MB — 10MB 경고 최초 발생) +
+  fundamentals.json(99/100종목). node scripts/backtest.mjs로 실제 backtest.json 최초 생성
+  (평가일 89개, Out 표본 157~225건, 변형 3종 모두 채택기준 미충족). 부수 발견: collect_data.py가
+  Windows cp949 콘솔에서 10MB 경고 로그의 em dash(—) 출력 시 UnicodeEncodeError로 죽는
+  버그 발견·수정(stdout/stderr UTF-8 강제). recommend-default-baseline.json 재생성(데이터
+  변경에 따른 정당한 결과). npm test(434개)+build 재확인 후 커밋·푸시·배포 확인 완료.
+
+# v9.1 진행 기록 (prd-v9.1-diagnostics.md) — Ralph 루프(/loop 스킬, 동적 자기 페이싱)
+
+## Iteration 1 — US-1. backtest.json 스키마 v2 — 완화/정상 분리 집계
+- 완료 스토리: US-1
+- 변경 파일: src/lib/backtestSchema.js(SCHEMA_VERSION 1→2, SUPPORTED_SCHEMA_VERSIONS=[1,2],
+  signalQuality 검증은 v2에서만), src/lib/backtestLoader.js(v1→v2 정규화: signalQuality
+  없으면 "all" 채움, findStrategy에 signalQuality 파라미터 추가·기본값 "all"),
+  scripts/backtest.mjs(SIGNAL_QUALITIES=[all,normal,relaxed], filterByQuality, runBacktest이
+  각 (key,basis,sample)마다 3종 신호 품질 전부 발행, schemaVersion:2로 변경, 콘솔에
+  formatSignalQualityComparison 추가), 테스트 4개 파일.
+- 테스트 수 변화: 434 → 442 (+8: backtestSchema 4개, backtestLoader 1개, backtest.mjs 3개)
+- 실데이터 검증: node scripts/backtest.mjs 실행 결과 — 가설 ① 판정 재료 확보:
+  in/normal 승률50.0%·초과수익+0.07%p(226건) vs in/relaxed 50.4%·-0.09%p(119건);
+  out/normal 48.6%·+1.82%p(257건) vs out/relaxed 40.3%·+0.56%p(72건). Out 구간에서
+  완화 신호가 정상 신호보다 뚜렷이 나쁨(승률 8.3%p 격차) — 가설 ①에 대한 실측 근거 확보,
+  최종 판정(완화 신호 top5 제외 여부)은 US-6 판정 기준표 + 운영자 결정 몫으로 남김.
+  임시 경로에만 저장, public/data/backtest.json은 아직 갱신 안 함(US-6 마감 후 재생성 예정).
+- 다음 스토리 메모: US-2 (변형 D 청산 규칙 — scripts/lib/exits.mjs 신규, performance.mjs
+  확장, 손절−8%+시간/트레일링 두 변형, 손계산 픽스처 테스트).
