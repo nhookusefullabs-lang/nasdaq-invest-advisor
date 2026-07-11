@@ -37,6 +37,15 @@ function validateConfig(config, errors) {
   if (!isNullableString(config.splitDate)) errors.push('config.splitDate: 문자열 또는 null이어야 합니다')
   if (!isNonEmptyString(config.benchmark)) errors.push('config.benchmark: 필수 문자열입니다')
   if (!isNumber(config.topN)) errors.push('config.topN: 숫자여야 합니다')
+
+  // overlapFactor(v9.1 US-3): 선택 필드 — 없으면(구 버전 산출물) 화면이 유효 표본 주석만 생략한다.
+  if (config.overlapFactor !== undefined) {
+    if (typeof config.overlapFactor !== 'object' || config.overlapFactor === null) {
+      errors.push('config.overlapFactor: 객체여야 합니다')
+    } else if (!Object.values(config.overlapFactor).every(isNumber)) {
+      errors.push('config.overlapFactor: 값이 전부 숫자여야 합니다')
+    }
+  }
 }
 
 function validateByHoldingItem(item, path, errors) {

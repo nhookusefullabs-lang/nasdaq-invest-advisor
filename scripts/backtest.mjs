@@ -114,13 +114,18 @@ export function buildSignalRecords(date, { trend, minervini, consensus }) {
   return records
 }
 
-/** evaluationDates 전체를 순회하며 신호 레코드를 축적한다 (100종목×주단위×2모드 규모 — 수만 건 수준). */
-export function runSignalLoop(rawUniverse, evaluationDates) {
+/**
+ * evaluationDates 전체를 순회하며 신호 레코드를 축적한다 (100종목×주단위×2모드 규모 — 수만 건 수준).
+ * onProgress(완료 개수, 전체 개수)는 선택적 진행률 콜백 — step=1(연산량 5배, US-3) 실행 시
+ * CLI가 평가일 단위로 진행 상황을 출력하는 데 쓴다. 기본은 no-op(테스트 출력을 오염시키지 않음).
+ */
+export function runSignalLoop(rawUniverse, evaluationDates, onProgress = () => {}) {
   const records = []
-  for (const date of evaluationDates) {
+  evaluationDates.forEach((date, i) => {
     const { trend, minervini, consensus } = evaluateAsOf(rawUniverse, date)
     records.push(...buildSignalRecords(date, { trend, minervini, consensus }))
-  }
+    onProgress(i + 1, evaluationDates.length)
+  })
   return records
 }
 
@@ -135,6 +140,14 @@ function computeRelaxedShare(records) {
   if (!records.length) return null
   const count = records.filter((r) => r.relaxationApplied).length
   return round4(count / records.length)
+}
+
+// v9.1 US-3: stepDays를 1로 낮추면(매일 평가) 인접 평가일의 보유 구간이 크게 겹쳐
+// "명목 표본 수"가 부풀려진다 — 보유기간별 overlapFactor(= holdingDays/stepDays)를
+// config에 명시해, 화면·리포트가 "유효 독립 표본 근사 = 명목 표본 ÷ overlapFactor"를
+// 함께 읽을 수 있게 한다(표본 착시 방지, 값 자체를 자동 보정하지는 않음).
+function computeOverlapFactor(holdingDays, stepDays) {
+  return Object.fromEntries(holdingDays.map((days) => [days, round4(days / stepDays)]))
 }
 
 // v9.1 US-1: 완화 폴백 신호(relaxationApplied:true)와 정상 신호를 분리 집계하는 차원.
@@ -156,10 +169,18 @@ function filterByQuality(records, quality) {
  */
 export function runBacktest(
   rawUniverse,
-  { warmupDays = 252, holdingBufferDays = 60, stepDays = 5, holdingDays = HOLDING_DAYS, topN = 5, fundamentalsData = null } = {}
+  {
+    warmupDays = 252,
+    holdingBufferDays = 60,
+    stepDays = 5,
+    holdingDays = HOLDING_DAYS,
+    topN = 5,
+    fundamentalsData = null,
+    onProgress = () => {},
+  } = {}
 ) {
   const evaluationDates = buildEvaluationDates(rawUniverse, { warmupDays, holdingBufferDays, stepDays })
-  const records = runSignalLoop(rawUniverse, evaluationDates)
+  const records = runSignalLoop(rawUniverse, evaluationDates, onProgress)
 
   const splitIndex = Math.floor(evaluationDates.length / 2)
   const splitDate = evaluationDates.length ? (evaluationDates[splitIndex] ?? null) : null
@@ -219,6 +240,7 @@ export function runBacktest(
       splitDate,
       benchmark: 'universe_equal_weight',
       topN,
+      overlapFactor: computeOverlapFactor(holdingDays, stepDays),
     },
     strategies,
     fundamentalAxis,
@@ -279,6 +301,18 @@ function formatSignalQualityComparison(backtest) {
   return lines.join('\n')
 }
 
+// v9.1 US-3: 명목 표본(신호 수)과 겹침 보정을 반영한 유효 독립 표본 근사를 병기한다
+// (stepDays가 holdingDays보다 작으면 인접 평가일의 보유 구간이 겹쳐 표본이 과대해 보인다).
+export function formatOverlapFactorNote(backtest) {
+  const trendOut20 = backtest.strategies.find(
+    (s) => s.key === 'trend' && s.basis === 'top5' && s.sample === 'out' && s.signalQuality === 'all'
+  )?.byHolding?.find((h) => h.days === 20)
+  const factor = backtest.config.overlapFactor?.[20]
+  if (!trendOut20 || !factor) return '겹침 보정: 계산 불가'
+  const effective = round4(trendOut20.signals / factor)
+  return `겹침 보정(20거래일 기준): 명목 표본 ${trendOut20.signals} / 유효 독립 표본 근사 ${effective} (overlapFactor=${factor})`
+}
+
 function loadFundamentalsIfPresent(dataPath) {
   // nasdaq100.json과 같은 디렉터리의 fundamentals.json을 선택적으로 사용한다(US-6) —
   // 없으면 조용히 null(엔진은 fundamentalAxis:null로 정상 완주, graceful degradation).
@@ -291,9 +325,50 @@ function loadFundamentalsIfPresent(dataPath) {
   }
 }
 
+// v9.1 US-3: --step=N(기본 5, 허용 1~10) / --out=경로 형태의 named 플래그를 파싱한다.
+// 첫 번째 non-flag 인자는 여전히 dataPath(위치 인자, 하위 호환)로 취급한다.
+export function parseArgs(argv) {
+  const flags = {}
+  const positional = []
+  for (const arg of argv) {
+    const m = /^--([^=]+)=(.*)$/.exec(arg)
+    if (m) flags[m[1]] = m[2]
+    else positional.push(arg)
+  }
+  return { flags, positional }
+}
+
+/**
+ * 파싱된 flags를 검증하고 stepDays를 확정한다 (main()과 테스트가 공유하는 순수 함수).
+ * 반환: { ok: true, stepDays } | { ok: false, error }
+ */
+export function validateCliArgs(flags) {
+  const stepDays = flags.step !== undefined ? Number(flags.step) : 5
+  if (!Number.isInteger(stepDays) || stepDays < 1 || stepDays > 10) {
+    return { ok: false, error: `--step은 1~10 사이 정수여야 합니다 (받은 값: ${flags.step})` }
+  }
+  // 화면 표시용 공식 backtest.json은 항상 step=5 산출물이라는 운영 규칙(README 참고) —
+  // step≠5 실험 실행이 실수로 공식 파일을 덮어쓰지 않도록 --out을 강제한다.
+  if (stepDays !== 5 && !flags.out) {
+    return { ok: false, error: '--step이 5가 아니면 --out=경로를 반드시 지정해야 합니다 (공식 backtest.json 보호)' }
+  }
+  return { ok: true, stepDays }
+}
+
 function main() {
-  const dataPath = process.argv[2] ? path.resolve(process.argv[2]) : DEFAULT_DATA_PATH
-  const outputPath = process.argv[3] ? path.resolve(process.argv[3]) : DEFAULT_OUTPUT_PATH
+  const { flags, positional } = parseArgs(process.argv.slice(2))
+
+  const validated = validateCliArgs(flags)
+  if (!validated.ok) {
+    console.error(`✗ ${validated.error}`)
+    process.exitCode = 1
+    return
+  }
+  const { stepDays } = validated
+
+  const dataPath = positional[0] ? path.resolve(positional[0]) : DEFAULT_DATA_PATH
+  const outputPath = flags.out ? path.resolve(flags.out) : DEFAULT_OUTPUT_PATH
+
   const rawUniverse = loadRawUniverse(dataPath)
   const dataset = buildDataset(rawUniverse)
   const { trend, minervini } = runSmoke(dataset)
@@ -302,15 +377,22 @@ function main() {
   console.log(formatSummary('추세추종', trend))
   console.log(formatSummary('미너비니', minervini))
 
-  const evaluationDates = buildEvaluationDates(rawUniverse)
-  console.log(`평가일 ${evaluationDates.length}개`)
+  const evaluationDates = buildEvaluationDates(rawUniverse, { stepDays })
+  console.log(`평가일 ${evaluationDates.length}개 (stepDays=${stepDays})`)
+
+  // step=1은 evaluationDates가 약 5배로 늘어 연산량도 비례 증가한다 — 평가일 단위 진행률 로그.
+  const logEvery = Math.max(1, Math.floor(evaluationDates.length / 10))
+  const onProgress = (done, total) => {
+    if (done % logEvery === 0 || done === total) console.log(`  진행률: ${done}/${total} 평가일`)
+  }
 
   const fundamentalsData = loadFundamentalsIfPresent(dataPath)
-  const backtest = runBacktest(rawUniverse, { fundamentalsData })
+  const backtest = runBacktest(rawUniverse, { fundamentalsData, stepDays, onProgress })
   console.log(`In/Out 분할: splitDate=${backtest.config.splitDate}`)
   console.log(formatInOutSummary(backtest))
   console.log('추세추종 신호 품질 비교 (가설 ① 판정 재료, allSignals·20거래일):')
   console.log(formatSignalQualityComparison(backtest))
+  console.log(formatOverlapFactorNote(backtest))
   console.log(backtest.fundamentalAxis ? `펀더멘털 축: coveredFrom=${backtest.fundamentalAxis.coveredFrom}` : '펀더멘털 축: fundamentals.json 없음(생략)')
 
   const result = atomicWriteBacktest(outputPath, backtest)

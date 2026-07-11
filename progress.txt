@@ -877,3 +877,20 @@
   아직 갱신 안 함(US-6 마감 후 재생성 예정).
 - 다음 스토리 메모: US-3 (stepDays 파라미터화 — --step/--out CLI 인자, overlapFactor,
   step≠5 시 --out 필수).
+
+## Iteration 3 — US-3. stepDays 파라미터화 + 겹침 보정 명시
+- 완료 스토리: US-3
+- 변경 파일: scripts/backtest.mjs(parseArgs/validateCliArgs export, main()이 --step=N/--out=경로
+  named 플래그 파싱, step≠5면 --out 필수 가드, computeOverlapFactor로 config.overlapFactor
+  기록, runSignalLoop에 onProgress 콜백 추가(기본 no-op, 테스트 오염 없음), CLI가 평가일
+  10% 단위 진행률 로그 + formatOverlapFactorNote 콘솔 출력), src/lib/backtestSchema.js
+  (config.overlapFactor 선택 필드 검증 추가), scripts/backtest.test.js(+13).
+- 테스트 수 변화: 457 → 468 (+11, 순감 있음 — 기존 검증 중 일부를 새 테스트로 대체)
+- 실데이터 검증: `node scripts/backtest.mjs public/data/nasdaq100.json --step=1
+  --out=<temp>` 실행 — 441개 평가일(step=5의 89개 대비 약 5배), 진행률 로그 10회 정상 출력,
+  "겹침 보정(20거래일 기준): 명목 표본 1068 / 유효 독립 표본 근사 53.4(overlapFactor=20)"
+  정상 출력. 가드 확인: --step=1만 주고 --out 생략 시 거부(exit 1), --step=15(범위 밖)도
+  거부. 실행 시간 1분38초(step=5 대비 약 4.5배 — "5배 연산량" 예상과 부합). 소요 시간이
+  길어 사용자가 외출하게 되어 이 스토리까지만 커밋하고 세션 중단.
+- 다음 스토리 메모: US-4 (신호 신선도 코호트 분석 — scripts/lib/freshness.mjs 신규,
+  골든크로스/피벗돌파 기반 코호트, backtest.json에 freshnessCohorts[] 추가).

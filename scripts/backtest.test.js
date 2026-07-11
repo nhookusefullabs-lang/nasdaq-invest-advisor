@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { loadDataset, runSmoke, toMinerviniInput, evaluateAsOf, buildSignalRecords, runSignalLoop, runBacktest } from './backtest.mjs'
+import { loadDataset, runSmoke, toMinerviniInput, evaluateAsOf, buildSignalRecords, runSignalLoop, runBacktest, parseArgs, validateCliArgs, formatOverlapFactorNote } from './backtest.mjs'
 import { buildDataset } from '../src/lib/buildDataset.js'
 import { recommend } from '../src/lib/recommend.js'
 import { runMinerviniRecommend } from '../src/lib/minervini.js'
@@ -285,5 +285,80 @@ describe('runBacktest — v9.1 US-2 변형 D 청산 규칙 (경로 의존 성과
 
   it('전체 스키마 검증을 통과한다(outDetail 필드 포함)', () => {
     expect(validateBacktest(backtest).valid).toBe(true)
+  })
+})
+
+describe('parseArgs / validateCliArgs — v9.1 US-3 stepDays 파라미터화', () => {
+  it('--step=N과 --out=경로를 파싱하고, 위치 인자(dataPath)는 그대로 유지한다', () => {
+    const { flags, positional } = parseArgs(['data.json', '--step=1', '--out=/tmp/x.json'])
+    expect(flags).toEqual({ step: '1', out: '/tmp/x.json' })
+    expect(positional).toEqual(['data.json'])
+  })
+
+  it('--step 생략 시 기본값 5로 검증 통과한다 (--out 없어도 됨)', () => {
+    expect(validateCliArgs({})).toEqual({ ok: true, stepDays: 5 })
+  })
+
+  it('--step이 1~10 범위를 벗어나면 거부한다', () => {
+    expect(validateCliArgs({ step: '0' }).ok).toBe(false)
+    expect(validateCliArgs({ step: '11' }).ok).toBe(false)
+    expect(validateCliArgs({ step: '1.5' }).ok).toBe(false)
+  })
+
+  it('step≠5인데 --out이 없으면 거부한다 (공식 파일 보호, US-3 승인 기준 2)', () => {
+    const result = validateCliArgs({ step: '1' })
+    expect(result.ok).toBe(false)
+    expect(result.error).toContain('--out')
+  })
+
+  it('step≠5라도 --out이 있으면 통과한다', () => {
+    expect(validateCliArgs({ step: '1', out: '/tmp/x.json' })).toEqual({ ok: true, stepDays: 1 })
+  })
+})
+
+describe('runBacktest — v9.1 US-3 stepDays 파라미터화 (엔진 동작, 승인 기준 1/3/4)', () => {
+  const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
+
+  it('stepDays=1은 stepDays=5 대비 평가일 수가 약 5배다', () => {
+    const dates5 = buildEvaluationDates(raw, { stepDays: 5 })
+    const dates1 = buildEvaluationDates(raw, { stepDays: 1 })
+    const ratio = dates1.length / dates5.length
+    expect(ratio).toBeGreaterThan(4)
+    expect(ratio).toBeLessThan(6)
+  })
+
+  it('stepDays=1 실행이 픽스처에서 완주하고 스키마를 통과한다', () => {
+    const backtest = runBacktest(raw, { stepDays: 1 })
+    expect(validateBacktest(backtest).valid).toBe(true)
+    expect(backtest.config.stepDays).toBe(1)
+  })
+
+  it('config.overlapFactor가 holdingDays/stepDays로 기록된다', () => {
+    const backtest = runBacktest(raw, { stepDays: 1 })
+    expect(backtest.config.overlapFactor).toEqual({ 5: 5, 20: 20, 60: 60 })
+
+    const backtest5 = runBacktest(raw)
+    expect(backtest5.config.overlapFactor).toEqual({ 5: 1, 20: 4, 60: 12 })
+  })
+
+  it('formatOverlapFactorNote가 명목/유효 표본 근사를 병기한 문자열을 만든다', () => {
+    const backtest = runBacktest(raw)
+    const note = formatOverlapFactorNote(backtest)
+    expect(note).toContain('명목 표본')
+    expect(note).toContain('유효 독립 표본 근사')
+  })
+
+  it('stepDays=5(기본) 산출물은 기존과 동일한 strategies 구조다 (회귀 없음)', () => {
+    const backtest = runBacktest(raw)
+    expect(backtest.config.stepDays).toBe(5)
+    expect(backtest.strategies.length).toBe(4 * 2 * 2 * 3) // key×basis×sample×signalQuality
+  })
+
+  it('onProgress 콜백이 평가일마다 (완료수, 전체수)로 호출된다', () => {
+    const evaluationDates = buildEvaluationDates(raw)
+    const calls = []
+    runSignalLoop(raw, evaluationDates, (done, total) => calls.push([done, total]))
+    expect(calls.length).toBe(evaluationDates.length)
+    expect(calls[calls.length - 1]).toEqual([evaluationDates.length, evaluationDates.length])
   })
 })
