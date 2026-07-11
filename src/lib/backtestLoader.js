@@ -43,9 +43,11 @@ export function findHolding(strategy, days) {
 }
 
 /**
- * modeKey('trend'|'minervini'|'consensus') → 화면에 노출할 신뢰도 요약(Out-of-Sample·top5·20거래일만).
- * backtest가 없거나, 해당 전략의 out/top5 항목이 없거나, 20거래일 레코드가 없으면 null
- * (호출자가 신뢰도 영역 전체를 렌더링하지 않도록 한다).
+ * modeKey('trend'|'minervini'|'consensus') → 화면에 노출할 신뢰도 요약(Out-of-Sample·top5,
+ * 20거래일·60거래일 병기 — v9.1 US-5). backtest가 없거나, 해당 전략의 out/top5 항목이 없거나,
+ * 20거래일 레코드가 없으면 null(호출자가 신뢰도 영역 전체를 렌더링하지 않도록 한다) — 20거래일은
+ * US-8부터의 기존 하드 게이트를 그대로 유지한다. 60거래일 레코드가 없으면(구버전 픽스처 등)
+ * null 처리하지 않고 insufficientSample60:true로만 표시한다(20일 표시는 그대로 유지).
  * consensus 모드는 ★★(consensus_2star)를 대표 지표로 쓴다 — PRD §7 스키마에 등급 통합 항목이
  * 없고, ★★가 더 강한 신호이므로 헤더 요약의 대표값으로 적합하다.
  */
@@ -56,5 +58,20 @@ export function getConfidenceSummary(backtest, modeKey) {
   const holding20 = findHolding(strategy, 20)
   if (!strategy || !holding20) return null
 
-  return { strategy, holding20, insufficientSample: !holding20.signals || holding20.winRate == null || holding20.avgExcess == null }
+  const holding60 = findHolding(strategy, 60)
+  const insufficientSample60 = !holding60 || !holding60.signals || holding60.winRate == null || holding60.avgExcess == null
+
+  // overlapFactor(v9.1 US-3)가 없는 v1 산출물은 유효 표본 근사를 계산하지 않는다(하위 호환,
+  // 화면은 주석만 생략 — US-5 승인 기준 2).
+  const overlapFactor60 = backtest.config?.overlapFactor?.[60]
+  const effectiveSample60 = holding60 && overlapFactor60 ? holding60.signals / overlapFactor60 : null
+
+  return {
+    strategy,
+    holding20,
+    holding60,
+    insufficientSample: !holding20.signals || holding20.winRate == null || holding20.avgExcess == null,
+    insufficientSample60,
+    effectiveSample60,
+  }
 }

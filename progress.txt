@@ -924,3 +924,26 @@
   이 스토리는 측정치 산출까지만.
 - 다음 스토리 메모: US-5 (화면2 신뢰도 표시 — 20일·60일 병기, BacktestConfidence.jsx +
   getConfidenceSummary 확장, overlapFactor 있으면 유효 표본 주석 병기).
+
+## Iteration 5 — US-5. 화면2 신뢰도 표시 — 20일·60일 병기
+- 완료 스토리: US-5
+- 변경 파일: src/lib/backtestLoader.js(getConfidenceSummary가 holding60/insufficientSample60/
+  effectiveSample60(=holding60.signals/config.overlapFactor[60], overlapFactor 없으면 null)을
+  추가 반환 — 기존 필드(strategy/holding20/insufficientSample)는 이름·의미 불변으로 유지해
+  하위 호환), src/components/BacktestConfidence.jsx(SummaryLine을 "검증 구간(Out-of-Sample)
+  초과수익 — 20거래일 +n.n%p · 60거래일 +n.n%p (겹침 보정 유효 표본 약 n건) (라벨 · 상위
+  5종목 기준)" 형태로 재작성 — 기존 승률 중심 1줄 요약을 대체, MODE_LABELS로 추세추종/
+  미너비니/★★ 컨센서스 라벨 분기), src/lib/backtestLoader.test.js(+3),
+  src/components/BacktestConfidence.test.jsx(기존 옛 텍스트 검증 1건을 새 포맷으로 교체,
+  +3 신규).
+- 설계 결정: 20거래일 레코드 부재 시 전체 null 반환하는 기존 하드 게이트(US-8)는 그대로 두고,
+  60거래일 레코드만 없는 경우(구버전 픽스처 등)는 insufficientSample60:true로만 표시하고
+  전체를 null 처리하지 않음 — 기존 "표본 0" 테스트 픽스처(20일만 있는 zeroSample)가 여전히
+  유효한 summary를 반환해야 하므로 이 비대칭이 필수였음.
+- 테스트 수 변화: 497 → 503 (+6)
+- 실데이터 검증: public/data/backtest.json(스키마 v1, US-1~4 이전에 생성되어 overlapFactor·
+  freshnessCohorts 둘 다 없음)을 getConfidenceSummary에 직접 통과시켜 확인 — trend/minervini/
+  consensus 전부 holding60 정상 반환(예: trend 60일 +11.31%p), insufficientSample60:false,
+  effectiveSample60:null(하위 호환 정확히 동작). npm run build 성공.
+- 다음 스토리 메모: US-6 (통합 검증·마감 — README v9.1 진단 실행 가이드 + 3가설 판정
+  기준표, progress.txt 최종 점검, PRD 체크박스 마감).

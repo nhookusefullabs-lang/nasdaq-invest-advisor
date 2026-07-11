@@ -107,3 +107,29 @@ describe('getConfidenceSummary — US-8 승인 기준', () => {
     expect(getConfidenceSummary(inOnly, 'trend')).toBeNull()
   })
 })
+
+describe('getConfidenceSummary — 20·60일 병기 (v9.1 US-5)', () => {
+  it('holding60과 effectiveSample60(=signals/overlapFactor[60])을 함께 반환한다', () => {
+    const withOverlap = { ...VALID_BACKTEST, config: { ...VALID_BACKTEST.config, overlapFactor: { 5: 1, 20: 4, 60: 12 } } }
+    const summary = getConfidenceSummary(withOverlap, 'trend')
+    expect(summary.holding60.days).toBe(60)
+    expect(summary.effectiveSample60).toBeCloseTo(summary.holding60.signals / 12, 10)
+  })
+
+  it('config.overlapFactor가 없으면(v1 하위 호환) effectiveSample60이 null이다 (승인 기준 2)', () => {
+    const summary = getConfidenceSummary(VALID_BACKTEST, 'trend')
+    expect(summary.effectiveSample60).toBeNull()
+  })
+
+  it('60거래일 레코드 자체가 없으면(구버전 픽스처) null 전체 반환 대신 insufficientSample60:true로만 표시한다', () => {
+    const no60 = {
+      ...VALID_BACKTEST,
+      strategies: [{ ...VALID_BACKTEST.strategies[0], byHolding: VALID_BACKTEST.strategies[0].byHolding.filter((h) => h.days !== 60) }],
+    }
+    const summary = getConfidenceSummary(no60, 'trend')
+    expect(summary).not.toBeNull()
+    expect(summary.holding20.days).toBe(20) // 20일 표시는 그대로 유지
+    expect(summary.insufficientSample60).toBe(true)
+    expect(summary.effectiveSample60).toBeNull()
+  })
+})

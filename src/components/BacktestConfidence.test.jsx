@@ -50,8 +50,31 @@ describe('BacktestConfidence — US-8', () => {
 
   it('요약과 고정 고지 문구가 항상 함께 렌더링된다 (분리 렌더 불가)', () => {
     render(<BacktestConfidence backtest={makeBacktest()} modeKey="trend" />)
-    expect(screen.getByText(/최근 검증 구간\(Out-of-Sample\) 승률/)).toBeInTheDocument()
+    expect(screen.getByText(/검증 구간\(Out-of-Sample\) 초과수익/)).toBeInTheDocument()
     expect(screen.getByText(BACKTEST_DISCLAIMER)).toBeInTheDocument()
+  })
+
+  it('20일·60일 초과수익이 한 줄에 병기된다 (v9.1 US-5 승인 기준 1)', () => {
+    render(<BacktestConfidence backtest={makeBacktest()} modeKey="trend" />)
+    const summary = screen.getByText(/검증 구간\(Out-of-Sample\) 초과수익/)
+    expect(summary.textContent).toContain('20거래일 +2.1%p')
+    expect(summary.textContent).toContain('60거래일 +1.8%p')
+    expect(summary.textContent).toContain('추세추종')
+  })
+
+  it('config.overlapFactor가 없으면(v1 하위 호환) 유효 표본 주석을 생략한다 (US-5 승인 기준 2)', () => {
+    const v1Backtest = makeBacktest({ config: { ...makeBacktest().config, overlapFactor: undefined } })
+    render(<BacktestConfidence backtest={v1Backtest} modeKey="trend" />)
+    const summary = screen.getByText(/검증 구간\(Out-of-Sample\) 초과수익/)
+    expect(summary.textContent).toContain('60거래일 +1.8%p')
+    expect(summary.textContent).not.toContain('겹침 보정')
+  })
+
+  it('config.overlapFactor가 있으면 60일 옆에 유효 표본 근사를 병기한다', () => {
+    const withOverlap = makeBacktest({ config: { ...makeBacktest().config, overlapFactor: { 5: 1, 20: 4, 60: 12 } } })
+    render(<BacktestConfidence backtest={withOverlap} modeKey="trend" />)
+    const summary = screen.getByText(/검증 구간\(Out-of-Sample\) 초과수익/)
+    expect(summary.textContent).toContain('겹침 보정 유효 표본 약 2.5건') // 30신호/overlapFactor 12
   })
 
   it('표본이 0이면 승률/초과수익 대신 "표본 부족"을 표시한다 (NaN 노출 금지)', () => {
