@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // v9 백테스트 엔진 (PRD_Nasdaq9.md §4.1, US-1) — "같은 코드" 원칙: 앱의 src/lib/*를 그대로
 // import해 실행한다. 지표·판정·스코어링의 백테스트 전용 재구현은 어떤 이유로도 금지.
-import { readFileSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { buildDataset } from '../src/lib/buildDataset.js'
@@ -10,6 +10,7 @@ import { runMinerviniRecommend } from '../src/lib/minervini.js'
 import { buildConsensusRanking } from '../src/lib/consensus.js'
 import { sliceUniverseAsOf, buildEvaluationDates, getCalendarDates } from './lib/asOf.mjs'
 import { buildPriceIndex, aggregatePerformance } from './lib/performance.mjs'
+import { buildFundamentalAxis } from './lib/fundamentalHistory.mjs'
 import { atomicWriteBacktest } from './validate-backtest.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -140,7 +141,10 @@ function computeRelaxedShare(records) {
  * 경계 규칙: splitDate 당일 신호는 Out에 귀속된다(splitDate = Out 구간의 첫 평가일).
  * fundamentalAxis는 US-6에서, variants는 US-7에서 채운다 — 여기서는 각각 null/[].
  */
-export function runBacktest(rawUniverse, { warmupDays = 252, holdingBufferDays = 60, stepDays = 5, holdingDays = HOLDING_DAYS, topN = 5 } = {}) {
+export function runBacktest(
+  rawUniverse,
+  { warmupDays = 252, holdingBufferDays = 60, stepDays = 5, holdingDays = HOLDING_DAYS, topN = 5, fundamentalsData = null } = {}
+) {
   const evaluationDates = buildEvaluationDates(rawUniverse, { warmupDays, holdingBufferDays, stepDays })
   const records = runSignalLoop(rawUniverse, evaluationDates)
 
@@ -172,6 +176,7 @@ export function runBacktest(rawUniverse, { warmupDays = 252, holdingBufferDays =
   }
 
   const calendarDates = getCalendarDates(rawUniverse)
+  const fundamentalAxis = buildFundamentalAxis(fundamentalsData, records, priceIndex, holdingDays)
 
   return {
     schemaVersion: 1,
@@ -187,7 +192,7 @@ export function runBacktest(rawUniverse, { warmupDays = 252, holdingBufferDays =
       topN,
     },
     strategies,
-    fundamentalAxis: null,
+    fundamentalAxis,
     variants: [],
   }
 }
@@ -201,6 +206,18 @@ function formatInOutSummary(backtest) {
     lines.push(`  ${s.key} (${s.sample}): 20거래일 승률 ${(d20.winRate * 100).toFixed(1)}% · 초과수익 ${(d20.avgExcess * 100).toFixed(2)}%p (표본 ${d20.signals})`)
   }
   return lines.join('\n')
+}
+
+function loadFundamentalsIfPresent(dataPath) {
+  // nasdaq100.json과 같은 디렉터리의 fundamentals.json을 선택적으로 사용한다(US-6) —
+  // 없으면 조용히 null(엔진은 fundamentalAxis:null로 정상 완주, graceful degradation).
+  const candidate = path.join(path.dirname(dataPath), 'fundamentals.json')
+  if (!existsSync(candidate)) return null
+  try {
+    return JSON.parse(readFileSync(candidate, 'utf-8'))
+  } catch {
+    return null
+  }
 }
 
 function main() {
@@ -217,9 +234,11 @@ function main() {
   const evaluationDates = buildEvaluationDates(rawUniverse)
   console.log(`평가일 ${evaluationDates.length}개`)
 
-  const backtest = runBacktest(rawUniverse)
+  const fundamentalsData = loadFundamentalsIfPresent(dataPath)
+  const backtest = runBacktest(rawUniverse, { fundamentalsData })
   console.log(`In/Out 분할: splitDate=${backtest.config.splitDate}`)
   console.log(formatInOutSummary(backtest))
+  console.log(backtest.fundamentalAxis ? `펀더멘털 축: coveredFrom=${backtest.fundamentalAxis.coveredFrom}` : '펀더멘털 축: fundamentals.json 없음(생략)')
 
   const result = atomicWriteBacktest(outputPath, backtest)
   if (!result.ok) {

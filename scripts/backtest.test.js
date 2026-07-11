@@ -158,8 +158,30 @@ describe('runBacktest — US-5 In/Out 분할 + backtest.json 발행', () => {
     expect(anyOutSignals).toBe(true)
   })
 
-  it('fundamentalAxis는 US-6 이전에는 null, variants는 US-7 이전에는 빈 배열이다', () => {
+  it('fundamentalsData를 넘기지 않으면 fundamentalAxis는 null이고, variants는 US-7 이전엔 빈 배열이다', () => {
     expect(backtest.fundamentalAxis).toBeNull()
     expect(backtest.variants).toEqual([])
+  })
+
+  it('fundamentalsData를 넘기면 fundamentalAxis가 채워지고 여전히 스키마를 통과한다 (US-6 연동)', () => {
+    const fundamentalsData = {
+      schemaVersion: 1,
+      generatedAt: raw.generatedAt,
+      tickers: raw.tickers.slice(0, 2).map((t) => ({
+        ticker: t.ticker,
+        roe: 0.2,
+        missing: [],
+        quarters: [
+          { period: '2026-Q2', eps: 1.5, revenue: 1000, operatingMargin: 0.3 },
+          { period: '2026-Q1', eps: 1.2, revenue: 800, operatingMargin: 0.28 },
+          { period: '2025-Q4', eps: 1.0, revenue: 700, operatingMargin: 0.25 },
+        ],
+      })),
+      excluded: [],
+    }
+    const withAxis = runBacktest(raw, { fundamentalsData })
+    expect(withAxis.fundamentalAxis).not.toBeNull()
+    expect(withAxis.fundamentalAxis.note).toBe('근사 재구성 · 짧은 구간 참고치')
+    expect(validateBacktest(withAxis).valid).toBe(true)
   })
 })
