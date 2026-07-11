@@ -751,3 +751,81 @@
   src/App.test.jsx(쿼리 정교화 1건), PRD_Nasdaq8.md(§10 항목1 [~]→[x]).
 - 운영자 액션 필요: 이 이터레이션 결과물(실데이터 3종 JSON + 회귀 수정 2건 + PRD 갱신)의
   커밋·푸시 여부는 사용자 확인 후 진행.
+
+# v9 진행 기록 (prd-v9-backtest.md) — 직접 순차 구현(Ralph 루프 아님, 사용자가
+# "직접 순차 구현"을 선택), US-1~10 전부, 스토리마다 커밋 분리
+
+## US-1. 백테스트 부트스트랩
+- scripts/backtest.mjs가 src/lib/buildDataset·recommend·minervini를 그대로 import.
+  동형성 테스트로 lib 직접 호출 결과와 완전히 일치함을 보증. 실데이터 CLI 스모크 확인.
+
+## US-2. 시점 슬라이서
+- scripts/lib/asOf.mjs: sliceUniverseAsOf(원본 불변, asOf 이하 봉만 절단) +
+  buildEvaluationDates(워밍업252/말단여유60/스텝5). 경계·불변·짧은데이터 테스트 11개.
+
+## US-3. 신호 재현 루프
+- evaluateAsOf()/buildSignalRecords()/runSignalLoop() — 평가일마다 슬라이스 →
+  recommend/runMinerviniRecommend/buildConsensusRanking(전부 기존 lib) → 신호 레코드.
+  실데이터: 38개 평가일, 2567건 레코드.
+
+## US-4. 성과 계산
+- scripts/lib/performance.mjs: buildPriceIndex/computeSignalPerformance/aggregatePerformance.
+  진입=신호일종가, 청산=N거래일후종가, 벤치마크=유니버스 등가중평균, 초과수익=차이.
+  3종목 소형 픽스처 손계산 대조 11개 테스트.
+
+## US-5. In/Out 분할 + backtest.json 발행
+- runBacktest()가 평가일 전반50%(In)/후반50%(Out) 분할(splitDate 당일→Out 귀속),
+  PRD §7 스키마로 backtest.json 발행. src/lib/backtestSchema.js(브라우저 세이프) +
+  scripts/validate-backtest.mjs(원자적 쓰기, research/fundamentals와 동일 패턴).
+  실데이터: 16개 strategies 항목, splitDate=2025-11-25.
+
+## US-6. 펀더멘털 축 근사 재구성
+- scripts/lib/fundamentalHistory.mjs: quarters[]를 분기i vs 직전분기(QoQ 근사)로
+  재구성해 evaluateFundamentalHurdle()을 그대로 호출(재구현 없음). F5(ROE)는 현재
+  스냅샷 — 선견 편향 note("근사 재구성 · 짧은 구간 참고치")로 고지. coveredFrom 이전
+  신호는 집계에서 제외. 실데이터: pass 7 / partial 178 / fail 43건 교차표 생성.
+
+## US-7. 후보 변형 비교 프레임 + 변형 A/B/C
+- scripts/lib/variants.mjs: A(disparity_inverted_u)/B(adx_gate)/C(consensus_weighted).
+  recommend.js(stage1Pass/scoreTicker/SCORE_*)·consensus.js(percentileOf)에 export만
+  보강(동작 불변, 기존 회귀 그대로 통과). ADX는 scripts/lib/adx.mjs에만(앱 미반영).
+  adopted 항상 false. 실데이터로 3변형 모두 실행 확인(delta 기록됨).
+
+## US-8. 신뢰도 표시 UI
+- src/lib/backtestLoader.js(graceful degradation) + src/components/BacktestConfidence.jsx
+  (요약+고정 고지 문구 분리불가 렌더, 펼침 상세, Out만 사용). Recommend.jsx 3모드에 배선,
+  DesignValueNotice가 backtest.json 존재 시 문구 교체. 기존 회귀 전부 유지.
+
+## US-9. 데이터 수집 3년 확대
+- collect_data.py PERIOD 2y→3y(백테스트 워밍업+평가2년+보유60일 여유 근거 주석 갱신).
+  결정적 3y 합성 픽스처(756거래일) 추가, 2y/3y 양쪽 엔진 완주 확인. 실데이터 재수집은
+  운영자 별도 세션(루프 범위 밖, Out of Scope 원칙 그대로 유지).
+
+## US-10. 워크플로 문서화 + 통합 검증
+- README.md에 "백테스트 & 파라미터 조정 워크플로" 절 추가(5단계: 실행→In 근거 조정안→
+  constants/v8.js 수정+changelog→재실행으로 Out 확인→커밋, 자동최적화 금지·Out 악화시
+  롤백 명기). constants/v8.js 상단에 changelog 템플릿 추가(값 변경 없음). 운영 절차에
+  "백테스트 재실행"(4번, 권장: 분기1회+파라미터변경시) 단계 삽입.
+
+### PRD_Nasdaq9.md §8 성공 기준 점검
+1. [x] backtest.mjs가 앱 lib를 그대로 import, 백테스트 전용 재구현 코드 없음 (US-1/3, 매 스토리 재확인)
+2. [x] 시점 재현 테스트: t 이후 데이터 개입 불가가 슬라이스 경계 테스트로 보증 (US-2, 11개 테스트)
+3. [x] 4개 전략 축 × In/Out × 보유 3종 성과표가 backtest.json으로 발행되고 스키마 검증 통과 (US-5)
+4. [x] 컨센서스 ★★ vs ★, 펀더멘털 Pass/Partial/Fail 실측 비교표 산출 (US-4/US-6, 실데이터로 확인됨)
+5. [x] 파라미터 조정 워크플로가 README 문서화 + constants/v8.js changelog 주석 (US-10)
+6. [x] 화면2 신뢰도 표시가 Out-of-Sample만 사용, 고정 고지 문구 동반, backtest.json 부재시 완전 미표시 (US-8)
+7. [~] 변형 결과는 variants[]에 전부 기록되고 adopted는 항상 false (US-7) — 단, "채택 시 화면에
+       스코어링 변경 안내 1줄" UI는 미구현. 이번 세션에서 어떤 변형도 실제로 채택(operator 승인)된
+       적이 없으므로, 조건부로만 필요한 UI를 지금 미리 만드는 것은 추측성 선반영이라 보류했다.
+       실제로 한 변형이 채택되는 다음 세션에서, 그 변형에 한해 안내 문구를 추가하는 별도 스토리로
+       처리할 것 (Out of Scope 원칙: "채택된 변형의 앱 반영은 운영자 결정 후 별도 작업").
+8. [x] 기존 테스트 전체 통과 — 434개 전체 통과, npm run build 매 스토리마다 확인.
+
+- 실데이터 검증: scripts/backtest.mjs(fundamentals.json 자동 인식)를 실제
+  public/data/nasdaq100.json(100종목·2년) 기준으로 실행해 backtest.json 스키마 통과,
+  16개 strategies + fundamentalAxis(pass/partial/fail) + variants(3종) 전부 정상 산출
+  확인(임시 경로에만 저장, 저장소에는 커밋하지 않음 — 실데이터 backtest.json 커밋은
+  research.json/fundamentals.json과 동일하게 사용자 확인 후 별도로 진행할 것).
+- 운영자 액션 필요: (1) collect_data.py 3y 재수집, (2) node scripts/backtest.mjs로
+  실제 backtest.json 생성, (3) 두 데이터 커밋 여부 확인 후 진행 — 전부 이번 세션
+  범위 밖(코드만 완성, 코드 스토리는 픽스처까지만이라는 US 문서의 명시적 원칙).
