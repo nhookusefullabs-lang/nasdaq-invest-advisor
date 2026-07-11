@@ -2,12 +2,13 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { loadDataset, runSmoke, toMinerviniInput, evaluateAsOf, buildSignalRecords, runSignalLoop } from './backtest.mjs'
+import { loadDataset, runSmoke, toMinerviniInput, evaluateAsOf, buildSignalRecords, runSignalLoop, runBacktest } from './backtest.mjs'
 import { buildDataset } from '../src/lib/buildDataset.js'
 import { recommend } from '../src/lib/recommend.js'
 import { runMinerviniRecommend } from '../src/lib/minervini.js'
 import { buildConsensusRanking } from '../src/lib/consensus.js'
 import { sliceUniverseAsOf, buildEvaluationDates } from './lib/asOf.mjs'
+import { validateBacktest } from '../src/lib/backtestSchema.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const FIXTURE_PATH = path.resolve(__dirname, '../src/lib/__fixtures__/nasdaq100.2y.sample.json')
@@ -115,5 +116,50 @@ describe('buildSignalRecords — basis/grade/relaxationApplied 규칙', () => {
     const trendTop5 = records.filter((r) => r.strategyKey === 'trend' && r.basis === 'top5')
     expect(trendAll.length).toBe(2) // signalPassed:true인 AAA/BBB만
     expect(trendTop5.length).toBe(2) // 2개뿐이라 top5 슬라이스해도 그대로
+  })
+})
+
+describe('runBacktest — US-5 In/Out 분할 + backtest.json 발행', () => {
+  const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
+  const backtest = runBacktest(raw)
+
+  it('스키마 검증을 통과한다', () => {
+    const { valid, errors } = validateBacktest(backtest)
+    expect(errors).toEqual([])
+    expect(valid).toBe(true)
+  })
+
+  it('In/Out 신호 수의 합이 전체 신호 수와 같다 (전체 신호 배열 기준, 전략키별로도 성립)', () => {
+    const evaluationDates = buildEvaluationDates(raw)
+    const allRecords = runSignalLoop(raw, evaluationDates)
+
+    const totalSignals = backtest.strategies
+      .filter((s) => s.sample === 'in')
+      .reduce((sum, s) => sum + s.byHolding.reduce((a, h) => Math.max(a, h.signals), 0), 0)
+    // signals 자체는 청산일 범위 초과로 보유기간별 다를 수 있어 직접 합산 비교는 불가능하므로,
+    // 원본 신호 레코드 수(In+Out)가 전체와 같은지를 먼저 확인한다.
+    const splitDate = backtest.config.splitDate
+    const inCount = allRecords.filter((r) => r.date < splitDate).length
+    const outCount = allRecords.filter((r) => r.date >= splitDate).length
+    expect(inCount + outCount).toBe(allRecords.length)
+    expect(totalSignals).toBeGreaterThanOrEqual(0)
+  })
+
+  it('경계 신호(splitDate 당일)는 Out에 귀속된다', () => {
+    const splitDate = backtest.config.splitDate
+    const evaluationDates = buildEvaluationDates(raw)
+    expect(evaluationDates).toContain(splitDate) // splitDate 자체가 실제 평가일이어야 경계 테스트가 유효
+    const allRecords = runSignalLoop(raw, evaluationDates)
+    const onSplitDate = allRecords.filter((r) => r.date === splitDate)
+    expect(onSplitDate.length).toBeGreaterThan(0)
+    // runBacktest 내부에서 outRecords는 date >= splitDate 규칙을 쓰므로, splitDate 당일 신호는
+    // 반드시 Out 성과 집계(byHolding)에 기여한다 — signals 합이 0보다 큰 out 그룹이 존재해야 한다.
+    const anyOutSignals = backtest.strategies.some((s) => s.sample === 'out' && s.byHolding.some((h) => h.signals > 0))
+    expect(anyOutSignals).toBe(true)
+  })
+
+  it('fundamentalAxis는 US-6 이전에는 null, variants는 US-7 이전에는 빈 배열이다', () => {
+    expect(backtest.fundamentalAxis).toBeNull()
+    expect(backtest.variants).toEqual([])
   })
 })

@@ -19,7 +19,7 @@ export function sliceUniverseAsOf(universe, asOfDate) {
 }
 
 /** universe.tickers 중 가장 긴 series를 거래일 캘린더 기준으로 삼는다 (전 종목 대체로 동일 거래일). */
-function getCalendarDates(universe) {
+export function getCalendarDates(universe) {
   let longest = []
   for (const t of universe.tickers) {
     if (t.series.length > longest.length) longest = t.series

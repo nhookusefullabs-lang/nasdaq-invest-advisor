@@ -8,10 +8,13 @@ import { buildDataset } from '../src/lib/buildDataset.js'
 import { recommend } from '../src/lib/recommend.js'
 import { runMinerviniRecommend } from '../src/lib/minervini.js'
 import { buildConsensusRanking } from '../src/lib/consensus.js'
-import { sliceUniverseAsOf, buildEvaluationDates } from './lib/asOf.mjs'
+import { sliceUniverseAsOf, buildEvaluationDates, getCalendarDates } from './lib/asOf.mjs'
+import { buildPriceIndex, aggregatePerformance } from './lib/performance.mjs'
+import { atomicWriteBacktest } from './validate-backtest.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const DEFAULT_DATA_PATH = path.resolve(__dirname, '../public/data/nasdaq100.json')
+const DEFAULT_OUTPUT_PATH = path.resolve(__dirname, '../public/data/backtest.json')
 
 /** raw nasdaq100.json({generatedAt, tickers}) 그대로 읽는다 (asOf 슬라이싱은 raw 형태에 대해 동작). */
 export function loadRawUniverse(dataPath = DEFAULT_DATA_PATH) {
@@ -118,8 +121,91 @@ export function runSignalLoop(rawUniverse, evaluationDates) {
   return records
 }
 
+// --- US-5: In/Out 분할 + backtest.json 발행 ---
+
+const round4 = (x) => Math.round(x * 10000) / 10000
+const HOLDING_DAYS = [5, 20, 60]
+const STRATEGY_KEYS = ['trend', 'minervini', 'consensus_2star', 'consensus_1star']
+const BASES = ['top5', 'allSignals']
+
+function computeRelaxedShare(records) {
+  if (!records.length) return null
+  const count = records.filter((r) => r.relaxationApplied).length
+  return round4(count / records.length)
+}
+
+/**
+ * 전체 백테스트 실행: 평가일 나열 → 신호 재현 → 신호일 기준 In(전반 50%)/Out(후반 50%) 분할
+ * → 성과 집계 → PRD_Nasdaq9.md §7 스키마 형태로 조립한다.
+ * 경계 규칙: splitDate 당일 신호는 Out에 귀속된다(splitDate = Out 구간의 첫 평가일).
+ * fundamentalAxis는 US-6에서, variants는 US-7에서 채운다 — 여기서는 각각 null/[].
+ */
+export function runBacktest(rawUniverse, { warmupDays = 252, holdingBufferDays = 60, stepDays = 5, holdingDays = HOLDING_DAYS, topN = 5 } = {}) {
+  const evaluationDates = buildEvaluationDates(rawUniverse, { warmupDays, holdingBufferDays, stepDays })
+  const records = runSignalLoop(rawUniverse, evaluationDates)
+
+  const splitIndex = Math.floor(evaluationDates.length / 2)
+  const splitDate = evaluationDates.length ? (evaluationDates[splitIndex] ?? null) : null
+  const inRecords = splitDate ? records.filter((r) => r.date < splitDate) : records
+  const outRecords = splitDate ? records.filter((r) => r.date >= splitDate) : []
+
+  const dataset = buildDataset(rawUniverse)
+  const priceIndex = buildPriceIndex(dataset.tickers)
+
+  const inGroups = aggregatePerformance(inRecords, priceIndex, holdingDays, { strategyKeys: STRATEGY_KEYS, bases: BASES })
+  const outGroups = aggregatePerformance(outRecords, priceIndex, holdingDays, { strategyKeys: STRATEGY_KEYS, bases: BASES })
+
+  const strategies = []
+  for (const key of STRATEGY_KEYS) {
+    for (const basis of BASES) {
+      for (const [sample, groups, sampleRecords] of [
+        ['in', inGroups, inRecords],
+        ['out', outGroups, outRecords],
+      ]) {
+        const byHolding = groups
+          .filter((g) => g.strategyKey === key && g.basis === basis)
+          .map((g) => ({ days: g.days, signals: g.signals, winRate: g.winRate, avgExcess: g.avgExcess, medianExcess: g.medianExcess, avgReturn: g.avgReturn, mdd: g.mdd }))
+        const matchingRecords = sampleRecords.filter((r) => r.strategyKey === key && r.basis === basis)
+        strategies.push({ key, sample, basis, byHolding, relaxedShare: computeRelaxedShare(matchingRecords) })
+      }
+    }
+  }
+
+  const calendarDates = getCalendarDates(rawUniverse)
+
+  return {
+    schemaVersion: 1,
+    generatedAt: rawUniverse.generatedAt,
+    config: {
+      dataFrom: calendarDates[0] ?? null,
+      dataTo: calendarDates[calendarDates.length - 1] ?? null,
+      stepDays,
+      holdingDays,
+      warmupDays,
+      splitDate,
+      benchmark: 'universe_equal_weight',
+      topN,
+    },
+    strategies,
+    fundamentalAxis: null,
+    variants: [],
+  }
+}
+
+function formatInOutSummary(backtest) {
+  const lines = []
+  for (const s of backtest.strategies) {
+    if (s.basis !== 'top5') continue
+    const d20 = s.byHolding.find((h) => h.days === 20)
+    if (!d20 || d20.signals === 0) continue
+    lines.push(`  ${s.key} (${s.sample}): 20거래일 승률 ${(d20.winRate * 100).toFixed(1)}% · 초과수익 ${(d20.avgExcess * 100).toFixed(2)}%p (표본 ${d20.signals})`)
+  }
+  return lines.join('\n')
+}
+
 function main() {
   const dataPath = process.argv[2] ? path.resolve(process.argv[2]) : DEFAULT_DATA_PATH
+  const outputPath = process.argv[3] ? path.resolve(process.argv[3]) : DEFAULT_OUTPUT_PATH
   const rawUniverse = loadRawUniverse(dataPath)
   const dataset = buildDataset(rawUniverse)
   const { trend, minervini } = runSmoke(dataset)
@@ -129,8 +215,20 @@ function main() {
   console.log(formatSummary('미너비니', minervini))
 
   const evaluationDates = buildEvaluationDates(rawUniverse)
-  const records = runSignalLoop(rawUniverse, evaluationDates)
-  console.log(`평가일 ${evaluationDates.length}개, 신호 레코드 ${records.length}건`)
+  console.log(`평가일 ${evaluationDates.length}개`)
+
+  const backtest = runBacktest(rawUniverse)
+  console.log(`In/Out 분할: splitDate=${backtest.config.splitDate}`)
+  console.log(formatInOutSummary(backtest))
+
+  const result = atomicWriteBacktest(outputPath, backtest)
+  if (!result.ok) {
+    console.error(`✗ ${outputPath}: 스키마 검증 실패`)
+    result.errors.forEach((e) => console.error(`  - ${e}`))
+    process.exitCode = 1
+    return
+  }
+  console.log(`✓ ${outputPath} 작성 완료`)
 }
 
 const isMainModule = process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])

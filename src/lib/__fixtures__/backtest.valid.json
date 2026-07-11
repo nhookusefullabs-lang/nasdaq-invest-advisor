@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-10",
+  "config": {
+    "dataFrom": "2024-08-05",
+    "dataTo": "2026-07-09",
+    "stepDays": 5,
+    "holdingDays": [5, 20, 60],
+    "warmupDays": 252,
+    "splitDate": "2026-01-05",
+    "benchmark": "universe_equal_weight",
+    "topN": 5
+  },
+  "strategies": [
+    {
+      "key": "trend",
+      "sample": "out",
+      "basis": "top5",
+      "byHolding": [
+        { "days": 5, "signals": 40, "winRate": 0.55, "avgExcess": 0.012, "medianExcess": 0.009, "avgReturn": 0.03, "mdd": 0.02 },
+        { "days": 20, "signals": 38, "winRate": 0.52, "avgExcess": 0.021, "medianExcess": 0.015, "avgReturn": 0.05, "mdd": 0.04 },
+        { "days": 60, "signals": 30, "winRate": 0.5, "avgExcess": 0.018, "medianExcess": 0.012, "avgReturn": 0.08, "mdd": 0.07 }
+      ],
+      "relaxedShare": 0.3
+    },
+    {
+      "key": "minervini",
+      "sample": "out",
+      "basis": "top5",
+      "byHolding": [
+        { "days": 5, "signals": 0, "winRate": null, "avgExcess": null, "medianExcess": null, "avgReturn": null, "mdd": null }
+      ],
+      "relaxedShare": null
+    }
+  ],
+  "fundamentalAxis": {
+    "note": "근사 재구성 · 짧은 구간 참고치",
+    "coveredFrom": "2026-01-05",
+    "byVerdict": [
+      { "verdict": "pass", "byHolding": [{ "days": 20, "signals": 5, "winRate": 0.6, "avgExcess": 0.03, "medianExcess": 0.02, "avgReturn": 0.06, "mdd": 0.03 }] }
+    ]
+  },
+  "variants": [
+    { "name": "disparity_inverted_u", "adopted": false, "outVsBaseline": { "avgExcessDelta": 0.002, "winRateDelta": -0.01 }, "note": "표본 부족으로 판단 보류" }
+  ]
+}
