@@ -185,6 +185,32 @@ export default function App() {
       expandedEntryEvidence: { ...s.expandedEntryEvidence, [ticker]: !s.expandedEntryEvidence[ticker] },
     }))
 
+  // 화면 3·4 청산 계획(체결가 필수·체결일 선택) 입력 (v10 US-14). 체결가가 비거나
+  // 무효(0 이하)면 해당 포지션 자체를 지운다 — persistence.js의 sanitizePositions와
+  // 동일 원칙("체결가 없는 포지션은 의미 없음").
+  const setPositionEntryPrice = (ticker, rawValue) =>
+    setUiState((s) => {
+      const value = rawValue === '' ? NaN : Number(rawValue)
+      const positions = { ...s.positions }
+      if (!(value > 0)) {
+        delete positions[ticker]
+      } else {
+        positions[ticker] = { ...positions[ticker], entryPrice: value }
+      }
+      return { ...s, positions }
+    })
+
+  const setPositionEntryDate = (ticker, dateValue) =>
+    setUiState((s) => {
+      const existing = s.positions[ticker]
+      if (!existing) return s // 체결가 없이 체결일만 입력할 순 없음(체결가가 필수)
+      const positions = {
+        ...s.positions,
+        [ticker]: dateValue ? { ...existing, entryDate: dateValue } : { entryPrice: existing.entryPrice },
+      }
+      return { ...s, positions }
+    })
+
   if (loadError) {
     return <CenteredMessage>데이터 로드 실패: {loadError}</CenteredMessage>
   }
@@ -262,6 +288,9 @@ export default function App() {
           selectedTickerData={selectedTickerData}
           onToggleTicker={toggleSelectedTicker}
           onGoToPortfolio={() => setScreen('portfolio')}
+          positions={uiState.positions}
+          onChangeEntryPrice={setPositionEntryPrice}
+          onChangeEntryDate={setPositionEntryDate}
         />
       )}
 
@@ -275,6 +304,9 @@ export default function App() {
           onToggleTicker={toggleSelectedTicker}
           onWeightChange={adjustTickerWeight}
           onResetWeights={resetWeightsToEqual}
+          positions={uiState.positions}
+          onChangeEntryPrice={setPositionEntryPrice}
+          onChangeEntryDate={setPositionEntryDate}
         />
       )}
     </div>

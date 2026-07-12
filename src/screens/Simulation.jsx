@@ -3,6 +3,7 @@ import TickerPicker from '../components/TickerPicker.jsx'
 import PriceSparkline from '../components/PriceSparkline.jsx'
 import ResearchSection from '../components/ResearchSection.jsx'
 import ResearchRequestToggle from '../components/ResearchRequestToggle.jsx'
+import PositionPlanPanel from '../components/PositionPlanPanel.jsx'
 
 export default function Simulation({
   generatedAt,
@@ -14,6 +15,9 @@ export default function Simulation({
   selectedTickerData,
   onToggleTicker,
   onGoToPortfolio,
+  positions = {},
+  onChangeEntryPrice,
+  onChangeEntryDate,
 }) {
   return (
     <div>
@@ -68,6 +72,13 @@ export default function Simulation({
                 <PriceSparkline label="6개월" points={t.chart.sixMonth} />
               </div>
               <ResearchSection research={researchMap?.get(t.ticker)} />
+              <PositionPlanPanel
+                ticker={t.ticker}
+                tickerData={t}
+                position={positions[t.ticker]}
+                onChangeEntryPrice={onChangeEntryPrice}
+                onChangeEntryDate={onChangeEntryDate}
+              />
             </div>
           )
         })}

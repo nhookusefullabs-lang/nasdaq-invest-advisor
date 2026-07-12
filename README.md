@@ -129,3 +129,66 @@ step=5 대비 약 5배이므로 완주까지 수 분 걸릴 수 있다. **`--out
 세 판정 모두 코드가 자동으로 내리지 않는다 — `variants[].adopted`는 항상 `false`로 남고,
 완화 신호 제외·매일 운영 전환은 이 저장소의 어떤 파일도 자동 적용하지 않는다. 위 표는
 운영자가 콘솔 출력 또는 `backtest.json`을 직접 읽고 판단할 때 참고하는 체크리스트일 뿐이다.
+
+## v10 분기 재검증 절차 (PRD_Nasdaq10.md §4.6/US-14)
+
+v10부터는 국면·진입/청산 엔진·NGX 파일럿까지 측정 대상이 늘어, **분기 첫 주 토요일**에
+아래 절차를 정기 실행한다(가격 자동 갱신은 기존과 동일하게 매주 진행 — 이 절차는 그중
+"분기 1회"만 해당하는 부분).
+
+1. **양 유니버스 데이터 재수집**
+   ```
+   python scripts/collect_data.py --universe=ndx
+   python scripts/collect_data.py --universe=ngx --ngx-source=<QQQJ 보유종목 CSV 경로>
+   ```
+   NGX는 `public/data/ngx100.json` + `fundamentals_ngx.json`을 생성한다(나스닥100과 동일
+   스키마·가드레일). **QQQJ 티커 소스 갱신**: Invesco NASDAQ Next Gen 100 ETF(QQQJ)의
+   최신 보유종목 공시 CSV를 내려받아 `--ngx-source`로 지정한다 — 이 저장소는 CSV를
+   자동으로 내려받지 않으므로, 운영자가 매 분기 최신 파일로 교체해야 한다.
+
+2. **양 유니버스 백테스트 재실행**
+   ```
+   node scripts/backtest.mjs --universe=ndx
+   node scripts/backtest.mjs --universe=ngx
+   ```
+   각각 `public/data/backtest.json`/`backtest_ngx.json`을 갱신한다. `--universe=ngx` 실행
+   시 콘솔에 나스닥100 vs NGX ★★ 컨센서스 비교 요약이 함께 출력된다(§7 판정 재료).
+   `backtest_ngx.json`은 UI가 참조하지 않는 측정 전용 파일이다.
+
+3. **표시 갱신 확인**
+   화면2 국면 배지·검증 상태 라벨은 `backtest.json`을 그대로 읽으므로 재실행만으로
+   자동 갱신된다. 별도 코드 수정 불필요.
+
+4. **판정 기준 재대조 (PRD_Nasdaq10.md §7 그대로)**
+
+   | 대상 | 채택/판정 기준 |
+   |---|---|
+   | NGX 유니버스 노출 (v11) | ★★ 컨센서스 In/Out 모두 나스닥100 대비 우위 + Pass 표본 ≥50 + Out 표본 ≥100 |
+   | 진입 변형 채택 | Out에서 기회비용 포함 초과수익이 entry_close 이상 + 체결률 ≥ 60% + 표본 ≥100 |
+   | 청산 변형/조합 채택 | Out에서 60일 초과수익 −1%p 이내 보존 + MDD 3%p 이상 개선 (기존 기준 유지) |
+   | 국면 소프트 정책 채택 | 해당 국면 Out 표본 ≥50에서 초과수익·승률 모두 현행 이상 |
+   | 상태 필터 변형(actionable_only_top5) 채택 | 전 구간 Out 표본 ≥100에서 초과수익·승률 모두 현행 이상 + 상태별 분해로 제외 상태의 열위 확인 |
+   | 모든 채택 | 운영자 승인 + changelog 기록. 스크립트 자동 적용 금지 |
+
+   `backtest.json`의 `entryVariants[]`/`combos[]`/`regimeAxis[]`/`stateAxis[]`와
+   `backtest_ngx.json`의 대응 필드를 위 표와 대조해 판단한다. 채택 시
+   `src/lib/constants/{entry,exit,regime,verification}.js` 값을 changelog 주석과 함께
+   수정하고(위 "백테스트 & 파라미터 조정 워크플로"와 동일한 5단계), `adopted`는 여전히
+   자동 반영되지 않으므로 화면 검증 상태 라벨(`constants/verification.js`)도 직접 갱신한다.
+
+5. **progress 기록**
+   판정 결과와 채택/보류 사유를 `progress.txt`에 남긴다.
+
+## PRD_Nasdaq10 §8 성공 기준 점검
+
+- [x] NGX 3년 데이터가 가드레일·예외 처리와 함께 수집되고, 동일 프로토콜 백테스트가 backtest_ngx.json을 산출한다 — 코드 완비, 실데이터 수집·실행은 위 분기 절차에서 운영자가 수행(합성 픽스처로 완주 검증됨)
+- [x] 국면 지표가 히스테리시스로 3상태를 판정하고, 전 축의 국면별 분해가 backtest.json v3에 포함되며, In/Out 역전이 국면 라벨로 재해석된다
+- [x] 화면2에 국면 배지·조건부 성과·진입 상태·가격 세트·매도 신호 배지가 검증 상태 표기와 함께 렌더링된다
+- [x] 진입 변형 4종의 체결률·기회비용 포함 성과와 조합 실험 결과가 산출된다 (entry_pivot_confirm2 포함)
+- [x] 화면 3·4에서 체결가 입력 → R-배수·손절/트레일링/브레이크이븐/이익 보호가 동작하고 localStorage v4로 유지된다
+- [x] 검증 열위 규칙(−8% 손절)이 열위 상태로 정직하게 표기된다 (권장처럼 보이지 않음)
+- [x] NGX·국면·진입/청산 관련 신규 파일 부재 시 각 기능만 비표시되고 앱은 v9.1과 동일하게 동작한다 (기존 테스트 전체 통과 — App/Recommend 43개 무수정 통과로 확인)
+- [x] 분기 재검증 절차가 README에 명문화된다 (본 절)
+
+미충족 항목 없음. 남은 것은 전부 운영자가 별도 세션에서 수행하는 실행 작업뿐이다
+(실데이터 재수집 3종, 양 유니버스 백테스트 실행, §7 판정 기준표 대조·채택 결정).

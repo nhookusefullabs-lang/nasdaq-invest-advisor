@@ -1,6 +1,7 @@
 import Disclaimer from '../components/Disclaimer.jsx'
 import TickerPicker from '../components/TickerPicker.jsx'
 import PortfolioPieChart from '../components/PortfolioPieChart.jsx'
+import PositionPlanPanel from '../components/PositionPlanPanel.jsx'
 import { buildPortfolio } from '../lib/portfolio.js'
 import { assignPortfolioColors } from '../lib/portfolioColors.js'
 
@@ -13,6 +14,9 @@ export default function Portfolio({
   onToggleTicker,
   onWeightChange,
   onResetWeights,
+  positions = {},
+  onChangeEntryPrice,
+  onChangeEntryDate,
 }) {
   const portfolio = buildPortfolio(selectedTickerData, weights)
   const colors = assignPortfolioColors(selectedTickers)
@@ -40,36 +44,45 @@ export default function Portfolio({
 
       <div className="border border-gray-200 rounded divide-y mb-4">
         {selectedTickerData.map((t) => (
-          <div key={t.ticker} className="flex items-center justify-between px-3 py-2 text-sm gap-3">
-            <div className="min-w-0 flex items-center gap-2">
-              <span
-                className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
-                style={{ backgroundColor: colors.get(t.ticker)?.color }}
-              />
-              <p className="font-semibold truncate">
-                {t.ticker} <span className="text-gray-500 font-normal">{t.name}</span>
-              </p>
+          <div key={t.ticker} className="px-3 py-2">
+            <div className="flex items-center justify-between text-sm gap-3">
+              <div className="min-w-0 flex items-center gap-2">
+                <span
+                  className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
+                  style={{ backgroundColor: colors.get(t.ticker)?.color }}
+                />
+                <p className="font-semibold truncate">
+                  {t.ticker} <span className="text-gray-500 font-normal">{t.name}</span>
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={weights[t.ticker] ?? 0}
+                  onChange={(e) => onWeightChange(t.ticker, Number(e.target.value))}
+                  aria-label={`${t.ticker} 가중치`}
+                  className="w-20 border border-gray-300 rounded px-2 py-1 text-right"
+                />
+                <span className="text-gray-400 text-xs">%</span>
+                <button
+                  type="button"
+                  onClick={() => onToggleTicker(t.ticker)}
+                  aria-label={`${t.ticker} 제거`}
+                  className="text-gray-400 hover:text-red-600"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <input
-                type="number"
-                min="0"
-                max="100"
-                value={weights[t.ticker] ?? 0}
-                onChange={(e) => onWeightChange(t.ticker, Number(e.target.value))}
-                aria-label={`${t.ticker} 가중치`}
-                className="w-20 border border-gray-300 rounded px-2 py-1 text-right"
-              />
-              <span className="text-gray-400 text-xs">%</span>
-              <button
-                type="button"
-                onClick={() => onToggleTicker(t.ticker)}
-                aria-label={`${t.ticker} 제거`}
-                className="text-gray-400 hover:text-red-600"
-              >
-                ✕
-              </button>
-            </div>
+            <PositionPlanPanel
+              ticker={t.ticker}
+              tickerData={t}
+              position={positions[t.ticker]}
+              onChangeEntryPrice={onChangeEntryPrice}
+              onChangeEntryDate={onChangeEntryDate}
+            />
           </div>
         ))}
         {selectedTickerData.length === 0 && (
