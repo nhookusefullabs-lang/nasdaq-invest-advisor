@@ -1,6 +1,7 @@
 // 진입가 엔진 (design-entry-point-engine.md, PRD_Nasdaq10 §4.3, US-3/US-4) — 순수 함수.
 // §2(피벗 산정)·§3(파생 가격) 그대로 구현한다.
 
+import { sma } from './indicators.js'
 import {
   PIVOT_LOOKBACK,
   BREAKOUT_RECENCY,
@@ -9,6 +10,7 @@ import {
   FAR_BAND,
   STOP_PCT,
   ATR_STOP_MULT,
+  VOL_MULT,
 } from './constants/entry.js'
 
 /**
@@ -122,4 +124,73 @@ export function derivedPrices({ pivot, currentClose, atr14 = null }) {
     stopFixed: currentClose * (1 - STOP_PCT),
     stopAtr: atr14 != null ? currentClose - ATR_STOP_MULT * atr14 : null,
   }
+}
+
+/**
+ * 진입 상태 판정 (§5 의사코드 그대로) + 거래량 확인(§4) + 돌파 후 경과일(v9.1 반영, US-4).
+ * computePivot()을 재사용해 피벗을 재계산하지 않는다.
+ *
+ * 반환 형태는 상태별로 다르다:
+ * - "산정불가": { state: '산정불가', reason }
+ * - 상태 0(원거리): { state: 0, trigger, distancePct, evidence }
+ * - 상태 1(돌파 대기): { state: 1, trigger, evidence }
+ * - 상태 2(매수 유효): { state: 2, upper, volumeOK, breakoutDate, daysSinceBreakout,
+ *   earlyBreakout, evidence }
+ * - 상태 3(확장/저항선 소멸): { state: 3, reason, evidence? }
+ */
+export function judgeEntryState(series) {
+  const pivotResult = computePivot(series)
+
+  if (!pivotResult.valid) {
+    if (pivotResult.reason.includes('데이터 부족')) {
+      return { state: '산정불가', reason: pivotResult.reason }
+    }
+    // 저항선 소멸 — §2.1 규칙3, §5 "P == 무효 → state 3"
+    return { state: 3, reason: pivotResult.reason }
+  }
+
+  const { pivot, breakoutIndex, breakoutDate, precedingHigh } = pivotResult
+  const closes = series.map((b) => b.close)
+  const t = closes.length - 1
+  const closeT = closes[t]
+  const derived = derivedPrices({ pivot, currentClose: closeT })
+  const evidence = {
+    pivot,
+    precedingHigh,
+    breakoutDate,
+    breakoutIndex,
+    pivotLookbackDays: PIVOT_LOOKBACK,
+  }
+
+  if (breakoutIndex == null) {
+    // 규칙1 분기(§5): close ≤ P
+    const distancePct = ((closeT - pivot) / pivot) * 100
+    if (closeT < pivot * (1 - FAR_BAND)) {
+      return { state: 0, trigger: derived.trigger, distancePct, evidence }
+    }
+    return { state: 1, trigger: derived.trigger, evidence }
+  }
+
+  // 규칙2 분기(§5): close > P, 최근 돌파 이벤트 B 존재
+  const volumes = series.map((b) => b.volume)
+  const sma50Vol = sma(volumes, 50)
+  const breakoutVolume = volumes[breakoutIndex]
+  const breakoutVolSma50 = sma50Vol[breakoutIndex]
+  const volumeOK = breakoutVolSma50 != null && breakoutVolume >= VOL_MULT * breakoutVolSma50
+  const daysSinceBreakout = t - breakoutIndex
+  const earlyBreakout = daysSinceBreakout <= 1
+
+  if (closeT <= derived.upper) {
+    return {
+      state: 2,
+      upper: derived.upper,
+      volumeOK,
+      breakoutDate,
+      daysSinceBreakout,
+      earlyBreakout,
+      evidence: { ...evidence, breakoutVolume, breakoutVolSma50 },
+    }
+  }
+
+  return { state: 3, reason: '유효 구간(+5%) 초과', evidence }
 }

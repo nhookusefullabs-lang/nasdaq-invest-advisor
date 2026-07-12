@@ -1064,3 +1064,25 @@
 - 다음 스토리 메모: US-4 진입가 엔진 2/2 — entryPoint.js에 상태 판정(0~3) 함수 추가,
   §5 의사코드 그대로(computePivot 재사용, 재구현 없음), 거래량 확인(SMA50 volume,
   기존 volumeTrend와 다른 함수 필요 — SMA50은 indicators.sma() 재사용), 돌파 후 경과일.
+
+## Iteration 4 — US-4. 진입가 엔진 (2/2) — 상태 판정 + 거래량 확인 + 경과일
+- 완료 스토리: US-4
+- 변경 파일:
+  - src/lib/entryPoint.js: `judgeEntryState(series)` 추가 — computePivot()을 재호출해
+    재구현 없이 §5 의사코드 그대로 상태 0~3/산정불가 판정, 거래량 확인(SMA50(volume)은
+    indicators.sma() 재사용), daysSinceBreakout·earlyBreakout(0~1일) 산출.
+  - src/lib/entryPoint.test.js: 13개 추가(총 26개) — 상태 경계(FAR_BAND 0.90P 정확·직하·
+    피벗P 정확·유효상단U 정확·직상·갭업, AC1 6개), 경과일·earlyBreakout·volumeOK
+    조합(daysSinceBreakout값·경과0일true·경과15일false·volumeOK true/false, AC2 5개),
+    엣지케이스(산정불가·저항선소멸, AC3 2개 — 무거래량돌파는 AC2의 volumeOK=false
+    테스트가 겸함).
+- 승인 기준 확인: AC1(6개 요구, 6개) 통과, AC2(4개 요구, 5개) 통과, AC3(각 1개 이상) 통과.
+- 테스트 픽스처 관련 함정(기록 가치 있음): "돌파 후 평평하게 유지되다 마지막 날만 다른 값"
+  식 픽스처는 의도와 달리 마지막 날 자체가 "새로운 돌파 이벤트"로 잡혀버린다 — 평평한
+  구간이 길어지면 PH_t가 그 평평값까지 따라잡고, 마지막 날의 근소한 차이가 다시
+  "직전일 ≤ PH, 오늘 > PH" 크로스 조건을 만족시키기 때문. 픽스처는 반드시 ①단일 돌파일이
+  곧 오늘이거나(daysSinceBreakout=0 고정) ②돌파 이후 매일 완만히 계속 상승(정체 없음, 이 경우
+  전일 종가가 항상 전일 PH보다 높으므로 재크로스가 안 생김) 둘 중 하나로 구성해야 한다.
+- 테스트 수 변화: 531 → 544 (+13). npm run test/build 둘 다 통과.
+- 다음 스토리 메모: US-5 청산 신호 계층 1(src/lib/exitSignals.js) — X3(템플릿 붕괴)는
+  minervini.js의 evaluateTrendTemplate() 그대로 재사용(재구현 금지, 조건 미충족 개수 집계).
