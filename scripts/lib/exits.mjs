@@ -5,9 +5,11 @@
 // 도달한 보유일수(holdingDaysActual)를 그 함수들의 holdingDays 인자로 넘길 뿐이다.
 import { entryPoint, universeBenchmarkReturn, maxDrawdown, average, median, round4 } from './performance.mjs'
 import { atr } from '../../src/lib/indicators.js'
-import { ATR_STOP_MULT } from '../../src/lib/constants/entry.js'
+import { ATR_STOP_MULT, PIVOT_STRUCTURAL_STOP_MULT } from '../../src/lib/constants/entry.js'
 import { evaluateExitSignals } from '../../src/lib/exitSignals.js'
-import { ENTRY_VARIANTS } from './entries.mjs'
+import { computePivot } from '../../src/lib/entryPoint.js'
+import { judgePullback } from '../../src/lib/pullback.js'
+import { ENTRY_VARIANTS, PULLBACK_ENTRY_VARIANTS } from './entries.mjs'
 
 const MAX_HOLDING_DAYS = 60
 const STOP_PCT = 0.08
@@ -26,6 +28,27 @@ function atrStopTriggered({ entryClose, close, series, entryIdx }) {
   const atr14 = atr(series.slice(0, entryIdx + 1), 14)
   if (atr14 == null) return false
   return close <= entryClose - ATR_STOP_MULT * atr14
+}
+
+/**
+ * exit_structural(v11 US-8)의 손절선 — entryType으로 분기: 'breakout'은 피벗×
+ * PIVOT_STRUCTURAL_STOP_MULT(entryPoint.js의 computePivot() 재사용), 'pullback'은 눌림
+ * 저점×PULLBACK_STOP_MULT(pullback.js의 judgePullback().stopReference를 그대로 재사용 —
+ * 재계산 없음). entryIdx까지의 asOfSeries만 사용해 진입 시점 구조로 고정한다(승인 기준 2:
+ * 이후 데이터로 재계산되지 않음). entryType이 'breakout'/'pullback' 어느 쪽도 아니거나
+ * (미지정) 산정 자체가 불가하면 null — 안전 기본값(승인 기준 1): 손절 미가동, 시간 청산만.
+ */
+function structuralStopPrice(series, entryIdx, entryType) {
+  const asOfSeries = series.slice(0, entryIdx + 1)
+  if (entryType === 'pullback') {
+    const judgement = judgePullback(asOfSeries)
+    return judgement.insufficientData ? null : judgement.stopReference
+  }
+  if (entryType === 'breakout') {
+    const pivotResult = computePivot(asOfSeries)
+    return pivotResult.valid ? pivotResult.pivot * PIVOT_STRUCTURAL_STOP_MULT : null
+  }
+  return null
 }
 
 // checkStop({entryClose,peak,close,series,entryIdx,idx,regime,regimeByDate}) → 그날 청산해야 하면 true.
@@ -82,6 +105,18 @@ export const EXIT_RULES = {
       const date = series[idx].date
       const info = regimeByDate.get(date)
       return info?.regime === 'down' && info?.transitionDate === date
+    },
+  },
+  // --- v11 US-8: 청산 변형 C(구조 기반 손절) ---
+  // entryType(context, 조합 실험 전용 — computeComboPerformance가 entryVariant.type을 그대로
+  // 넘긴다)이 없는 일반 사용(evaluateExitVariants가 원 신호일 종가 체결로 단독 적용하는 경우)은
+  // 안전 기본값으로 손절이 걸리지 않고 60거래일 시간 청산만 적용된다(승인 기준 1).
+  exit_structural: {
+    name: 'exit_structural',
+    description: '진입 유형별 구조 기반 손절 — 돌파형: 피벗×0.97 / 눌림목형: 눌림 저점×0.98, 이탈 시 당일 청산, 미이탈 시 60거래일 시간 청산 (유형 불명 시 안전 기본값: 손절 미가동)',
+    checkStop: ({ series, entryIdx, close, entryType }) => {
+      const stopPrice = structuralStopPrice(series, entryIdx, entryType)
+      return stopPrice != null && close <= stopPrice
     },
   },
 }
@@ -176,25 +211,34 @@ export function aggregateExitPerformance(records, priceIndex, exitRule, context 
 }
 
 // --- v10 US-9: 진입×청산 조합 실험 (§7 "미너비니 완전체 근사 vs 현행" 최종 대결) ---
-// 격자 탐색을 피하고 대표 조합 3개만 등록한다(PRD 명시: "격자 자제").
+// 격자 탐색을 피하고 대표 조합만 등록한다(PRD 명시: "격자 자제").
 export const COMBOS = [
   { name: 'entry_pivot_confirm2_x_exit_stop_atr', entryVariant: ENTRY_VARIANTS.entry_pivot_confirm2, exitRule: EXIT_RULES.exit_stop_atr },
   { name: 'entry_pivot_trigger_vol_x_exit_sma50_break', entryVariant: ENTRY_VARIANTS.entry_pivot_trigger_vol, exitRule: EXIT_RULES.exit_sma50_break },
   { name: 'entry_pivot_confirm2_x_exit_sma50_break', entryVariant: ENTRY_VARIANTS.entry_pivot_confirm2, exitRule: EXIT_RULES.exit_sma50_break },
+  // --- v11 US-8: 대표 조합 2종 ---
+  { name: 'pullback_resume_vol_x_exit_structural', entryVariant: PULLBACK_ENTRY_VARIANTS.pullback_resume_vol, exitRule: EXIT_RULES.exit_structural },
+  { name: 'entry_close_x_exit_regime_conditional', entryVariant: ENTRY_VARIANTS.entry_close, exitRule: EXIT_RULES.exit_regime_conditional },
 ]
 
 /**
  * 신호 레코드 하나를 진입 변형(entries.mjs)으로 체결한 뒤, 그 체결가/체결일부터 청산 규칙으로
  * 보유·청산을 시뮬레이션한다. 미체결 신호는 { filled:false }로 남긴다(체결률 집계용).
+ * rsPercentileValue(v11 US-8)는 눌림목 진입 변형(pullback_*)의 P1 판정에 필요 — record에
+ * 이미 실려 있으면(US-6/backtest.mjs) 그대로 전달, 돌파형 진입은 이 인자를 쓰지 않는다.
+ * context(v11 US-8)는 exitRule.checkStop에 그대로 병합된다 — entryType(entryVariant.type,
+ * exit_structural 전용)과 regime(record.regime, exit_regime_conditional 조합 전용)을
+ * 조합 실험에서도 그대로 사용할 수 있도록 항상 채워 넘긴다(대부분의 exitRule은 무시).
  */
 export function computeComboPerformance(record, priceIndex, entryVariant, exitRule) {
   const point = entryPoint(priceIndex, record.ticker, record.date)
   if (!point) return null
 
-  const fillResult = entryVariant.simulate(point.series, point.idx)
+  const fillResult = entryVariant.simulate(point.series, point.idx, record.rsPercentileValue)
   if (!fillResult.filled) return { ...record, filled: false }
 
-  const walkResult = walkExit(point.series, fillResult.fillIdx, exitRule, fillResult.fillPrice)
+  const context = { entryType: entryVariant.type, regime: record.regime }
+  const walkResult = walkExit(point.series, fillResult.fillIdx, exitRule, fillResult.fillPrice, context)
   if (!walkResult) return { ...record, filled: true, exitOutOfRange: true }
 
   const returnPct = walkResult.exitClose / fillResult.fillPrice - 1

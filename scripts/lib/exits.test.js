@@ -6,7 +6,9 @@ import { walkExit, computeExitPerformance, aggregateExitPerformance, EXIT_RULES,
 import { buildPriceIndex } from './performance.mjs'
 import { sliceUniverseAsOf } from './asOf.mjs'
 import { evaluateExitSignals } from '../../src/lib/exitSignals.js'
-import { ENTRY_VARIANTS } from './entries.mjs'
+import { ENTRY_VARIANTS, PULLBACK_ENTRY_VARIANTS } from './entries.mjs'
+import { PIVOT_STRUCTURAL_STOP_MULT } from '../../src/lib/constants/entry.js'
+import { PULLBACK_STOP_MULT } from '../../src/lib/constants/pullback.js'
 import { regimeSeries, currentRegime } from '../../src/lib/regime.js'
 import { buildDataset } from '../../src/lib/buildDataset.js'
 
@@ -203,13 +205,14 @@ describe('exits.mjs — exit_climax (X4, US-9 AC1/AC2)', () => {
 })
 
 describe('exits.mjs — combos (US-9 AC3: 진입·청산 양쪽 파라미터 명시 — adopted=false는 backtest.mjs 통합 레벨에서 부여)', () => {
-  it('COMBOS가 정확히 3개 등록되어 있고 각각 entryVariant/exitRule을 명시한다', () => {
-    expect(COMBOS).toHaveLength(3)
+  it('COMBOS가 정확히 5개(v11 US-8의 2종 포함) 등록되어 있고 각각 entryVariant/exitRule을 명시한다', () => {
+    expect(COMBOS).toHaveLength(5)
+    const allEntryVariants = [...Object.values(ENTRY_VARIANTS), ...Object.values(PULLBACK_ENTRY_VARIANTS)]
     for (const combo of COMBOS) {
       expect(typeof combo.name).toBe('string')
       expect(combo.entryVariant).toBeDefined()
       expect(combo.exitRule).toBeDefined()
-      expect(Object.values(ENTRY_VARIANTS)).toContain(combo.entryVariant)
+      expect(allEntryVariants).toContain(combo.entryVariant)
       expect(Object.values(EXIT_RULES)).toContain(combo.exitRule)
     }
   })
@@ -328,5 +331,117 @@ describe('exits.mjs — v11 US-7 AC3: 5.5년 약세장 구간에서 exit_regime_
     const agg = aggregateExitPerformance(records, priceIndex, EXIT_RULES.exit_regime_conditional, { regimeByDate })
     expect(agg.signals).toBeGreaterThan(0)
     expect(agg.stopHitRate).toBeGreaterThan(0)
+  })
+})
+
+// --- v11 US-8: 청산 변형 C(구조 기반 손절) 픽스처 ---
+// 돌파형: 90일 평평(100) 베이스 → entryIdx=89(피벗=100, 손절선=100×0.97=97).
+function makeBreakoutStructuralSeries(afterEntryCloses) {
+  const bars = []
+  for (let i = 0; i < 90; i++) bars.push({ date: `bo-${i}`, close: 100, high: 100.2, low: 99.8, volume: 1_000_000 })
+  afterEntryCloses.forEach((close, k) => bars.push({ date: `bo-post-${k}`, close, high: close, low: close, volume: 1_000_000 }))
+  return bars
+}
+const BO_ENTRY_IDX = 89
+
+// 눌림목형: 68일 평평(100) + 피벗일(index68, 200) + 눌림일(index69, entryIdx) — pullback.test.js의
+// singleDayPullback과 동일한 형태(peakIndex=68 단일 최고점 → 눌림 저점=눌림일 자신의 종가).
+function makePullbackStructuralSeries(depthPct, afterEntryCloses) {
+  const bars = []
+  for (let i = 0; i < 68; i++) bars.push({ date: `pb-${i}`, close: 100, high: 100.2, low: 99.8, volume: 1_000_000 })
+  bars.push({ date: 'pb-peak', close: 200, high: 200.2, low: 199.8, volume: 1_000_000 })
+  bars.push({ date: 'pb-entry', close: 200 * (1 - depthPct / 100), high: 200, low: 100, volume: 1_000_000 })
+  afterEntryCloses.forEach((close, k) => bars.push({ date: `pb-post-${k}`, close, high: close, low: close, volume: 1_000_000 }))
+  return bars
+}
+const PB_ENTRY_IDX = 69 // 눌림 저점(pullbackLow) = 200×(1−depthPct/100), 손절선 = pullbackLow×0.98
+
+describe('exits.mjs — exit_structural (v11 US-8 AC1: 진입 유형→손절선 매핑 + 유형 불명 시 안전 기본값)', () => {
+  it('돌파형(entryType=breakout): 피벗×0.97(=97) 이하로 하락하면 그날 청산된다', () => {
+    const series = makeBreakoutStructuralSeries([100, 96, ...Array(58).fill(96)])
+    const result = walkExit(series, BO_ENTRY_IDX, EXIT_RULES.exit_structural, undefined, { entryType: 'breakout' })
+    expect(result.stopHit).toBe(true)
+    expect(result.holdingDaysActual).toBe(2)
+  })
+
+  it('돌파형: 손절선(97)에 도달하지 않으면 60거래일 시간 청산된다', () => {
+    const series = makeBreakoutStructuralSeries(new Array(60).fill(98))
+    const result = walkExit(series, BO_ENTRY_IDX, EXIT_RULES.exit_structural, undefined, { entryType: 'breakout' })
+    expect(result.stopHit).toBe(false)
+    expect(result.holdingDaysActual).toBe(60)
+  })
+
+  it(`눌림목형(entryType=pullback): 눌림 저점×${PULLBACK_STOP_MULT}(=166.6) 이하로 하락하면 그날 청산된다`, () => {
+    const series = makePullbackStructuralSeries(15, [175, 165, ...Array(58).fill(165)])
+    const result = walkExit(series, PB_ENTRY_IDX, EXIT_RULES.exit_structural, undefined, { entryType: 'pullback' })
+    expect(result.stopHit).toBe(true)
+    expect(result.holdingDaysActual).toBe(2)
+  })
+
+  it('눌림목형: 손절선(166.6)에 도달하지 않으면 60거래일 시간 청산된다', () => {
+    const series = makePullbackStructuralSeries(15, new Array(60).fill(200))
+    const result = walkExit(series, PB_ENTRY_IDX, EXIT_RULES.exit_structural, undefined, { entryType: 'pullback' })
+    expect(result.stopHit).toBe(false)
+    expect(result.holdingDaysActual).toBe(60)
+  })
+
+  it('유형 불명(entryType 미지정 — context 없이 호출): 큰 하락에도 손절이 걸리지 않고 60거래일 시간 청산만 적용된다(승인 기준 1의 안전 기본값)', () => {
+    const series = makeBreakoutStructuralSeries(new Array(60).fill(50)) // 피벗(100) 대비 -50%
+    const result = walkExit(series, BO_ENTRY_IDX, EXIT_RULES.exit_structural) // context 생략
+    expect(result.stopHit).toBe(false)
+    expect(result.holdingDaysActual).toBe(60)
+  })
+})
+
+describe('exits.mjs — exit_structural (v11 US-8 AC2: 손절선이 진입 시점 구조로 고정, 이후 데이터로 재계산되지 않음)', () => {
+  it('진입일 이후 극단적인 스파이크가 끼어들어도 손절선(피벗×0.97=97)은 변하지 않는다', () => {
+    // day+1에 500으로 스파이크한 뒤 day+2에 90으로 급락 — 손절선이 진입 시점(day89)까지의
+    // 데이터로 고정되지 않고 매 스텝 전체 시리즈로 재계산됐다면 스파이크가 피벗을 끌어올려
+    // day+2의 90이 손절선에 걸리지 않을 수도 있다. 실제로는 97 그대로 유지되어 정확히 걸린다.
+    const series = makeBreakoutStructuralSeries([500, 90, ...Array(58).fill(90)])
+    const result = walkExit(series, BO_ENTRY_IDX, EXIT_RULES.exit_structural, undefined, { entryType: 'breakout' })
+    expect(result.stopHit).toBe(true)
+    expect(result.holdingDaysActual).toBe(2)
+  })
+})
+
+describe('exits.mjs — v11 US-8 AC3: 조합 레코드에 entryType/regime 컨텍스트가 배선된다 (대표 조합 2종)', () => {
+  it('entry_close × exit_regime_conditional: record.regime이 조합 경로에서도 그대로 적용된다', () => {
+    const stopSeries = makeExtendedSeries([100, 97, ...Array(58).fill(97)])
+    const tickers2 = [{ ticker: 'COMBOREGIMEX', dataSufficient: true, series: stopSeries }]
+    const priceIndex2 = buildPriceIndex(tickers2)
+    const upRecord = { date: stopSeries[ENTRY_IDX].date, ticker: 'COMBOREGIMEX', strategyKey: 'trend', basis: 'top5', regime: 'up' }
+    const downRecord = { ...upRecord, regime: 'down' }
+    expect(computeComboPerformance(upRecord, priceIndex2, ENTRY_VARIANTS.entry_close, EXIT_RULES.exit_regime_conditional).holdingDaysActual).toBe(60)
+    expect(computeComboPerformance(downRecord, priceIndex2, ENTRY_VARIANTS.entry_close, EXIT_RULES.exit_regime_conditional).holdingDaysActual).toBe(2)
+  })
+
+  it('COMBOS에 등록된 실제 조합 정의(entry_close_x_exit_regime_conditional)로도 동일하게 동작한다', () => {
+    const combo = COMBOS.find((c) => c.name === 'entry_close_x_exit_regime_conditional')
+    expect(combo).toBeDefined()
+    const stopSeries = makeExtendedSeries([100, 97, ...Array(58).fill(97)])
+    const tickers2 = [{ ticker: 'COMBOREGIMEY', dataSufficient: true, series: stopSeries }]
+    const priceIndex2 = buildPriceIndex(tickers2)
+    const downRecord = { date: stopSeries[ENTRY_IDX].date, ticker: 'COMBOREGIMEY', strategyKey: 'trend', basis: 'top5', regime: 'down' }
+    expect(computeComboPerformance(downRecord, priceIndex2, combo.entryVariant, combo.exitRule).holdingDaysActual).toBe(2)
+  })
+
+  it('pullback_resume_vol_x_exit_structural: 등록된 조합의 entryVariant는 PULLBACK_ENTRY_VARIANTS 소속이며 type="pullback"이다', () => {
+    const combo = COMBOS.find((c) => c.name === 'pullback_resume_vol_x_exit_structural')
+    expect(combo).toBeDefined()
+    expect(combo.entryVariant).toBe(PULLBACK_ENTRY_VARIANTS.pullback_resume_vol)
+    expect(combo.entryVariant.type).toBe('pullback')
+  })
+
+  it('entryVariant.type="pullback" 배선 검증: computeComboPerformance가 entryType을 눌림목형으로 넘겨 exit_structural이 눌림 저점 기준 손절을 적용한다 (체결 자체는 항상 신호일에 이뤄지는 최소 가짜 진입 변형으로 격리 — pullback_resume_vol 자체의 체결 로직은 entries.test.js에서 이미 검증됨)', () => {
+    const series = makePullbackStructuralSeries(15, [175, 165, ...Array(58).fill(165)])
+    const tickers2 = [{ ticker: 'COMBOPULLBACKX', dataSufficient: true, series }]
+    const priceIndex2 = buildPriceIndex(tickers2)
+    const record = { date: series[PB_ENTRY_IDX].date, ticker: 'COMBOPULLBACKX', strategyKey: 'trend', basis: 'top5' }
+    const fakePullbackVariant = { name: 'fake_pullback_entry', type: 'pullback', simulate: (s, entryIdx) => ({ filled: true, fillIdx: entryIdx, fillPrice: s[entryIdx].close }) }
+    const perf = computeComboPerformance(record, priceIndex2, fakePullbackVariant, EXIT_RULES.exit_structural)
+    expect(perf.filled).toBe(true)
+    expect(perf.stopHit).toBe(true)
+    expect(perf.holdingDaysActual).toBe(2)
   })
 })

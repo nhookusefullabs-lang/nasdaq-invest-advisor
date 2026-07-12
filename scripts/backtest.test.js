@@ -346,9 +346,9 @@ describe('runBacktest — v9.1 US-2 변형 D 청산 규칙 (경로 의존 성과
   const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
   const backtest = runBacktest(raw)
   // v10 US-9가 EXIT_RULES에 exit_stop_atr/exit_sma50_break/exit_climax 3종을, v11 US-7이
-  // exit_regime_conditional/exit_regime_flip 2종을 추가했고, evaluateExitVariants()는
-  // Object.values(EXIT_RULES)를 그대로 순회하므로(코드 변경 없이) variants[]에 자동으로
-  // 함께 나타난다 — 의도된 확장이지 회귀가 아니다.
+  // exit_regime_conditional/exit_regime_flip 2종을, v11 US-8이 exit_structural 1종을
+  // 추가했고, evaluateExitVariants()는 Object.values(EXIT_RULES)를 그대로 순회하므로(코드
+  // 변경 없이) variants[]에 자동으로 함께 나타난다 — 의도된 확장이지 회귀가 아니다.
   const exitVariantNames = [
     'exit_stop8_time60',
     'exit_stop8_trail15',
@@ -357,11 +357,12 @@ describe('runBacktest — v9.1 US-2 변형 D 청산 규칙 (경로 의존 성과
     'exit_climax',
     'exit_regime_conditional',
     'exit_regime_flip',
+    'exit_structural',
   ]
   // v10 US-10이 소프트 정책 변형 3종을 추가로 variants[]에 병합한다.
   const policyVariantNames = ['relax_off_in_downturn', 'twostar_only_in_downturn', 'actionable_only_top5']
 
-  it('기존 변형 A/B/C 3종 + 청산 변형 7종 + 정책 변형 3종, 총 13종이 variants[]에 있다', () => {
+  it('기존 변형 A/B/C 3종 + 청산 변형 8종 + 정책 변형 3종, 총 14종이 variants[]에 있다', () => {
     expect(backtest.variants.map((v) => v.name).sort()).toEqual(
       ['adx_gate', 'consensus_weighted', 'disparity_inverted_u', ...exitVariantNames, ...policyVariantNames].sort()
     )
@@ -651,11 +652,17 @@ describe('runBacktest — v10 US-9 청산 변형 3종 + 조합 3종 (통합)', (
     }
   })
 
-  it('combos 3종이 모두 발행되고 전부 adopted=false다', () => {
-    expect(backtest.combos).toHaveLength(3)
+  it('combos 5종(v11 US-8의 2종 포함)이 모두 발행되고 전부 adopted=false다', () => {
+    expect(backtest.combos).toHaveLength(5)
     expect(backtest.combos.every((c) => c.adopted === false)).toBe(true)
     expect(backtest.combos.map((c) => c.name).sort()).toEqual(
-      ['entry_pivot_confirm2_x_exit_stop_atr', 'entry_pivot_trigger_vol_x_exit_sma50_break', 'entry_pivot_confirm2_x_exit_sma50_break'].sort()
+      [
+        'entry_pivot_confirm2_x_exit_stop_atr',
+        'entry_pivot_trigger_vol_x_exit_sma50_break',
+        'entry_pivot_confirm2_x_exit_sma50_break',
+        'pullback_resume_vol_x_exit_structural',
+        'entry_close_x_exit_regime_conditional',
+      ].sort()
     )
   })
 })

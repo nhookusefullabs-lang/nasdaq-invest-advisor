@@ -137,19 +137,25 @@ function simulatePullbackResume(series, entryIdx, rsPercentileValue, { requireVo
  * ENTRY_VARIANTS(돌파형 4종)와는 별도 맵으로 둔다 — entryVariants[](US-4/US-8)의 모드별
  * 4종 구성을 그대로 유지하고, 눌림목 3종은 pullbackAxis[](국면 분해 포함)로만 집계한다.
  */
+// type(v11 US-8): 청산 변형 C(exit_structural)가 손절선 계산 방식을 "진입 유형"으로
+// 분기해야 해서 추가한 태그 — breakout(피벗 기준)/pullback(눌림 저점 기준). 기존 필드
+// (name/description/simulate)는 변경 없음, 순수 추가.
 export const PULLBACK_ENTRY_VARIANTS = {
   pullback_immediate: {
     name: 'pullback_immediate',
+    type: 'pullback',
     description: '관찰 조건(P1~P4) 충족 신호일 종가 진입 (기준선 — 상태 0 실측의 재현)',
     simulate: (series, entryIdx, rsPercentileValue) => simulatePullbackImmediate(series, entryIdx, rsPercentileValue),
   },
   pullback_resume: {
     name: 'pullback_resume',
+    type: 'pullback',
     description: `관찰 후 ${PULLBACK_OBSERVATION_VALID_DAYS}거래일 내 종가가 재개 트리거가 상회 시 진입 (체결가=max(트리거,시가))`,
     simulate: (series, entryIdx, rsPercentileValue) => simulatePullbackResume(series, entryIdx, rsPercentileValue, { requireVolume: false }),
   },
   pullback_resume_vol: {
     name: 'pullback_resume_vol',
+    type: 'pullback',
     description: `재개 확인 + 당일 거래량 ${PULLBACK_RESUME_VOL_MULT}×50일평균 이상 동시 충족 시 진입`,
     simulate: (series, entryIdx, rsPercentileValue) => simulatePullbackResume(series, entryIdx, rsPercentileValue, { requireVolume: true }),
   },
@@ -158,21 +164,25 @@ export const PULLBACK_ENTRY_VARIANTS = {
 export const ENTRY_VARIANTS = {
   entry_close: {
     name: 'entry_close',
+    type: 'breakout',
     description: '신호일 종가 그대로 체결 (기준선)',
     simulate: (series, entryIdx) => simulateEntryClose(series, entryIdx),
   },
   entry_pivot_trigger: {
     name: 'entry_pivot_trigger',
+    type: 'breakout',
     description: '트리거가 도달 첫날 체결 (체결가=max(T,시가))',
     simulate: (series, entryIdx) => simulateTriggerEntry(series, entryIdx, { requireVolume: false }),
   },
   entry_pivot_trigger_vol: {
     name: 'entry_pivot_trigger_vol',
+    type: 'breakout',
     description: '트리거 도달 + 거래량 조건(1.5×50일평균) 동시 충족 첫날 체결',
     simulate: (series, entryIdx) => simulateTriggerEntry(series, entryIdx, { requireVolume: true }),
   },
   entry_pivot_confirm2: {
     name: 'entry_pivot_confirm2',
+    type: 'breakout',
     description: '돌파 후 2거래일 종가가 피벗 위 유지 확인 시 3일째 시가 체결',
     simulate: (series, entryIdx) => simulateConfirm2Entry(series, entryIdx),
   },

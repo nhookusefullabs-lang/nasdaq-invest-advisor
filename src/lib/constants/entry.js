@@ -20,3 +20,5 @@ export const STOP_PCT = 0.08
 export const ATR_STOP_MULT = 2.5
 /** 돌파 거래량 확인 배수 — 50일 평균 거래량 대비 */
 export const VOL_MULT = 1.5
+/** 구조 기반 손절(청산 변형 C, PRD_Nasdaq11 US-8) — 돌파형 진입의 손절선 계수: 피벗 × 이 값 */
+export const PIVOT_STRUCTURAL_STOP_MULT = 0.97
