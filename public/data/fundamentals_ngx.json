@@ -1,0 +1,4311 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-12",
+  "tickers": [
+    {
+      "ticker": "RYAAY",
+      "epsGrowthQoQ_yoy": 20.51,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 9.37,
+      "marginImproving": false,
+      "roe": 0.2537,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": -0.7614,
+          "revenue": 2512600000.0,
+          "operatingMargin": -0.2346
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.0585,
+          "revenue": 3214200000.0,
+          "operatingMargin": 0.0321
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 3.3089,
+          "revenue": 5479900000.0,
+          "operatingMargin": 0.3553
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.5783,
+          "revenue": 4337600000.0,
+          "operatingMargin": 0.2106
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -0.6318,
+          "revenue": 2297300000.0,
+          "operatingMargin": -0.2129
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "IONS",
+      "epsGrowthQoQ_yoy": -37.03,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 86.98,
+      "marginImproving": true,
+      "roe": -0.6762,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": -0.5599,
+          "revenue": 246091000.0,
+          "operatingMargin": -0.4774
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -1.3881,
+          "revenue": 203330000.0,
+          "operatingMargin": -1.0548
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -0.7782,
+          "revenue": 156719000.0,
+          "operatingMargin": -1.022
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.7476,
+          "revenue": 452049000.0,
+          "operatingMargin": 0.3093
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -0.8891,
+          "revenue": 131612000.0,
+          "operatingMargin": -1.1165
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "MDGL",
+      "epsGrowthQoQ_yoy": 28.88,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 126.84,
+      "marginImproving": false,
+      "roe": -0.4935,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": -4.094,
+          "revenue": 311337000.0,
+          "operatingMargin": -0.2978
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -2.5406,
+          "revenue": 321083000.0,
+          "operatingMargin": -0.1856
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -4.9528,
+          "revenue": 287268000.0,
+          "operatingMargin": -0.3968
+        },
+        {
+          "period": "2025-Q2",
+          "eps": -1.8339,
+          "revenue": 212802000.0,
+          "operatingMargin": -0.2218
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -3.1766,
+          "revenue": 137250000.0,
+          "operatingMargin": -0.5779
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "MEDP",
+      "epsGrowthQoQ_yoy": 8.09,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 26.5,
+      "marginImproving": false,
+      "roe": 0.7725,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 4.3372,
+          "revenue": 706604000.0,
+          "operatingMargin": 0.2003
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 4.7316,
+          "revenue": 708450000.0,
+          "operatingMargin": 0.2163
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 3.8913,
+          "revenue": 659903000.0,
+          "operatingMargin": 0.2149
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 3.1604,
+          "revenue": 603311000.0,
+          "operatingMargin": 0.2094
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 4.0125,
+          "revenue": 558570000.0,
+          "operatingMargin": 0.2032
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "CHRW",
+      "epsGrowthQoQ_yoy": 8.82,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": -0.84,
+      "marginImproving": false,
+      "roe": 0.3484,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 1.2491,
+          "revenue": 4012934000.0,
+          "operatingMargin": 0.0438
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.1565,
+          "revenue": 3912634000.0,
+          "operatingMargin": 0.0464
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 1.3827,
+          "revenue": 4136846000.0,
+          "operatingMargin": 0.0534
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.2935,
+          "revenue": 4136543000.0,
+          "operatingMargin": 0.0522
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 1.1479,
+          "revenue": 4046740000.0,
+          "operatingMargin": 0.0437
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "NTNX",
+      "epsGrowthQoQ_yoy": 13.78,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 10.03,
+      "marginImproving": false,
+      "roe": null,
+      "quarters": [
+        {
+          "period": "2026-Q2",
+          "eps": 0.2667,
+          "revenue": 703066000.0,
+          "operatingMargin": 0.1003
+        },
+        {
+          "period": "2026-Q1",
+          "eps": 0.3811,
+          "revenue": 722825000.0,
+          "operatingMargin": 0.1164
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.2297,
+          "revenue": 670576000.0,
+          "operatingMargin": 0.0736
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.143,
+          "revenue": 653267000.0,
+          "operatingMargin": 0.0478
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.2344,
+          "revenue": 638983000.0,
+          "operatingMargin": 0.0761
+        }
+      ],
+      "missing": [
+        "F5"
+      ]
+    },
+    {
+      "ticker": "TTD",
+      "epsGrowthQoQ_yoy": -21.06,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 11.82,
+      "marginImproving": false,
+      "roe": 0.1674,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.0937,
+          "revenue": 688857000.0,
+          "operatingMargin": 0.0968
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.4378,
+          "revenue": 846791000.0,
+          "operatingMargin": 0.3033
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.2706,
+          "revenue": 739433000.0,
+          "operatingMargin": 0.218
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.2111,
+          "revenue": 694039000.0,
+          "operatingMargin": 0.1683
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.1187,
+          "revenue": 616021000.0,
+          "operatingMargin": 0.0884
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "OKTA",
+      "epsGrowthQoQ_yoy": 19.37,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 11.19,
+      "marginImproving": true,
+      "roe": 0.0367,
+      "quarters": [
+        {
+          "period": "2026-Q2",
+          "eps": 0.4455,
+          "revenue": 765000000.0,
+          "operatingMargin": 0.0732
+        },
+        {
+          "period": "2026-Q1",
+          "eps": 0.3792,
+          "revenue": 761000000.0,
+          "operatingMargin": 0.0657
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.2588,
+          "revenue": 742000000.0,
+          "operatingMargin": 0.031
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.4033,
+          "revenue": 728000000.0,
+          "operatingMargin": 0.0563
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.3732,
+          "revenue": 688000000.0,
+          "operatingMargin": 0.0567
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "ARGX",
+      "epsGrowthQoQ_yoy": 116.57,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 64.3,
+      "marginImproving": true,
+      "roe": null,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 5.8854,
+          "revenue": 1298000000.0,
+          "operatingMargin": 0.3035
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 8.57,
+          "revenue": 1287877000.0,
+          "operatingMargin": 0.2792
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 5.5358,
+          "revenue": 1126961000.0,
+          "operatingMargin": 0.3105
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 3.9454,
+          "revenue": 947961000.0,
+          "operatingMargin": 0.215
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 2.7176,
+          "revenue": 790000000.0,
+          "operatingMargin": 0.1759
+        }
+      ],
+      "missing": [
+        "F5"
+      ]
+    },
+    {
+      "ticker": "MDB",
+      "epsGrowthQoQ_yoy": -111.78,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 25.25,
+      "marginImproving": false,
+      "roe": -0.0097,
+      "quarters": [
+        {
+          "period": "2026-Q2",
+          "eps": 0.0551,
+          "revenue": 687616000.0,
+          "operatingMargin": -0.0361
+        },
+        {
+          "period": "2026-Q1",
+          "eps": 0.1931,
+          "revenue": 695072000.0,
+          "operatingMargin": 0.0004
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -0.025,
+          "revenue": 628309000.0,
+          "operatingMargin": -0.0293
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -0.5849,
+          "revenue": 591402000.0,
+          "operatingMargin": -0.1104
+        },
+        {
+          "period": "2025-Q2",
+          "eps": -0.4678,
+          "revenue": 549014000.0,
+          "operatingMargin": -0.0975
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "WYNN",
+      "epsGrowthQoQ_yoy": 65.59,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 9.2,
+      "marginImproving": false,
+      "roe": null,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 1.1606,
+          "revenue": 1856762000.0,
+          "operatingMargin": 0.1585
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.9638,
+          "revenue": 1865983000.0,
+          "operatingMargin": 0.1817
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.8512,
+          "revenue": 1833747000.0,
+          "operatingMargin": 0.1733
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.638,
+          "revenue": 1737797000.0,
+          "operatingMargin": 0.1588
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.7009,
+          "revenue": 1700397000.0,
+          "operatingMargin": 0.1611
+        }
+      ],
+      "missing": [
+        "F5"
+      ]
+    },
+    {
+      "ticker": "CHKP",
+      "epsGrowthQoQ_yoy": 0.37,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 4.8,
+      "marginImproving": false,
+      "roe": 0.3802,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 1.8418,
+          "revenue": 668400000.0,
+          "operatingMargin": 0.2769
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 2.9271,
+          "revenue": 744900000.0,
+          "operatingMargin": 0.3127
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 3.4481,
+          "revenue": 677500000.0,
+          "operatingMargin": 0.2939
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.9495,
+          "revenue": 665200000.0,
+          "operatingMargin": 0.3061
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 1.8351,
+          "revenue": 637800000.0,
+          "operatingMargin": 0.3065
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "FLEX",
+      "epsGrowthQoQ_yoy": 12.61,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 16.86,
+      "marginImproving": false,
+      "roe": 0.1735,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.6823,
+          "revenue": 7477000000.0,
+          "operatingMargin": 0.0531
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.6523,
+          "revenue": 7058000000.0,
+          "operatingMargin": 0.0558
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.5431,
+          "revenue": 6804000000.0,
+          "operatingMargin": 0.0497
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.524,
+          "revenue": 6575000000.0,
+          "operatingMargin": 0.0484
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.6059,
+          "revenue": 6398000000.0,
+          "operatingMargin": 0.0481
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "ZBRA",
+      "epsGrowthQoQ_yoy": -0.74,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 14.3,
+      "marginImproving": false,
+      "roe": 0.1178,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 2.8341,
+          "revenue": 1495000000.0,
+          "operatingMargin": 0.1498
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.4696,
+          "revenue": 1475000000.0,
+          "operatingMargin": 0.1505
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 2.1204,
+          "revenue": 1320000000.0,
+          "operatingMargin": 0.1462
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 2.3513,
+          "revenue": 1293000000.0,
+          "operatingMargin": 0.1446
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 2.8551,
+          "revenue": 1308000000.0,
+          "operatingMargin": 0.1514
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "DOCU",
+      "epsGrowthQoQ_yoy": 8.48,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 8.72,
+      "marginImproving": true,
+      "roe": 0.1644,
+      "quarters": [
+        {
+          "period": "2026-Q2",
+          "eps": 0.4095,
+          "revenue": 830235000.0,
+          "operatingMargin": 0.1341
+        },
+        {
+          "period": "2026-Q1",
+          "eps": 0.4729,
+          "revenue": 836860000.0,
+          "operatingMargin": 0.1048
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.4385,
+          "revenue": 818350000.0,
+          "operatingMargin": 0.1043
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.3298,
+          "revenue": 800636000.0,
+          "operatingMargin": 0.0815
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.3775,
+          "revenue": 763654000.0,
+          "operatingMargin": 0.0789
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "EVRG",
+      "epsGrowthQoQ_yoy": 21.19,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 5.03,
+      "marginImproving": true,
+      "roe": 0.0887,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.6572,
+          "revenue": 1443700000.0,
+          "operatingMargin": 0.2162
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.3657,
+          "revenue": 1340200000.0,
+          "operatingMargin": 0.1909
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 2.0606,
+          "revenue": 1809900000.0,
+          "operatingMargin": 0.3603
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.7431,
+          "revenue": 1437000000.0,
+          "operatingMargin": 0.236
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.5423,
+          "revenue": 1374500000.0,
+          "operatingMargin": 0.2079
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "HTHT",
+      "epsGrowthQoQ_yoy": -8.61,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 11.14,
+      "marginImproving": false,
+      "roe": 0.4636,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 2.6567,
+          "revenue": 5996000000.0,
+          "operatingMargin": 0.2482
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 3.8143,
+          "revenue": 6525000000.0,
+          "operatingMargin": 0.2915
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 4.7769,
+          "revenue": 6961000000.0,
+          "operatingMargin": 0.2942
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 5.0207,
+          "revenue": 6426000000.0,
+          "operatingMargin": 0.2781
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 2.9071,
+          "revenue": 5395000000.0,
+          "operatingMargin": 0.2006
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "GH",
+      "epsGrowthQoQ_yoy": 17.78,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 48.26,
+      "marginImproving": true,
+      "roe": null,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": -0.8452,
+          "revenue": 301665000.0,
+          "operatingMargin": -0.4023
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -0.969,
+          "revenue": 281266000.0,
+          "operatingMargin": -0.4295
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -0.6993,
+          "revenue": 265196000.0,
+          "operatingMargin": -0.3733
+        },
+        {
+          "period": "2025-Q2",
+          "eps": -0.7534,
+          "revenue": 232088000.0,
+          "operatingMargin": -0.4585
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -0.7176,
+          "revenue": 203471000.0,
+          "operatingMargin": -0.5457
+        }
+      ],
+      "missing": [
+        "F5"
+      ]
+    },
+    {
+      "ticker": "CASY",
+      "epsGrowthQoQ_yoy": 65.49,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 14.5,
+      "marginImproving": true,
+      "roe": 0.1915,
+      "quarters": [
+        {
+          "period": "2026-Q2",
+          "eps": 4.3963,
+          "revenue": 4571779000.0,
+          "operatingMargin": 0.0514
+        },
+        {
+          "period": "2026-Q1",
+          "eps": 3.515,
+          "revenue": 3916132000.0,
+          "operatingMargin": 0.0498
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 5.5759,
+          "revenue": 4506084000.0,
+          "operatingMargin": 0.0663
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 5.8196,
+          "revenue": 4567106000.0,
+          "operatingMargin": 0.0668
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 2.6566,
+          "revenue": 3992758000.0,
+          "operatingMargin": 0.039
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "FOX",
+      "epsGrowthQoQ_yoy": -52.02,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": -8.63,
+      "marginImproving": true,
+      "roe": 0.152,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.7531,
+          "revenue": 3994000000.0,
+          "operatingMargin": 0.2136
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.0389,
+          "revenue": 5182000000.0,
+          "operatingMargin": 0.1142
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 2.7175,
+          "revenue": 3738000000.0,
+          "operatingMargin": 0.2587
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 3.2528,
+          "revenue": 3287000000.0,
+          "operatingMargin": 0.2543
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 1.5697,
+          "revenue": 4371000000.0,
+          "operatingMargin": 0.1739
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "FOXA",
+      "epsGrowthQoQ_yoy": -52.02,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": -8.63,
+      "marginImproving": true,
+      "roe": 0.152,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.8322,
+          "revenue": 3994000000.0,
+          "operatingMargin": 0.2136
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.148,
+          "revenue": 5182000000.0,
+          "operatingMargin": 0.1142
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 3.0029,
+          "revenue": 3738000000.0,
+          "operatingMargin": 0.2587
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 3.5944,
+          "revenue": 3287000000.0,
+          "operatingMargin": 0.2543
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 1.7346,
+          "revenue": 4371000000.0,
+          "operatingMargin": 0.1739
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "ZM",
+      "epsGrowthQoQ_yoy": 67.19,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 5.47,
+      "marginImproving": true,
+      "roe": 0.2195,
+      "quarters": [
+        {
+          "period": "2026-Q2",
+          "eps": 1.6085,
+          "revenue": 1239006000.0,
+          "operatingMargin": 0.2506
+        },
+        {
+          "period": "2026-Q1",
+          "eps": 2.5471,
+          "revenue": 1246992000.0,
+          "operatingMargin": 0.2004
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 2.3158,
+          "revenue": 1229835000.0,
+          "operatingMargin": 0.2524
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 1.355,
+          "revenue": 1217227000.0,
+          "operatingMargin": 0.2643
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.9621,
+          "revenue": 1174715000.0,
+          "operatingMargin": 0.2057
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "ILMN",
+      "epsGrowthQoQ_yoy": 2.3,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 4.8,
+      "marginImproving": true,
+      "roe": 0.3382,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.8857,
+          "revenue": 1091000000.0,
+          "operatingMargin": 0.1916
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 2.2075,
+          "revenue": 1159000000.0,
+          "operatingMargin": 0.1821
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.9914,
+          "revenue": 1084000000.0,
+          "operatingMargin": 0.2094
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.5532,
+          "revenue": 1059000000.0,
+          "operatingMargin": 0.2021
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.8658,
+          "revenue": 1041000000.0,
+          "operatingMargin": 0.1575
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "RGLD",
+      "epsGrowthQoQ_yoy": 147.69,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 142.52,
+      "marginImproving": true,
+      "roe": 0.1198,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 3.3126,
+          "revenue": 469125000.0,
+          "operatingMargin": 0.6333
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.103,
+          "revenue": 375323000.0,
+          "operatingMargin": 0.5984
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 1.4944,
+          "revenue": 252068000.0,
+          "operatingMargin": 0.6948
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.5595,
+          "revenue": 209643000.0,
+          "operatingMargin": 0.6766
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 1.3374,
+          "revenue": 193436000.0,
+          "operatingMargin": 0.6364
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "BBIO",
+      "epsGrowthQoQ_yoy": -2.02,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 66.78,
+      "marginImproving": true,
+      "roe": null,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": -0.8375,
+          "revenue": 194515000.0,
+          "operatingMargin": -0.5447
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -0.9847,
+          "revenue": 154178000.0,
+          "operatingMargin": -0.833
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -0.933,
+          "revenue": 120700000.0,
+          "operatingMargin": -1.1297
+        },
+        {
+          "period": "2025-Q2",
+          "eps": -0.9287,
+          "revenue": 110565000.0,
+          "operatingMargin": -1.2072
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -0.8548,
+          "revenue": 116633000.0,
+          "operatingMargin": -0.89
+        }
+      ],
+      "missing": [
+        "F5"
+      ]
+    },
+    {
+      "ticker": "PODD",
+      "epsGrowthQoQ_yoy": 157.33,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 33.87,
+      "marginImproving": false,
+      "roe": 0.23,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 1.3152,
+          "revenue": 761700000.0,
+          "operatingMargin": 0.1604
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.4668,
+          "revenue": 783800000.0,
+          "operatingMargin": 0.1867
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 1.2647,
+          "revenue": 706300000.0,
+          "operatingMargin": 0.1666
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.3248,
+          "revenue": 649100000.0,
+          "operatingMargin": 0.1866
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.5111,
+          "revenue": 569000000.0,
+          "operatingMargin": 0.1559
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "BNTX",
+      "epsGrowthQoQ_yoy": 27.92,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": -35.39,
+      "marginImproving": false,
+      "roe": -0.0666,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": -2.1033,
+          "revenue": 118100000.0,
+          "operatingMargin": -5.6833
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -1.2061,
+          "revenue": 907400000.0,
+          "operatingMargin": -0.3091
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -0.1135,
+          "revenue": 1518900000.0,
+          "operatingMargin": 0.4305
+        },
+        {
+          "period": "2025-Q2",
+          "eps": -1.5288,
+          "revenue": 260800000.0,
+          "operatingMargin": -1.8347
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -1.6442,
+          "revenue": 182800000.0,
+          "operatingMargin": -3.0717
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "GEN",
+      "epsGrowthQoQ_yoy": 260.59,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 27.03,
+      "marginImproving": true,
+      "roe": 0.3988,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.8499,
+          "revenue": 1283000000.0,
+          "operatingMargin": 0.6337
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.3187,
+          "revenue": 1240000000.0,
+          "operatingMargin": 0.3581
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.2224,
+          "revenue": 1220000000.0,
+          "operatingMargin": 0.3623
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.2241,
+          "revenue": 1257000000.0,
+          "operatingMargin": 0.3628
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.2357,
+          "revenue": 1010000000.0,
+          "operatingMargin": 0.4188
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "TCOM",
+      "epsGrowthQoQ_yoy": -41.57,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 17.19,
+      "marginImproving": false,
+      "roe": 0.2014,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 3.9685,
+          "revenue": 16208000000.0,
+          "operatingMargin": 0.2434
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 6.7984,
+          "revenue": 15398000000.0,
+          "operatingMargin": 0.2517
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 31.5862,
+          "revenue": 18338000000.0,
+          "operatingMargin": 0.304
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 7.6957,
+          "revenue": 14843000000.0,
+          "operatingMargin": 0.2764
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 6.7921,
+          "revenue": 13830000000.0,
+          "operatingMargin": 0.2576
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "RVMD",
+      "epsGrowthQoQ_yoy": 112.63,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": null,
+      "marginImproving": null,
+      "roe": -0.7667,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": -2.1346,
+          "revenue": 0.0,
+          "operatingMargin": null
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -1.7164,
+          "revenue": 0.0,
+          "operatingMargin": null
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -1.4356,
+          "revenue": 0.0,
+          "operatingMargin": null
+        },
+        {
+          "period": "2025-Q2",
+          "eps": -1.1655,
+          "revenue": 0.0,
+          "operatingMargin": null
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -1.0039,
+          "revenue": 0.0,
+          "operatingMargin": null
+        }
+      ],
+      "missing": [
+        "F3",
+        "F4"
+      ]
+    },
+    {
+      "ticker": "LNT",
+      "epsGrowthQoQ_yoy": 5.17,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 4.96,
+      "marginImproving": true,
+      "roe": 0.1131,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.8673,
+          "revenue": 1184000000.0,
+          "operatingMargin": 0.2103
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.5498,
+          "revenue": 1064000000.0,
+          "operatingMargin": 0.1852
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 1.088,
+          "revenue": 1210000000.0,
+          "operatingMargin": 0.2884
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.6737,
+          "revenue": 961000000.0,
+          "operatingMargin": 0.232
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.8247,
+          "revenue": 1128000000.0,
+          "operatingMargin": 0.2278
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "LECO",
+      "epsGrowthQoQ_yoy": 15.1,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 11.65,
+      "marginImproving": false,
+      "roe": 0.3776,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 2.4893,
+          "revenue": 1121434000.0,
+          "operatingMargin": 0.1679
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 2.4827,
+          "revenue": 1078715000.0,
+          "operatingMargin": 0.1764
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 2.2383,
+          "revenue": 1061227000.0,
+          "operatingMargin": 0.172
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 2.6173,
+          "revenue": 1088673000.0,
+          "operatingMargin": 0.1788
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 2.1627,
+          "revenue": 1004388000.0,
+          "operatingMargin": 0.168
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "AKAM",
+      "epsGrowthQoQ_yoy": -13.68,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 5.76,
+      "marginImproving": false,
+      "roe": 0.0917,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.7313,
+          "revenue": 1073610000.0,
+          "operatingMargin": 0.1061
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.5851,
+          "revenue": 1094912000.0,
+          "operatingMargin": 0.1382
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.9641,
+          "revenue": 1054630000.0,
+          "operatingMargin": 0.1574
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.7127,
+          "revenue": 1043494000.0,
+          "operatingMargin": 0.1493
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.8472,
+          "revenue": 1015139000.0,
+          "operatingMargin": 0.1527
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "RPRX",
+      "epsGrowthQoQ_yoy": 23.11,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 10.97,
+      "marginImproving": true,
+      "roe": 0.1377,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.6648,
+          "revenue": 630576000.0,
+          "operatingMargin": 1.003
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.4832,
+          "revenue": 621990000.0,
+          "operatingMargin": 0.6244
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.6502,
+          "revenue": 609291000.0,
+          "operatingMargin": 0.7011
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.0681,
+          "revenue": 578665000.0,
+          "operatingMargin": 0.3626
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.54,
+          "revenue": 568247000.0,
+          "operatingMargin": 0.9401
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "SNY",
+      "epsGrowthQoQ_yoy": -13.77,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 6.02,
+      "marginImproving": true,
+      "roe": 0.0658,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.6743,
+          "revenue": 11244000000.0,
+          "operatingMargin": 0.2018
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -0.3346,
+          "revenue": 12205000000.0,
+          "operatingMargin": 0.1336
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 1.1705,
+          "revenue": 13170000000.0,
+          "operatingMargin": 0.2874
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.6459,
+          "revenue": 10735000000.0,
+          "operatingMargin": 0.1595
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.782,
+          "revenue": 10606000000.0,
+          "operatingMargin": 0.2105
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "KMB",
+      "epsGrowthQoQ_yoy": 17.29,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 2.69,
+      "marginImproving": true,
+      "roe": 1.1173,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 2.0034,
+          "revenue": 4163000000.0,
+          "operatingMargin": 0.1809
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.5033,
+          "revenue": 4080000000.0,
+          "operatingMargin": 0.1243
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 1.3436,
+          "revenue": 4150000000.0,
+          "operatingMargin": 0.1496
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.5334,
+          "revenue": 4163000000.0,
+          "operatingMargin": 0.1422
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 1.7081,
+          "revenue": 4054000000.0,
+          "operatingMargin": 0.1556
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "FFIV",
+      "epsGrowthQoQ_yoy": 1.53,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 11.02,
+      "marginImproving": false,
+      "roe": 0.2034,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 2.6189,
+          "revenue": 811700000.0,
+          "operatingMargin": 0.2202
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 3.1914,
+          "revenue": 822465000.0,
+          "operatingMargin": 0.2604
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 3.3764,
+          "revenue": 810090000.0,
+          "operatingMargin": 0.2713
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 3.3661,
+          "revenue": 780370000.0,
+          "operatingMargin": 0.2516
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 2.5794,
+          "revenue": 731123000.0,
+          "operatingMargin": 0.2173
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "AFRM",
+      "epsGrowthQoQ_yoy": 3580.0,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 32.64,
+      "marginImproving": false,
+      "roe": 0.1149,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.3496,
+          "revenue": 1038765000.0,
+          "operatingMargin": 0.1946
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.4402,
+          "revenue": 1123020000.0,
+          "operatingMargin": 0.2042
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.2741,
+          "revenue": 933337000.0,
+          "operatingMargin": 0.1861
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.2352,
+          "revenue": 876417000.0,
+          "operatingMargin": 0.1871
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.0095,
+          "revenue": 783134000.0,
+          "operatingMargin": 0.1267
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "NDSN",
+      "epsGrowthQoQ_yoy": 4.37,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 8.48,
+      "marginImproving": true,
+      "roe": 0.1714,
+      "quarters": [
+        {
+          "period": "2026-Q2",
+          "eps": 2.1055,
+          "revenue": 740847000.0,
+          "operatingMargin": 0.2662
+        },
+        {
+          "period": "2026-Q1",
+          "eps": 2.3939,
+          "revenue": 669461000.0,
+          "operatingMargin": 0.2486
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 2.7215,
+          "revenue": 751820000.0,
+          "operatingMargin": 0.2854
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 2.2575,
+          "revenue": 741509000.0,
+          "operatingMargin": 0.2697
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 2.0174,
+          "revenue": 682938000.0,
+          "operatingMargin": 0.2471
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "STLD",
+      "epsGrowthQoQ_yoy": 85.78,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 19.13,
+      "marginImproving": true,
+      "roe": 0.1525,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 2.7975,
+          "revenue": 5204858000.0,
+          "operatingMargin": 0.1115
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.8447,
+          "revenue": 4414048000.0,
+          "operatingMargin": 0.0764
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 2.7992,
+          "revenue": 4828215000.0,
+          "operatingMargin": 0.1139
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 2.0714,
+          "revenue": 4565123000.0,
+          "operatingMargin": 0.0906
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 1.5058,
+          "revenue": 4369195000.0,
+          "operatingMargin": 0.0682
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "EXE",
+      "epsGrowthQoQ_yoy": -565.48,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 100.27,
+      "marginImproving": true,
+      "roe": 0.1757,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 4.8447,
+          "revenue": 4398000000.0,
+          "operatingMargin": 0.364
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 2.3116,
+          "revenue": 3340000000.0,
+          "operatingMargin": 0.2689
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 2.2865,
+          "revenue": 2967000000.0,
+          "operatingMargin": 0.2626
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 4.0463,
+          "revenue": 3686000000.0,
+          "operatingMargin": 0.3565
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -1.0408,
+          "revenue": 2196000000.0,
+          "operatingMargin": -0.1002
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "ASTS",
+      "epsGrowthQoQ_yoy": 317.91,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 1952.23,
+      "marginImproving": false,
+      "roe": -0.3775,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": -0.6394,
+          "revenue": 14735000.0,
+          "operatingMargin": -10.1399
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -0.2476,
+          "revenue": 54305000.0,
+          "operatingMargin": -1.3309
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -0.4113,
+          "revenue": 14739000.0,
+          "operatingMargin": -5.4058
+        },
+        {
+          "period": "2025-Q2",
+          "eps": -0.3327,
+          "revenue": 1156000.0,
+          "operatingMargin": -62.9732
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -0.153,
+          "revenue": 718000.0,
+          "operatingMargin": -87.6922
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "UTHR",
+      "epsGrowthQoQ_yoy": -14.68,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": -1.62,
+      "marginImproving": false,
+      "roe": 0.2026,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 6.4764,
+          "revenue": 781500000.0,
+          "operatingMargin": 0.4169
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 8.5825,
+          "revenue": 790200000.0,
+          "operatingMargin": 0.4524
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 7.9794,
+          "revenue": 799500000.0,
+          "operatingMargin": 0.4869
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 7.2915,
+          "revenue": 798600000.0,
+          "operatingMargin": 0.4836
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 7.5907,
+          "revenue": 794400000.0,
+          "operatingMargin": 0.4819
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "TER",
+      "epsGrowthQoQ_yoy": 303.32,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 87.04,
+      "marginImproving": true,
+      "roe": 0.2875,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 2.5482,
+          "revenue": 1282494000.0,
+          "operatingMargin": 0.3715
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.6431,
+          "revenue": 1083337000.0,
+          "operatingMargin": 0.2846
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.7637,
+          "revenue": 769210000.0,
+          "operatingMargin": 0.1975
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.5006,
+          "revenue": 651797000.0,
+          "operatingMargin": 0.1429
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.6318,
+          "revenue": 685680000.0,
+          "operatingMargin": 0.1973
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "SMMT",
+      "epsGrowthQoQ_yoy": 200.99,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": null,
+      "marginImproving": null,
+      "roe": -2.7095,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": -0.2441,
+          "revenue": 0.0,
+          "operatingMargin": null
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -0.2824,
+          "revenue": 0.0,
+          "operatingMargin": null
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -0.2986,
+          "revenue": 0.0,
+          "operatingMargin": null
+        },
+        {
+          "period": "2025-Q2",
+          "eps": -0.7289,
+          "revenue": 0.0,
+          "operatingMargin": null
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -0.0811,
+          "revenue": 0.0,
+          "operatingMargin": null
+        }
+      ],
+      "missing": [
+        "F3",
+        "F4"
+      ]
+    },
+    {
+      "ticker": "TRMB",
+      "epsGrowthQoQ_yoy": 48.3,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 11.81,
+      "marginImproving": false,
+      "roe": 0.0825,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.4243,
+          "revenue": 939900000.0,
+          "operatingMargin": 0.1563
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.6718,
+          "revenue": 969800000.0,
+          "operatingMargin": 0.2194
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.4783,
+          "revenue": 901200000.0,
+          "operatingMargin": 0.1828
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.3826,
+          "revenue": 875700000.0,
+          "operatingMargin": 0.1505
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.2861,
+          "revenue": 840600000.0,
+          "operatingMargin": 0.1213
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "ROIV",
+      "epsGrowthQoQ_yoy": -246.74,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": -66.71,
+      "marginImproving": true,
+      "roe": -0.0759,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.4213,
+          "revenue": 2520000.0,
+          "operatingMargin": -140.871
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -0.3697,
+          "revenue": 1999000.0,
+          "operatingMargin": -169.6613
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -0.1578,
+          "revenue": 1571000.0,
+          "operatingMargin": -194.9287
+        },
+        {
+          "period": "2025-Q2",
+          "eps": -0.3105,
+          "revenue": 2170000.0,
+          "operatingMargin": -131.3005
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -0.2871,
+          "revenue": 7570000.0,
+          "operatingMargin": -37.644
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "GFS",
+      "epsGrowthQoQ_yoy": -50.95,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 3.09,
+      "marginImproving": false,
+      "roe": 0.0683,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.1877,
+          "revenue": 1634000000.0,
+          "operatingMargin": 0.1102
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.3627,
+          "revenue": 1830000000.0,
+          "operatingMargin": 0.1393
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.452,
+          "revenue": 1688000000.0,
+          "operatingMargin": 0.1155
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.4155,
+          "revenue": 1688000000.0,
+          "operatingMargin": 0.1161
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.3827,
+          "revenue": 1585000000.0,
+          "operatingMargin": 0.0953
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "RIVN",
+      "epsGrowthQoQ_yoy": -23.68,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 11.37,
+      "marginImproving": true,
+      "roe": -0.6569,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": -0.2882,
+          "revenue": 1381000000.0,
+          "operatingMargin": -0.6379
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -0.5618,
+          "revenue": 1286000000.0,
+          "operatingMargin": -0.6477
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -0.8126,
+          "revenue": 1558000000.0,
+          "operatingMargin": -0.6309
+        },
+        {
+          "period": "2025-Q2",
+          "eps": -0.7738,
+          "revenue": 1303000000.0,
+          "operatingMargin": -0.855
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -0.3776,
+          "revenue": 1240000000.0,
+          "operatingMargin": -0.5282
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "GRAB",
+      "epsGrowthQoQ_yoy": 462.3,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 23.54,
+      "marginImproving": false,
+      "roe": 0.0477,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.0343,
+          "revenue": 955000000.0,
+          "operatingMargin": 0.0775
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.0434,
+          "revenue": 906000000.0,
+          "operatingMargin": 0.1082
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.0093,
+          "revenue": 873000000.0,
+          "operatingMargin": 0.0767
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.0088,
+          "revenue": 819000000.0,
+          "operatingMargin": 0.0476
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.0061,
+          "revenue": 773000000.0,
+          "operatingMargin": 0.0181
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "IREN",
+      "epsGrowthQoQ_yoy": 1434.29,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": -0.02,
+      "marginImproving": false,
+      "roe": 0.0773,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": -0.6935,
+          "revenue": 144795000.0,
+          "operatingMargin": -0.6447
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -0.4349,
+          "revenue": 184692000.0,
+          "operatingMargin": -0.4584
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 1.0762,
+          "revenue": 240295000.0,
+          "operatingMargin": -0.2503
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.2674,
+          "revenue": 187292000.0,
+          "operatingMargin": 0.0897
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -0.0452,
+          "revenue": 144823000.0,
+          "operatingMargin": 0.1912
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "SSNC",
+      "epsGrowthQoQ_yoy": 6.15,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 8.8,
+      "marginImproving": true,
+      "roe": 0.118,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.9388,
+          "revenue": 1647100000.0,
+          "operatingMargin": 0.2418
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.8018,
+          "revenue": 1653500000.0,
+          "operatingMargin": 0.2229
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.872,
+          "revenue": 1568000000.0,
+          "operatingMargin": 0.2332
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.7507,
+          "revenue": 1536800000.0,
+          "operatingMargin": 0.2242
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.8844,
+          "revenue": 1513900000.0,
+          "operatingMargin": 0.2364
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "CRDO",
+      "epsGrowthQoQ_yoy": 362.18,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 157.02,
+      "marginImproving": false,
+      "roe": 0.3441,
+      "quarters": [
+        {
+          "period": "2026-Q2",
+          "eps": 0.9068,
+          "revenue": 437003000.0,
+          "operatingMargin": 0.3566
+        },
+        {
+          "period": "2026-Q1",
+          "eps": 0.8427,
+          "revenue": 407012000.0,
+          "operatingMargin": 0.3676
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.4431,
+          "revenue": 268027000.0,
+          "operatingMargin": 0.294
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.34,
+          "revenue": 223074000.0,
+          "operatingMargin": 0.2723
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.1962,
+          "revenue": 170025000.0,
+          "operatingMargin": 0.2039
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "DKNG",
+      "epsGrowthQoQ_yoy": -162.23,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 16.84,
+      "marginImproving": false,
+      "roe": 0.0794,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.0425,
+          "revenue": 1646076000.0,
+          "operatingMargin": 0.0036
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.275,
+          "revenue": 1989193000.0,
+          "operatingMargin": 0.0763
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -0.5176,
+          "revenue": 1144019000.0,
+          "operatingMargin": -0.2377
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.3183,
+          "revenue": 1512507000.0,
+          "operatingMargin": 0.0996
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -0.0683,
+          "revenue": 1408806000.0,
+          "operatingMargin": -0.0329
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "KTOS",
+      "epsGrowthQoQ_yoy": 164.58,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 22.6,
+      "marginImproving": false,
+      "roe": 0.0123,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.0635,
+          "revenue": 371000000.0,
+          "operatingMargin": 0.0178
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.0315,
+          "revenue": 345100000.0,
+          "operatingMargin": 0.0293
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.0464,
+          "revenue": 347600000.0,
+          "operatingMargin": 0.021
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.0155,
+          "revenue": 351500000.0,
+          "operatingMargin": 0.0105
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.024,
+          "revenue": 302600000.0,
+          "operatingMargin": 0.0218
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "EBAY",
+      "epsGrowthQoQ_yoy": 2.61,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 19.5,
+      "marginImproving": false,
+      "roe": 0.4288,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 1.1532,
+          "revenue": 3089000000.0,
+          "operatingMargin": 0.1978
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.1892,
+          "revenue": 2965000000.0,
+          "operatingMargin": 0.2027
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 1.4234,
+          "revenue": 2820000000.0,
+          "operatingMargin": 0.2043
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.8288,
+          "revenue": 2730000000.0,
+          "operatingMargin": 0.1773
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 1.1239,
+          "revenue": 2585000000.0,
+          "operatingMargin": 0.2364
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "FTAI",
+      "epsGrowthQoQ_yoy": 34.69,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 65.45,
+      "marginImproving": false,
+      "roe": 2.3329,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 1.3443,
+          "revenue": 830697000.0,
+          "operatingMargin": 0.2248
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.1265,
+          "revenue": 662028000.0,
+          "operatingMargin": 0.285
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 1.1475,
+          "revenue": 667064000.0,
+          "operatingMargin": 0.3117
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.6123,
+          "revenue": 676237000.0,
+          "operatingMargin": 0.3179
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.9981,
+          "revenue": 502080000.0,
+          "operatingMargin": 0.3152
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "NXT",
+      "epsGrowthQoQ_yoy": -3.95,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": -4.74,
+      "marginImproving": false,
+      "roe": 0.2957,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.9931,
+          "revenue": 880517000.0,
+          "operatingMargin": 0.1744
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.8654,
+          "revenue": 909352000.0,
+          "operatingMargin": 0.1937
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.9684,
+          "revenue": 905268000.0,
+          "operatingMargin": 0.2003
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.0365,
+          "revenue": 864253000.0,
+          "operatingMargin": 0.2155
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 1.0339,
+          "revenue": 924342000.0,
+          "operatingMargin": 0.2065
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "FWONA",
+      "epsGrowthQoQ_yoy": 1040.07,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 59.06,
+      "marginImproving": false,
+      "roe": 0.0273,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 2.3759,
+          "revenue": 711000000.0,
+          "operatingMargin": 0.09
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 3.543,
+          "revenue": 1609000000.0,
+          "operatingMargin": 0.1274
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 2.751,
+          "revenue": 1085000000.0,
+          "operatingMargin": 0.1585
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 15.9226,
+          "revenue": 1341000000.0,
+          "operatingMargin": 0.211
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.2084,
+          "revenue": 447000000.0,
+          "operatingMargin": -0.1253
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "FWONK",
+      "epsGrowthQoQ_yoy": 1039.91,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 59.06,
+      "marginImproving": false,
+      "roe": 0.0273,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.2542,
+          "revenue": 711000000.0,
+          "operatingMargin": 0.09
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.3791,
+          "revenue": 1609000000.0,
+          "operatingMargin": 0.1274
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.2943,
+          "revenue": 1085000000.0,
+          "operatingMargin": 0.1585
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.7036,
+          "revenue": 1341000000.0,
+          "operatingMargin": 0.211
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.0223,
+          "revenue": 447000000.0,
+          "operatingMargin": -0.1253
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "TLN",
+      "epsGrowthQoQ_yoy": -146.67,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 96.67,
+      "marginImproving": true,
+      "roe": -0.0186,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 1.3181,
+          "revenue": 1241000000.0,
+          "operatingMargin": 0.2933
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -7.5949,
+          "revenue": 771000000.0,
+          "operatingMargin": -0.3385
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 4.331,
+          "revenue": 770000000.0,
+          "operatingMargin": 0.2948
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.5064,
+          "revenue": 454000000.0,
+          "operatingMargin": -0.0573
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -2.8246,
+          "revenue": 631000000.0,
+          "operatingMargin": 0.1204
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "BIDU",
+      "epsGrowthQoQ_yoy": -55.36,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": -1.16,
+      "marginImproving": true,
+      "roe": 0.0032,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 12.5387,
+          "revenue": 32075000000.0,
+          "operatingMargin": 0.0995
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 6.4859,
+          "revenue": 32740000000.0,
+          "operatingMargin": 0.0453
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -40.8808,
+          "revenue": 31174000000.0,
+          "operatingMargin": 0.0353
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 26.6497,
+          "revenue": 32713000000.0,
+          "operatingMargin": 0.1002
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 28.0873,
+          "revenue": 32452000000.0,
+          "operatingMargin": 0.1389
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "NBIS",
+      "epsGrowthQoQ_yoy": -647.26,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 683.89,
+      "marginImproving": true,
+      "roe": 0.1414,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 2.8184,
+          "revenue": 399000000.0,
+          "operatingMargin": -0.3208
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -1.2196,
+          "revenue": 227700000.0,
+          "operatingMargin": -1.0979
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -0.5426,
+          "revenue": 146100000.0,
+          "operatingMargin": -0.8912
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 2.6519,
+          "revenue": 100700000.0,
+          "operatingMargin": -1.0129
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -0.515,
+          "revenue": 50900000.0,
+          "operatingMargin": -2.3635
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "COO",
+      "epsGrowthQoQ_yoy": -188.81,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 7.9,
+      "marginImproving": false,
+      "roe": 0.0285,
+      "quarters": [
+        {
+          "period": "2026-Q2",
+          "eps": -0.3994,
+          "revenue": 1081500000.0,
+          "operatingMargin": -0.0287
+        },
+        {
+          "period": "2026-Q1",
+          "eps": 0.6707,
+          "revenue": 1024100000.0,
+          "operatingMargin": 0.2078
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.4338,
+          "revenue": 1065100000.0,
+          "operatingMargin": 0.1318
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.504,
+          "revenue": 1060300000.0,
+          "operatingMargin": 0.1657
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.4497,
+          "revenue": 1002300000.0,
+          "operatingMargin": 0.1844
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "ALAB",
+      "epsGrowthQoQ_yoy": 152.42,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 93.4,
+      "marginImproving": false,
+      "roe": 0.2111,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.4685,
+          "revenue": 308361000.0,
+          "operatingMargin": 0.2005
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.2624,
+          "revenue": 270583000.0,
+          "operatingMargin": 0.2475
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.5316,
+          "revenue": 230575000.0,
+          "operatingMargin": 0.2403
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.2988,
+          "revenue": 191925000.0,
+          "operatingMargin": 0.2072
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.1856,
+          "revenue": 159442000.0,
+          "operatingMargin": 0.0708
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "TEM",
+      "epsGrowthQoQ_yoy": 85.09,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 36.12,
+      "marginImproving": false,
+      "roe": -0.8158,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": -0.7215,
+          "revenue": 348116000.0,
+          "operatingMargin": -0.2433
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -0.3104,
+          "revenue": 367211000.0,
+          "operatingMargin": -0.1672
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -0.4583,
+          "revenue": 334206000.0,
+          "operatingMargin": -0.1825
+        },
+        {
+          "period": "2025-Q2",
+          "eps": -0.2455,
+          "revenue": 314635000.0,
+          "operatingMargin": -0.1963
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -0.3898,
+          "revenue": 255737000.0,
+          "operatingMargin": -0.2686
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "EXPE",
+      "epsGrowthQoQ_yoy": -97.0,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 14.66,
+      "marginImproving": false,
+      "roe": 0.7149,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": -0.0524,
+          "revenue": 3426000000.0,
+          "operatingMargin": 0.0709
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.7904,
+          "revenue": 3547000000.0,
+          "operatingMargin": 0.1545
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 8.3756,
+          "revenue": 4412000000.0,
+          "operatingMargin": 0.2557
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 2.8821,
+          "revenue": 3786000000.0,
+          "operatingMargin": 0.1403
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -1.7467,
+          "revenue": 2988000000.0,
+          "operatingMargin": -0.0147
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "SMCI",
+      "epsGrowthQoQ_yoy": 344.29,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 122.68,
+      "marginImproving": true,
+      "roe": 0.1788,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.7473,
+          "revenue": 10243014000.0,
+          "operatingMargin": 0.0611
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.6192,
+          "revenue": 12682491000.0,
+          "operatingMargin": 0.0374
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.2602,
+          "revenue": 5017790000.0,
+          "operatingMargin": 0.0363
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.3017,
+          "revenue": 5756911000.0,
+          "operatingMargin": 0.0397
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.1682,
+          "revenue": 4599913000.0,
+          "operatingMargin": 0.0319
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "SNDK",
+      "epsGrowthQoQ_yoy": -287.02,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 251.03,
+      "marginImproving": true,
+      "roe": 0.393,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 24.4109,
+          "revenue": 5950000000.0,
+          "operatingMargin": 0.6998
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 5.4224,
+          "revenue": 3025000000.0,
+          "operatingMargin": 0.3554
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.7563,
+          "revenue": 2308000000.0,
+          "operatingMargin": 0.0832
+        },
+        {
+          "period": "2025-Q2",
+          "eps": -0.1553,
+          "revenue": 1901000000.0,
+          "operatingMargin": 0.0268
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -13.0529,
+          "revenue": 1695000000.0,
+          "operatingMargin": -0.0248
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "MTSI",
+      "epsGrowthQoQ_yoy": 46.34,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 22.5,
+      "marginImproving": true,
+      "roe": 0.1349,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.6073,
+          "revenue": 288955000.0,
+          "operatingMargin": 0.1759
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.6392,
+          "revenue": 271612000.0,
+          "operatingMargin": 0.1594
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.5914,
+          "revenue": 261170000.0,
+          "operatingMargin": 0.1516
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.4788,
+          "revenue": 252079000.0,
+          "operatingMargin": 0.1494
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.415,
+          "revenue": 235887000.0,
+          "operatingMargin": 0.1478
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "BIIB",
+      "epsGrowthQoQ_yoy": 32.85,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 1.93,
+      "marginImproving": true,
+      "roe": 0.077,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 2.1641,
+          "revenue": 2477800000.0,
+          "operatingMargin": 0.1856
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -0.3312,
+          "revenue": 2279400000.0,
+          "operatingMargin": 0.1691
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 3.1598,
+          "revenue": 2534700000.0,
+          "operatingMargin": 0.2393
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 4.2997,
+          "revenue": 2645500000.0,
+          "operatingMargin": 0.322
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 1.629,
+          "revenue": 2431000000.0,
+          "operatingMargin": 0.2572
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "CRWV",
+      "epsGrowthQoQ_yoy": 134.92,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 111.61,
+      "marginImproving": false,
+      "roe": -0.4067,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": -1.6534,
+          "revenue": 2078000000.0,
+          "operatingMargin": -0.0693
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -1.0093,
+          "revenue": 1571904000.0,
+          "operatingMargin": -0.057
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -0.246,
+          "revenue": 1364676000.0,
+          "operatingMargin": 0.038
+        },
+        {
+          "period": "2025-Q2",
+          "eps": -0.6491,
+          "revenue": 1212788000.0,
+          "operatingMargin": 0.0158
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -0.7038,
+          "revenue": 982000000.0,
+          "operatingMargin": -0.0275
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "PSKY",
+      "epsGrowthQoQ_yoy": -175.04,
+      "epsAccelerating": null,
+      "revenueGrowthQoQ_yoy": -7.98,
+      "marginImproving": null,
+      "roe": -0.0077,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.1545,
+          "revenue": 7347000000.0,
+          "operatingMargin": 0.0979
+        },
+        {
+          "period": "2025-Q4",
+          "eps": null,
+          "revenue": null,
+          "operatingMargin": null
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.0524,
+          "revenue": 6849000000.0,
+          "operatingMargin": 0.1076
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.1397,
+          "revenue": 7192000000.0,
+          "operatingMargin": 0.0834
+        },
+        {
+          "period": "2024-Q4",
+          "eps": -0.2059,
+          "revenue": 7984000000.0,
+          "operatingMargin": 0.039
+        }
+      ],
+      "missing": [
+        "F2",
+        "F4"
+      ]
+    },
+    {
+      "ticker": "LOGI",
+      "epsGrowthQoQ_yoy": -0.42,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 7.44,
+      "marginImproving": false,
+      "roe": 0.3278,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.9995,
+          "revenue": 1085523000.0,
+          "operatingMargin": 0.1278
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.749,
+          "revenue": 1421479000.0,
+          "operatingMargin": 0.2015
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 1.189,
+          "revenue": 1186056000.0,
+          "operatingMargin": 0.165
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.0173,
+          "revenue": 1147703000.0,
+          "operatingMargin": 0.143
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 1.0037,
+          "revenue": 1010355000.0,
+          "operatingMargin": 0.1136
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "LLYVA",
+      "epsGrowthQoQ_yoy": 174.89,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": null,
+      "marginImproving": false,
+      "roe": null,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": -11.5016,
+          "revenue": 63620000.0,
+          "operatingMargin": -0.2623
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 6.2968,
+          "revenue": 381951000.0,
+          "operatingMargin": -0.0831
+        },
+        {
+          "period": "2025-Q2",
+          "eps": -6.9603,
+          "revenue": 0.0,
+          "operatingMargin": null
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -1.1526,
+          "revenue": 47059000.0,
+          "operatingMargin": -0.3672
+        },
+        {
+          "period": "2024-Q4",
+          "eps": -4.184,
+          "revenue": 0.0,
+          "operatingMargin": null
+        }
+      ],
+      "missing": [
+        "F3",
+        "F5"
+      ]
+    },
+    {
+      "ticker": "LLYVK",
+      "epsGrowthQoQ_yoy": 174.89,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": null,
+      "marginImproving": false,
+      "roe": null,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": -4.6031,
+          "revenue": 63620000.0,
+          "operatingMargin": -0.2623
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 2.5201,
+          "revenue": 381951000.0,
+          "operatingMargin": -0.0831
+        },
+        {
+          "period": "2025-Q2",
+          "eps": -2.7856,
+          "revenue": 0.0,
+          "operatingMargin": null
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -0.4613,
+          "revenue": 47059000.0,
+          "operatingMargin": -0.3672
+        },
+        {
+          "period": "2024-Q4",
+          "eps": -1.6745,
+          "revenue": 0.0,
+          "operatingMargin": null
+        }
+      ],
+      "missing": [
+        "F3",
+        "F5"
+      ]
+    },
+    {
+      "ticker": "PTC",
+      "epsGrowthQoQ_yoy": 263.2,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 21.68,
+      "marginImproving": true,
+      "roe": 0.344,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 5.1142,
+          "revenue": 774303000.0,
+          "operatingMargin": 0.382
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.4416,
+          "revenue": 685825000.0,
+          "operatingMargin": 0.3224
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 3.011,
+          "revenue": 893795000.0,
+          "operatingMargin": 0.4979
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.2236,
+          "revenue": 643937000.0,
+          "operatingMargin": 0.3259
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 1.4081,
+          "revenue": 636366000.0,
+          "operatingMargin": 0.3578
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "ICLR",
+      "epsGrowthQoQ_yoy": -34.86,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 0.93,
+      "marginImproving": false,
+      "roe": 0.0184,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 1.3578,
+          "revenue": 2033999000.0,
+          "operatingMargin": 0.0919
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -1.4277,
+          "revenue": 2189839000.0,
+          "operatingMargin": 0.1052
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -3.6837,
+          "revenue": 2084415000.0,
+          "operatingMargin": 0.1196
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 2.3718,
+          "revenue": 2017357000.0,
+          "operatingMargin": 0.1283
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 2.0845,
+          "revenue": 2015320000.0,
+          "operatingMargin": 0.1348
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "FISV",
+      "epsGrowthQoQ_yoy": -32.9,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": -2.01,
+      "marginImproving": false,
+      "roe": null,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 1.0708,
+          "revenue": 5027000000.0,
+          "operatingMargin": 0.1661
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.5209,
+          "revenue": 5284000000.0,
+          "operatingMargin": 0.2438
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 1.4852,
+          "revenue": 5263000000.0,
+          "operatingMargin": 0.2538
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.924,
+          "revenue": 5516000000.0,
+          "operatingMargin": 0.308
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 1.5959,
+          "revenue": 5130000000.0,
+          "operatingMargin": 0.268
+        }
+      ],
+      "missing": [
+        "F5"
+      ]
+    },
+    {
+      "ticker": "JBHT",
+      "epsGrowthQoQ_yoy": 20.22,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 4.62,
+      "marginImproving": false,
+      "roe": 0.1668,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 1.5011,
+          "revenue": 3056491000.0,
+          "operatingMargin": 0.0677
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.9202,
+          "revenue": 3096626000.0,
+          "operatingMargin": 0.0796
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 1.8118,
+          "revenue": 3052897000.0,
+          "operatingMargin": 0.0795
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.364,
+          "revenue": 2928181000.0,
+          "operatingMargin": 0.0674
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 1.2486,
+          "revenue": 2921392000.0,
+          "operatingMargin": 0.0612
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "ON",
+      "epsGrowthQoQ_yoy": -93.13,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 4.68,
+      "marginImproving": true,
+      "roe": 0.0749,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": -0.0858,
+          "revenue": 1513300000.0,
+          "operatingMargin": 0.1823
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.4671,
+          "revenue": 1530100000.0,
+          "operatingMargin": 0.1692
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.6552,
+          "revenue": 1550900000.0,
+          "operatingMargin": 0.1831
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.4376,
+          "revenue": 1468700000.0,
+          "operatingMargin": 0.1652
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -1.249,
+          "revenue": 1445700000.0,
+          "operatingMargin": -0.0238
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "FSLR",
+      "epsGrowthQoQ_yoy": 65.43,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 23.64,
+      "marginImproving": true,
+      "roe": 0.1844,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 3.2258,
+          "revenue": 1044240000.0,
+          "operatingMargin": 0.3307
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 4.8475,
+          "revenue": 1682782000.0,
+          "operatingMargin": 0.3256
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 4.2432,
+          "revenue": 1594856000.0,
+          "operatingMargin": 0.2922
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 3.1815,
+          "revenue": 1097170000.0,
+          "operatingMargin": 0.3296
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 1.95,
+          "revenue": 844568000.0,
+          "operatingMargin": 0.262
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "NWSA",
+      "epsGrowthQoQ_yoy": -13.58,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 8.76,
+      "marginImproving": false,
+      "roe": 0.0652,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.2462,
+          "revenue": 2185000000.0,
+          "operatingMargin": 0.1011
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.5338,
+          "revenue": 2362000000.0,
+          "operatingMargin": 0.1706
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.3098,
+          "revenue": 2144000000.0,
+          "operatingMargin": 0.104
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 2.055,
+          "revenue": 2109000000.0,
+          "operatingMargin": 0.0958
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.2849,
+          "revenue": 2009000000.0,
+          "operatingMargin": 0.0876
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "CDW",
+      "epsGrowthQoQ_yoy": 4.67,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 9.25,
+      "marginImproving": false,
+      "roe": 0.4416,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 1.8426,
+          "revenue": 5679800000.0,
+          "operatingMargin": 0.0662
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 2.1878,
+          "revenue": 5511000000.0,
+          "operatingMargin": 0.0782
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 2.2778,
+          "revenue": 5737400000.0,
+          "operatingMargin": 0.0773
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 2.1228,
+          "revenue": 5976600000.0,
+          "operatingMargin": 0.0703
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 1.7604,
+          "revenue": 5199100000.0,
+          "operatingMargin": 0.0695
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "NWS",
+      "epsGrowthQoQ_yoy": -13.59,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 8.76,
+      "marginImproving": false,
+      "roe": 0.0652,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.4917,
+          "revenue": 2185000000.0,
+          "operatingMargin": 0.1011
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.0663,
+          "revenue": 2362000000.0,
+          "operatingMargin": 0.1706
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.6188,
+          "revenue": 2144000000.0,
+          "operatingMargin": 0.104
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 4.1049,
+          "revenue": 2109000000.0,
+          "operatingMargin": 0.0958
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.569,
+          "revenue": 2009000000.0,
+          "operatingMargin": 0.0876
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "VRSN",
+      "epsGrowthQoQ_yoy": 7.63,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 6.61,
+      "marginImproving": true,
+      "roe": null,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 2.3571,
+          "revenue": 428900000.0,
+          "operatingMargin": 0.6845
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 2.2659,
+          "revenue": 425300000.0,
+          "operatingMargin": 0.6696
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 2.3385,
+          "revenue": 419100000.0,
+          "operatingMargin": 0.6784
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 2.2791,
+          "revenue": 409900000.0,
+          "operatingMargin": 0.6848
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 2.1901,
+          "revenue": 402300000.0,
+          "operatingMargin": 0.6741
+        }
+      ],
+      "missing": [
+        "F5"
+      ]
+    },
+    {
+      "ticker": "INCY",
+      "epsGrowthQoQ_yoy": 91.73,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 20.87,
+      "marginImproving": false,
+      "roe": 0.3082,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 1.5183,
+          "revenue": 1272676000.0,
+          "operatingMargin": 0.2547
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.498,
+          "revenue": 1506835000.0,
+          "operatingMargin": 0.2548
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 2.1232,
+          "revenue": 1365980000.0,
+          "operatingMargin": 0.3157
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 2.0272,
+          "revenue": 1215529000.0,
+          "operatingMargin": 0.2557
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.7919,
+          "revenue": 1052898000.0,
+          "operatingMargin": 0.2058
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "NTAP",
+      "epsGrowthQoQ_yoy": 18.83,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 12.47,
+      "marginImproving": true,
+      "roe": 1.0673,
+      "quarters": [
+        {
+          "period": "2026-Q2",
+          "eps": 2.0621,
+          "revenue": 1948000000.0,
+          "operatingMargin": 0.2726
+        },
+        {
+          "period": "2026-Q1",
+          "eps": 1.7048,
+          "revenue": 1713000000.0,
+          "operatingMargin": 0.2516
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.5568,
+          "revenue": 1705000000.0,
+          "operatingMargin": 0.2475
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 1.1893,
+          "revenue": 1559000000.0,
+          "operatingMargin": 0.1995
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.7354,
+          "revenue": 1732000000.0,
+          "operatingMargin": 0.2275
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "NBIX",
+      "epsGrowthQoQ_yoy": 2404.07,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 42.25,
+      "marginImproving": false,
+      "roe": 0.225,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 1.9682,
+          "revenue": 814500000.0,
+          "operatingMargin": 0.2284
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.5286,
+          "revenue": 805500000.0,
+          "operatingMargin": 0.2829
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 2.0835,
+          "revenue": 794900000.0,
+          "operatingMargin": 0.301
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.0691,
+          "revenue": 687500000.0,
+          "operatingMargin": 0.2118
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.0786,
+          "revenue": 572600000.0,
+          "operatingMargin": 0.0414
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "DLTR",
+      "epsGrowthQoQ_yoy": 1.14,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 7.24,
+      "marginImproving": false,
+      "roe": 0.3398,
+      "quarters": [
+        {
+          "period": "2026-Q2",
+          "eps": 1.8072,
+          "revenue": 4975800000.0,
+          "operatingMargin": 0.0951
+        },
+        {
+          "period": "2026-Q1",
+          "eps": 2.6335,
+          "revenue": 5450700000.0,
+          "operatingMargin": 0.1275
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.2728,
+          "revenue": 4751000000.0,
+          "operatingMargin": 0.0723
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.9804,
+          "revenue": 4570400000.0,
+          "operatingMargin": 0.0505
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.7869,
+          "revenue": 4639700000.0,
+          "operatingMargin": 0.0828
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "AVAV",
+      "epsGrowthQoQ_yoy": -244.61,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 133.27,
+      "marginImproving": true,
+      "roe": -0.1003,
+      "quarters": [
+        {
+          "period": "2026-Q2",
+          "eps": -0.4762,
+          "revenue": 641616000.0,
+          "operatingMargin": 0.0887
+        },
+        {
+          "period": "2026-Q1",
+          "eps": -4.8179,
+          "revenue": 408045000.0,
+          "operatingMargin": -0.068
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -0.338,
+          "revenue": 472508000.0,
+          "operatingMargin": -0.064
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -1.3312,
+          "revenue": 454676000.0,
+          "operatingMargin": -0.1524
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.3293,
+          "revenue": 275050000.0,
+          "operatingMargin": 0.117
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "UAL",
+      "epsGrowthQoQ_yoy": 80.63,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 10.57,
+      "marginImproving": false,
+      "roe": 0.2573,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 2.1536,
+          "revenue": 14608000000.0,
+          "operatingMargin": 0.0416
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 3.2166,
+          "revenue": 15396000000.0,
+          "operatingMargin": 0.0894
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 2.9239,
+          "revenue": 15225000000.0,
+          "operatingMargin": 0.0868
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 2.9978,
+          "revenue": 15236000000.0,
+          "operatingMargin": 0.1163
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 1.1923,
+          "revenue": 13212000000.0,
+          "operatingMargin": 0.038
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "DPZ",
+      "epsGrowthQoQ_yoy": -6.58,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 3.47,
+      "marginImproving": true,
+      "roe": null,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 4.2033,
+          "revenue": 1150594000.0,
+          "operatingMargin": 0.1934
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 5.461,
+          "revenue": 1535740000.0,
+          "operatingMargin": 0.1924
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 4.1885,
+          "revenue": 1147054000.0,
+          "operatingMargin": 0.1946
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 3.9412,
+          "revenue": 1145144000.0,
+          "operatingMargin": 0.1931
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 4.4992,
+          "revenue": 1112056000.0,
+          "operatingMargin": 0.1889
+        }
+      ],
+      "missing": [
+        "F5"
+      ]
+    },
+    {
+      "ticker": "JD",
+      "epsGrowthQoQ_yoy": -53.15,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 4.85,
+      "marginImproving": true,
+      "roe": 0.06,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 3.7779,
+          "revenue": 315694000000.0,
+          "operatingMargin": 0.0121
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -2.0089,
+          "revenue": 352284000000.0,
+          "operatingMargin": -0.0129
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 3.9067,
+          "revenue": 299059000000.0,
+          "operatingMargin": -0.0041
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 4.5746,
+          "revenue": 356660000000.0,
+          "operatingMargin": -0.003
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 8.0637,
+          "revenue": 301082000000.0,
+          "operatingMargin": 0.035
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "WWD",
+      "epsGrowthQoQ_yoy": 23.01,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 23.42,
+      "marginImproving": false,
+      "roe": 0.2113,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 2.2492,
+          "revenue": 1090568000.0,
+          "operatingMargin": 0.1536
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 2.2443,
+          "revenue": 996454000.0,
+          "operatingMargin": 0.16
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 2.3098,
+          "revenue": 995264000.0,
+          "operatingMargin": 0.1515
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 1.8201,
+          "revenue": 915446000.0,
+          "operatingMargin": 0.1304
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 1.8285,
+          "revenue": 883629000.0,
+          "operatingMargin": 0.1347
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "TSCO",
+      "epsGrowthQoQ_yoy": -8.27,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 3.61,
+      "marginImproving": false,
+      "roe": 0.455,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.3137,
+          "revenue": 3592046000.0,
+          "operatingMargin": 0.065
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.4336,
+          "revenue": 3898320000.0,
+          "operatingMargin": 0.0764
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.4944,
+          "revenue": 3719044000.0,
+          "operatingMargin": 0.0921
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.82,
+          "revenue": 4439729000.0,
+          "operatingMargin": 0.1301
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.342,
+          "revenue": 3466952000.0,
+          "operatingMargin": 0.0719
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "ASND",
+      "epsGrowthQoQ_yoy": -765.09,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 144.27,
+      "marginImproving": true,
+      "roe": 3.3265,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 9.5946,
+          "revenue": 246601000.0,
+          "operatingMargin": 0.1006
+        },
+        {
+          "period": "2025-Q4",
+          "eps": -0.5117,
+          "revenue": 247500000.0,
+          "operatingMargin": 0.026
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -0.9298,
+          "revenue": 213634000.0,
+          "operatingMargin": 0.0515
+        },
+        {
+          "period": "2025-Q2",
+          "eps": -0.5924,
+          "revenue": 158045000.0,
+          "operatingMargin": -0.335
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -1.4426,
+          "revenue": 100954000.0,
+          "operatingMargin": -1.0323
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "ZG",
+      "epsGrowthQoQ_yoy": 474.85,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 18.39,
+      "marginImproving": true,
+      "roe": 0.0133,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 1.0859,
+          "revenue": 708000000.0,
+          "operatingMargin": 0.0508
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.0708,
+          "revenue": 654000000.0,
+          "operatingMargin": -0.0168
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.2361,
+          "revenue": 676000000.0,
+          "operatingMargin": -0.0015
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.0472,
+          "revenue": 655000000.0,
+          "operatingMargin": -0.0168
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.1889,
+          "revenue": 598000000.0,
+          "operatingMargin": -0.0151
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "ESLT",
+      "epsGrowthQoQ_yoy": 50.16,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 15.46,
+      "marginImproving": false,
+      "roe": 0.1557,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 3.432,
+          "revenue": 2188846000.0,
+          "operatingMargin": 0.0937
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 3.5893,
+          "revenue": 2148559000.0,
+          "operatingMargin": 0.0969
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 2.8472,
+          "revenue": 1921608000.0,
+          "operatingMargin": 0.0892
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 2.683,
+          "revenue": 1972659000.0,
+          "operatingMargin": 0.08
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 2.2856,
+          "revenue": 1895801000.0,
+          "operatingMargin": 0.079
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "LULU",
+      "epsGrowthQoQ_yoy": -38.0,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 4.26,
+      "marginImproving": false,
+      "roe": 0.3203,
+      "quarters": [
+        {
+          "period": "2026-Q2",
+          "eps": 1.7987,
+          "revenue": 2471603000.0,
+          "operatingMargin": 0.1121
+        },
+        {
+          "period": "2026-Q1",
+          "eps": 5.412,
+          "revenue": 3640801000.0,
+          "operatingMargin": 0.2231
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 2.8296,
+          "revenue": 2565920000.0,
+          "operatingMargin": 0.1699
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 3.4204,
+          "revenue": 2525219000.0,
+          "operatingMargin": 0.2074
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 2.9009,
+          "revenue": 2370660000.0,
+          "operatingMargin": 0.185
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "NTRA",
+      "epsGrowthQoQ_yoy": 27.11,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 38.82,
+      "marginImproving": false,
+      "roe": -0.1502,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": -0.5941,
+          "revenue": 696644000.0,
+          "operatingMargin": -0.1342
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.33,
+          "revenue": 665498000.0,
+          "operatingMargin": -0.0342
+        },
+        {
+          "period": "2025-Q3",
+          "eps": -0.6113,
+          "revenue": 592183000.0,
+          "operatingMargin": -0.1648
+        },
+        {
+          "period": "2025-Q2",
+          "eps": -0.7048,
+          "revenue": 546600000.0,
+          "operatingMargin": -0.2019
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -0.4674,
+          "revenue": 501830000.0,
+          "operatingMargin": -0.1578
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "LITE",
+      "epsGrowthQoQ_yoy": -427.01,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 90.12,
+      "marginImproving": true,
+      "roe": 0.2283,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 1.8535,
+          "revenue": 808400000.0,
+          "operatingMargin": 0.2172
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 1.0051,
+          "revenue": 665500000.0,
+          "operatingMargin": 0.096
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.054,
+          "revenue": 533800000.0,
+          "operatingMargin": 0.0281
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 2.7416,
+          "revenue": 480700000.0,
+          "operatingMargin": -0.0067
+        },
+        {
+          "period": "2025-Q1",
+          "eps": -0.5668,
+          "revenue": 425200000.0,
+          "operatingMargin": -0.1538
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "Z",
+      "epsGrowthQoQ_yoy": 474.77,
+      "epsAccelerating": true,
+      "revenueGrowthQoQ_yoy": 18.39,
+      "marginImproving": true,
+      "roe": 0.0133,
+      "quarters": [
+        {
+          "period": "2026-Q1",
+          "eps": 0.2552,
+          "revenue": 708000000.0,
+          "operatingMargin": 0.0508
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 0.0166,
+          "revenue": 654000000.0,
+          "operatingMargin": -0.0168
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 0.0555,
+          "revenue": 676000000.0,
+          "operatingMargin": -0.0015
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 0.0111,
+          "revenue": 655000000.0,
+          "operatingMargin": -0.0168
+        },
+        {
+          "period": "2025-Q1",
+          "eps": 0.0444,
+          "revenue": 598000000.0,
+          "operatingMargin": -0.0151
+        }
+      ],
+      "missing": []
+    },
+    {
+      "ticker": "ULTA",
+      "epsGrowthQoQ_yoy": 11.61,
+      "epsAccelerating": false,
+      "revenueGrowthQoQ_yoy": 11.08,
+      "marginImproving": true,
+      "roe": 0.4745,
+      "quarters": [
+        {
+          "period": "2026-Q2",
+          "eps": 7.9199,
+          "revenue": 3163857000.0,
+          "operatingMargin": 0.1432
+        },
+        {
+          "period": "2026-Q1",
+          "eps": 8.2969,
+          "revenue": 3898361000.0,
+          "operatingMargin": 0.1233
+        },
+        {
+          "period": "2025-Q4",
+          "eps": 5.3705,
+          "revenue": 2857623000.0,
+          "operatingMargin": 0.1101
+        },
+        {
+          "period": "2025-Q3",
+          "eps": 6.0684,
+          "revenue": 2788469000.0,
+          "operatingMargin": 0.1255
+        },
+        {
+          "period": "2025-Q2",
+          "eps": 7.096,
+          "revenue": 2848367000.0,
+          "operatingMargin": 0.1417
+        }
+      ],
+      "missing": []
+    }
+  ],
+  "excluded": [
+    {
+      "ticker": "AGPXX",
+      "reason": "분기 재무제표 없음"
+    },
+    {
+      "ticker": "HO1",
+      "reason": "분기 재무제표 없음"
+    }
+  ]
+}
