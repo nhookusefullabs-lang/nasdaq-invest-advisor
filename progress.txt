@@ -1118,3 +1118,24 @@
 - 다음 스토리 메모: US-6 포지션 계획 계층 2(src/lib/positionPlan.js) — 손절 참고 2종의
   검증 상태 매핑은 constants/verification.js 신규(코드 문자열→상태), entryPoint.js의
   derivedPrices()/STOP_PCT/ATR_STOP_MULT 재사용.
+
+## Iteration 6 — US-6. 포지션 계획 계층 2 (포지션 수준)
+- 완료 스토리: US-6
+- 변경 파일:
+  - src/lib/constants/verification.js(신규): VERIFICATION_STATUS — stopFixed8pct(열위)/
+    stopAtr(측정중)/holding60d(우위), 각 {status,basis} 정적 매핑, PRD §4.4/US-6 원문 그대로.
+  - src/lib/positionPlan.js(신규): `computePositionPlan({ticker,entryPrice,entryDate?},series)` —
+    R-배수(현재수익%÷STOP_PCT%), 손절 참고 2종(체결가 기준 고정−8%/ATR비례, 검증상태 포함),
+    브레이크이븐 알림(R≥2), 트레일링 참고(entryDate 있을 때만 — 보유중 최고종가×0.85,
+    손절선과 max 비교해 강조), 이익 보호 알림(peak≥+20% AND 현재≤peak×50%).
+    entry.js의 STOP_PCT/ATR_STOP_MULT, indicators.js의 atr() 재사용(재구현 없음).
+  - src/lib/positionPlan.test.js(신규): 11개 — R-배수 계산·브레이크이븐 경계(R=2.0 정확/
+    직하, AC1 3개), 이익보호 경계(peak20%+giveback50% 정확/직하/peak미달, AC1 3개),
+    entryDate 유무 분기(미제공·트레일링계산·범위밖, AC2 3개), 검증상태(열위존재·출력에
+    상태코드 실림, AC3 2개).
+- 승인 기준 확인: AC1(6개 요구, 6개) 통과, AC2(분기 테스트) 통과, AC3(−8% 열위 존재 +
+  출력에 상태코드 포함) 통과.
+- 테스트 수 변화: 564 → 575 (+11). npm run test/build 둘 다 통과.
+- 다음 스토리 메모: US-7 백테스트 국면 귀속 + 스키마 v3 골격 — backtest.mjs가 신호일마다
+  regime.js를 슬라이스 기준으로 호출(미래참조 불가 유지), backtestSchema.js schemaVersion 3
+  + regimeAxis[], v1/v2 로더 하위호환 유지.
