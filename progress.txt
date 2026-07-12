@@ -1016,3 +1016,28 @@
   npm 카운트에 미포함). npm run test/build 둘 다 통과.
 - 다음 스토리 메모: US-2 국면 지표 lib(src/lib/regime.js) — breadth()는 buildDataset()의
   dataSufficient 필터링된 유니버스를 그대로 재사용.
+
+## Iteration 2 — US-2. 국면 지표 lib
+- 완료 스토리: US-2
+- 변경 파일:
+  - src/lib/constants/regime.js(신규): REGIME_UP_ENTER(0.65)/REGIME_UP_EXIT(0.55)/
+    REGIME_DOWN_ENTER(0.40)/REGIME_DOWN_EXIT(0.50)/REGIME_SMA_PERIOD(200), PRD §4.2 표 그대로.
+  - src/lib/regime.js(신규): `breadth(tickers)`(최신 시점 스냅샷), `regimeSeries(tickers)`
+    (일자별 국면 시계열), `currentRegime(tickers)`(최신 유효 국면+전환일), 내부 헬퍼
+    `applyHysteresis(dates,values)`(상태기계 자체를 breadth 계산과 분리 — 히스테리시스
+    단위 테스트가 실제 유니버스를 조립하지 않고도 임의 breadth 시퀀스로 검증 가능해짐).
+    breadth 계산은 기존 indicators.js의 sma()를 재사용(재구현 없음), 날짜 문자열로
+    티커 간 정렬(종목마다 상장일이 달라 길이가 다를 수 있으므로 인덱스가 아닌 date 매칭).
+  - src/lib/regime.test.js(신규): 12개 테스트 — 히스테리시스 데드존/상승유지 오실레이션·
+    실제 전이·결측일 상태 보존(AC1, 4개), 초기 상태 3경계(AC2, 3개),
+    dataSufficient=false 제외·SMA200 워밍업 불가(150일) 종목 제외·전량 제외 시 null·
+    currentRegime/regimeSeries 워밍업 구간 처리(AC3, 5개).
+- 승인 기준 확인: AC1(4개 요구, 4개 작성) 통과, AC2(경계 3종) 통과, AC3(dataSufficient
+  반영 3종 + 통합 2종) 통과.
+- 설계 결정: 히스테리시스 상태는 breadth 계산 불가일(null)에도 리셋되지 않고 다음 유효일로
+  이어짐 — 초기 판정으로 되돌아가면 결측 하루마다 국면이 튈 위험이 있어 명시적으로 방지.
+  초기 상태 분류는 진입(enter) 문턱이 아니라 유지(exit) 문턱(0.55/0.40)을 경계로 사용
+  (PRD §4.2 표 그대로 — 진입 문턱 0.65/0.40이 아님에 주의).
+- 테스트 수 변화: 506 → 518 (+12). npm run test/build 둘 다 통과.
+- 다음 스토리 메모: US-3 진입가 엔진 1/2(src/lib/entryPoint.js) — design-entry-point-engine.md
+  §2(피벗)·§3(파생가격) 그대로 구현, PH_d는 당일 제외 63일 최고 종가.

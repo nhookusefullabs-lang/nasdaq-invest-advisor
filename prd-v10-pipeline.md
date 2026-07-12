@@ -49,7 +49,7 @@
 ---
 
 ### US-2. 국면 지표 lib
-- [ ] **개발자로서, 시장 폭 기반 3상태 국면을 결정적으로 판정하는 공용 함수를 원한다.**
+- [x] **개발자로서, 시장 폭 기반 3상태 국면을 결정적으로 판정하는 공용 함수를 원한다.**
 
 **구현:** `src/lib/regime.js` + `constants/regime.js`
 - `breadth(universe)` = dataSufficient 종목 중 close > SMA200 비율 (기존 SMA 재사용)
