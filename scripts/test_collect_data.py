@@ -128,5 +128,20 @@ class TestLoadNgxTickerSource(unittest.TestCase):
             self.assertEqual(included, [("IJKL", "Foo", "Technology")])
 
 
+class TestStartDateCollectionPoint(unittest.TestCase):
+    """PRD_Nasdaq11 §4.1, US-1 — 고정 기점(기간 길이가 아님) 수집 방식."""
+
+    def test_start_date_constant_is_2021_01_01(self):
+        self.assertEqual(cd.START_DATE, "2021-01-01")
+
+    def test_download_batch_uses_start_not_period(self):
+        # download_batch가 여전히 period= 인자를 쓰면(회귀) 이 테스트가 실패해야 하므로,
+        # 소스 코드 텍스트에서 직접 확인한다(런타임 목킹보다 회귀에 더 강함).
+        import inspect
+        source = inspect.getsource(cd.download_batch)
+        self.assertIn("start=START_DATE", source)
+        self.assertNotIn("period=", source)
+
+
 if __name__ == "__main__":
     unittest.main()

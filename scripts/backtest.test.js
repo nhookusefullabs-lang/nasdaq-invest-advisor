@@ -218,6 +218,24 @@ describe('runBacktest — US-9 데이터 수집 3년 확대 (2y/3y 픽스처 양
   })
 })
 
+describe('runBacktest — v11 US-1 데이터 수집 기점 2021-01-01 (5.5y 픽스처, AC3)', () => {
+  const raw2y = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
+  const FIXTURE_5Y_PATH = path.resolve(__dirname, '../src/lib/__fixtures__/nasdaq100.5y.sample.json')
+  const raw5y = JSON.parse(readFileSync(FIXTURE_5Y_PATH, 'utf-8'))
+
+  it('5.5y 픽스처(1400거래일)에서도 엔진이 완주하고 스키마를 통과한다', () => {
+    const backtest = runBacktest(raw5y)
+    expect(validateBacktest(backtest).valid).toBe(true)
+    expect(backtest.strategies.some((s) => s.byHolding.some((h) => h.signals > 0))).toBe(true)
+  }, 30000)
+
+  it('데이터가 길수록(5y > 2y) 평가일 수가 규칙대로 더 많다(자동 적응 회귀 확인)', () => {
+    const evalDates2y = buildEvaluationDates(raw2y)
+    const evalDates5y = buildEvaluationDates(raw5y)
+    expect(evalDates5y.length).toBeGreaterThan(evalDates2y.length)
+  })
+})
+
 describe('runBacktest — v9.1 US-1 완화/정상 분리 집계 (schemaVersion v2)', () => {
   const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
   const backtest = runBacktest(raw)

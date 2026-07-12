@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import path from 'node:path'
 import { breadth, regimeSeries, currentRegime, applyHysteresis } from './regime.js'
+import { buildDataset } from './buildDataset.js'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 function makeSeries(days, closeAt) {
   const arr = []
@@ -107,5 +113,23 @@ describe('regime.js — breadth() dataSufficient 반영 (PRD_Nasdaq10 US-2 AC3)'
     const series = regimeSeries([tickerA])
     expect(series[0]).toMatchObject({ breadth: null, regime: null })
     expect(series[series.length - 1]).toMatchObject({ breadth: 1, regime: 'up' })
+  })
+})
+
+describe('regime.js — 5.5년 픽스처 (PRD_Nasdaq11 US-1 AC2: 상승·하락 양쪽 판정)', () => {
+  const raw = JSON.parse(readFileSync(path.resolve(__dirname, '__fixtures__/nasdaq100.5y.sample.json'), 'utf-8'))
+  const dataset = buildDataset(raw)
+
+  it('상승(불장)·하락(약세장) 국면이 모두 시계열에 등장한다', () => {
+    const series = regimeSeries(dataset.tickers)
+    const regimes = new Set(series.map((s) => s.regime))
+    expect(regimes.has('up')).toBe(true)
+    expect(regimes.has('down')).toBe(true)
+  })
+
+  it('하락 국면 표본이 실제로 쌓일 만큼 충분하다(v10의 "표본 30건" 한계를 이 픽스처가 해소)', () => {
+    const series = regimeSeries(dataset.tickers)
+    const downDays = series.filter((s) => s.regime === 'down').length
+    expect(downDays).toBeGreaterThan(50)
   })
 })
