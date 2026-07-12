@@ -1,8 +1,16 @@
 import { describe, it, expect } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import path from 'node:path'
 import { walkExit, computeExitPerformance, aggregateExitPerformance, EXIT_RULES, EXIT_LIMITATION_NOTE, COMBOS, computeComboPerformance, aggregateComboPerformance } from './exits.mjs'
 import { buildPriceIndex } from './performance.mjs'
+import { sliceUniverseAsOf } from './asOf.mjs'
 import { evaluateExitSignals } from '../../src/lib/exitSignals.js'
 import { ENTRY_VARIANTS } from './entries.mjs'
+import { regimeSeries, currentRegime } from '../../src/lib/regime.js'
+import { buildDataset } from '../../src/lib/buildDataset.js'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 function makeDates(n) {
   return Array.from({ length: n }, (_, i) => new Date((19723 + i) * 86400000).toISOString().slice(0, 10))
@@ -225,5 +233,100 @@ describe('exits.mjs — combos (US-9 AC3: 진입·청산 양쪽 파라미터 명
     const record = { date: tickers2[0].series[ENTRY_IDX].date, ticker: 'NOFILLX', strategyKey: 'trend', basis: 'top5' }
     const perf = computeComboPerformance(record, priceIndex2, ENTRY_VARIANTS.entry_pivot_confirm2, EXIT_RULES.exit_stop_atr)
     expect(perf.filled).toBe(false)
+  })
+})
+
+describe('exits.mjs — exit_regime_conditional (US-7 AC1: 신호일 국면별 규칙 분기)', () => {
+  // exit_stop_atr과 동일한 ATR 손절 픽스처(day61(offset2)=97 — ATR14≈0.6 → stop≈98.5)를
+  // day2 이후 60일치까지 연장 — 'up' 시나리오가 손절 없이 day60 시간 청산까지 도달하려면
+  // walkExit이 entryIdx+60까지의 데이터를 요구하기 때문(60일 미만이면 null 반환).
+  const stopSeries = makeExtendedSeries([100, 97, ...Array(58).fill(97)])
+
+  it('신호일 국면이 상승이면 ATR 이탈에도 손절이 걸리지 않고 60거래일 보유된다', () => {
+    const result = walkExit(stopSeries, ENTRY_IDX, EXIT_RULES.exit_regime_conditional, undefined, { regime: 'up' })
+    expect(result.stopHit).toBe(false)
+    expect(result.holdingDaysActual).toBe(60)
+  })
+
+  it('신호일 국면이 하락이면 exit_stop_atr과 동일하게 day2에 손절된다', () => {
+    const result = walkExit(stopSeries, ENTRY_IDX, EXIT_RULES.exit_regime_conditional, undefined, { regime: 'down' })
+    const baseline = walkExit(stopSeries, ENTRY_IDX, EXIT_RULES.exit_stop_atr)
+    expect(result.stopHit).toBe(true)
+    expect(result.holdingDaysActual).toBe(2)
+    expect(result).toEqual(baseline)
+  })
+
+  it('신호일 국면이 중립이어도 ATR 손절이 가동된다(상승만 예외)', () => {
+    const result = walkExit(stopSeries, ENTRY_IDX, EXIT_RULES.exit_regime_conditional, undefined, { regime: 'neutral' })
+    expect(result.stopHit).toBe(true)
+    expect(result.holdingDaysActual).toBe(2)
+  })
+
+  it('computeExitPerformance는 record.regime을 자동으로 컨텍스트에 병합한다(별도 배선 불필요)', () => {
+    const tickers2 = [{ ticker: 'REGIMEX', dataSufficient: true, series: stopSeries }]
+    const priceIndex2 = buildPriceIndex(tickers2)
+    const upRecord = { date: stopSeries[ENTRY_IDX].date, ticker: 'REGIMEX', strategyKey: 'trend', basis: 'top5', regime: 'up' }
+    const downRecord = { ...upRecord, regime: 'down' }
+    expect(computeExitPerformance(upRecord, priceIndex2, EXIT_RULES.exit_regime_conditional).holdingDaysActual).toBe(60)
+    expect(computeExitPerformance(downRecord, priceIndex2, EXIT_RULES.exit_regime_conditional).holdingDaysActual).toBe(2)
+  })
+})
+
+describe('exits.mjs — exit_regime_flip (US-7 AC2: 전환일 판정의 슬라이스 기준 시점 정합성)', () => {
+  const raw = JSON.parse(readFileSync(path.resolve(__dirname, '../../src/lib/__fixtures__/nasdaq100.5y.sample.json'), 'utf-8'))
+  const dataset = buildDataset(raw)
+  const fullSeries = regimeSeries(dataset.tickers)
+  const regimeByDate = new Map(fullSeries.map((s) => [s.date, { regime: s.regime, transitionDate: s.transitionDate }]))
+  const flipDay = fullSeries.find((s) => s.regime === 'down' && s.transitionDate === s.date)
+
+  it('5.5년 픽스처에 하락 전환일이 최소 1개 존재한다(픽스처 전제 확인)', () => {
+    expect(flipDay).toBeDefined()
+  })
+
+  it('AC2 시점 정합성: 전환일까지만 슬라이스한 유니버스로 직접 계산한 국면이 전체 계산(regimeByDate) 결과와 정확히 같다', () => {
+    const sliced = sliceUniverseAsOf(raw, flipDay.date)
+    const direct = currentRegime(buildDataset(sliced).tickers)
+    expect(direct.regime).toBe('down')
+    expect(direct.transitionDate).toBe(flipDay.date)
+    expect(regimeByDate.get(flipDay.date)).toEqual({ regime: direct.regime, transitionDate: direct.transitionDate })
+  })
+
+  it('exit_regime_flip.checkStop은 전환일 당일에만 true, 그 전날에는 false다', () => {
+    const dayBefore = fullSeries[fullSeries.findIndex((s) => s.date === flipDay.date) - 1]
+    const seriesStub = (date) => [{ date }]
+    expect(
+      EXIT_RULES.exit_regime_flip.checkStop({ series: seriesStub(flipDay.date), idx: 0, regimeByDate })
+    ).toBe(true)
+    expect(
+      EXIT_RULES.exit_regime_flip.checkStop({ series: seriesStub(dayBefore.date), idx: 0, regimeByDate })
+    ).toBe(false)
+  })
+
+  it('regimeByDate가 없으면(구버전 호출부) 안전하게 미체결(false)로 처리한다', () => {
+    expect(EXIT_RULES.exit_regime_flip.checkStop({ series: [{ date: flipDay.date }], idx: 0 })).toBe(false)
+  })
+})
+
+describe('exits.mjs — v11 US-7 AC3: 5.5년 약세장 구간에서 exit_regime_conditional 방어 청산 실발동', () => {
+  it('하락 국면 신호 표본에서 ATR 손절이 실제로 다수 발동한다(stopHitRate > 0)', () => {
+    const raw = JSON.parse(readFileSync(path.resolve(__dirname, '../../src/lib/__fixtures__/nasdaq100.5y.sample.json'), 'utf-8'))
+    const dataset = buildDataset(raw)
+    const fullSeries = regimeSeries(dataset.tickers)
+    const regimeByDate = new Map(fullSeries.map((s) => [s.date, { regime: s.regime, transitionDate: s.transitionDate }]))
+    const downDates = fullSeries.filter((s) => s.regime === 'down').map((s) => s.date)
+    const sampleDates = downDates.filter((_, i) => i % 15 === 0)
+
+    const priceIndex = buildPriceIndex(dataset.tickers)
+    const records = []
+    for (const date of sampleDates) {
+      for (const t of dataset.tickers) {
+        if (!t.dataSufficient) continue
+        records.push({ date, ticker: t.ticker, strategyKey: 'trend', basis: 'top5', regime: 'down' })
+      }
+    }
+
+    const agg = aggregateExitPerformance(records, priceIndex, EXIT_RULES.exit_regime_conditional, { regimeByDate })
+    expect(agg.signals).toBeGreaterThan(0)
+    expect(agg.stopHitRate).toBeGreaterThan(0)
   })
 })

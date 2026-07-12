@@ -8,7 +8,7 @@ import { buildDataset } from '../src/lib/buildDataset.js'
 import { recommend } from '../src/lib/recommend.js'
 import { runMinerviniRecommend } from '../src/lib/minervini.js'
 import { buildConsensusRanking } from '../src/lib/consensus.js'
-import { currentRegime } from '../src/lib/regime.js'
+import { currentRegime, regimeSeries } from '../src/lib/regime.js'
 import { judgeEntryState } from '../src/lib/entryPoint.js'
 import { hasFullYearData, rsRawScore, rsPercentile } from '../src/lib/indicators.js'
 import { sliceUniverseAsOf, buildEvaluationDates, getCalendarDates } from './lib/asOf.mjs'
@@ -116,6 +116,22 @@ function buildRsPercentileMap(datasetTickers) {
   const rawScores = eligible.map((t) => rsRawScore(t.series))
   const percentiles = rsPercentile(rawScores)
   return new Map(eligible.map((t, i) => [t.ticker, percentiles[i]]))
+}
+
+/**
+ * 날짜 → { regime, transitionDate } 맵 (v11 US-7, exit_regime_flip 전용). regime.js의
+ * regimeSeries()를 유니버스 전체(미절단)에 "딱 한 번"만 호출해서 만든다 — 재구현 없음.
+ * 미래 참조처럼 보이지만 실제로는 아니다: breadthTimeSeries()의 SMA200은 항상 과거창만
+ * 보고, applyHysteresis()의 상태기계는 날짜 오름차순으로 과거 상태만 이어받아 전진
+ * 계산한다(둘 다 그 날짜 이후 데이터를 전혀 참조하지 않음) — 그래서 "그 날짜까지로 미리
+ * 잘라 각각 다시 계산"한 것과 "전체를 한 번에 계산해 날짜로 조회"한 것이 정확히 같은
+ * 값을 준다(exits.test.js의 AC2가 이를 직접 검증). 매 청산 시뮬레이션 스텝마다
+ * 유니버스를 다시 슬라이스·재계산하는 것보다 훨씬 저렴하다.
+ */
+function buildRegimeDateMap(rawUniverse) {
+  const dataset = buildDataset(rawUniverse)
+  const series = regimeSeries(dataset.tickers)
+  return new Map(series.map((s) => [s.date, { regime: s.regime, transitionDate: s.transitionDate }]))
 }
 
 /**
@@ -326,7 +342,9 @@ export function runBacktest(
   const calendarDates = getCalendarDates(rawUniverse)
   const fundamentalAxis = buildFundamentalAxis(fundamentalsData, records, priceIndex, holdingDays)
   const variants = VARIANTS.map((v) => evaluateVariant(rawUniverse, v, { evaluationDates, splitDate, mainRecords: records, priceIndex }))
-  const exitVariants = evaluateExitVariants(outRecords, strategies, priceIndex)
+  // v11 US-7: exit_regime_flip 전용 날짜→국면 맵 — 한 번만 계산해 공유(레코드별 재계산 없음).
+  const regimeByDate = buildRegimeDateMap(rawUniverse)
+  const exitVariants = evaluateExitVariants(outRecords, strategies, priceIndex, regimeByDate)
 
   // v9.1 US-4 가설 ③: 신선 신호(0~2d)와 지연 신호(3d+/no_recent_breakout)의 성과 차이를
   // In/Out 양쪽에서 측정한다(basis는 allSignals만 — top5는 코호트별 표본이 너무 작아짐).
@@ -552,13 +570,13 @@ function buildPolicyVariants(outRecords, priceIndex) {
 // v9.1 US-2 가설 ②: trend/top5 Out 신호에 경로 의존 청산(변형 D) 2종을 적용해, 현행
 // 60거래일 고정 보유(all·signalQuality) 대비 성과 델타를 계산한다. 채택 결정은 하지 않는다
 // (adopted 항상 false — 손절·트레일링 채택은 운영자 몫).
-function evaluateExitVariants(outRecords, strategies, priceIndex) {
+function evaluateExitVariants(outRecords, strategies, priceIndex, regimeByDate = new Map()) {
   const outTrendTop5 = outRecords.filter((r) => r.strategyKey === 'trend' && r.basis === 'top5')
   const baseline = strategies.find((s) => s.key === 'trend' && s.basis === 'top5' && s.sample === 'out' && s.signalQuality === 'all')
   const baseline60 = baseline?.byHolding?.find((h) => h.days === 60) ?? null
 
   return Object.values(EXIT_RULES).map((rule) => {
-    const outDetail = aggregateExitPerformance(outTrendTop5, priceIndex, rule)
+    const outDetail = aggregateExitPerformance(outTrendTop5, priceIndex, rule, { regimeByDate })
     const bothMeasurable = outDetail.avgExcess != null && outDetail.winRate != null && baseline60?.avgExcess != null && baseline60?.winRate != null
     const outVsBaseline = {
       avgExcessDelta: bothMeasurable ? round4(outDetail.avgExcess - baseline60.avgExcess) : null,

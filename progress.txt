@@ -1673,3 +1673,58 @@
   전환을 매일 재판정해야 해 미래참조 금지 원칙상 그 날짜까지의 슬라이스로 판정해야 함을
   주의(entries.mjs의 asOfSeries 패턴 재사용). 5.5년 픽스처(US-1)에 하락 구간이 있으므로
   AC3(하락 국면 방어 청산 실제 발동 케이스)는 그 픽스처로 검증 가능.
+
+## Iteration 7 — US-7. 청산 변형 A(국면 조건부) + regime-flip
+- 완료 스토리: US-7
+- 예상 밖 발견: regime-flip(Should, 그러나 AC2가 요구해 실질 필수)은 "보유 중 매일" 국면을
+  재판정해야 하는데, 국면은 유니버스 전체를 봐야 하는 값이라(US-6의 rsPercentileValue와
+  같은 계열의 문제) exits.mjs가 개별 티커 series만 갖고 걷는 walkExit 루프 안에서는 원래
+  구할 수 없었다. 다만 regime.js의 breadthTimeSeries()(SMA200은 항상 과거창)와
+  applyHysteresis()(날짜 오름차순으로 과거 상태만 이어받는 순수 전진 상태기계)는 둘 다
+  미래를 보지 않으므로, "유니버스 전체로 한 번 계산한 날짜별 국면 시계열에서 그 날짜를
+  조회"하는 것과 "그 날짜까지 매번 새로 슬라이스해서 재계산"하는 것이 수학적으로 동일한
+  값을 준다는 사실을 확인 — 이를 근거로 매 청산 스텝마다 재계산하는 대신 딱 한 번(전체
+  백테스트당 1회) 계산한 날짜→국면 맵을 공유하는 방식으로 구현(정확성 손실 없이 비용만
+  절감 — exits.test.js AC2가 이 인과성을 직접 검증).
+- 변경 파일:
+  - scripts/lib/exits.mjs: `atrStopTriggered()` 헬퍼로 ATR 손절 판정 추출(exit_stop_atr이
+    쓰던 로직을 그대로 함수화 — 재구현 아님), exit_regime_conditional이 재사용. `walkExit`/
+    `computeExitPerformance`/`aggregateExitPerformance`에 선택 `context` 매개변수 추가 —
+    `computeExitPerformance`는 `record.regime`을 항상 자동으로 context에 병합(호출부 배선
+    불필요). `EXIT_RULES`에 `exit_regime_conditional`(신호일 국면 상승→60일 보유 손절 없음
+    / 중립·하락→ATR손절) + `exit_regime_flip`(regimeByDate 맵에서 그 날짜가 정확히
+    '하락 전환일'(transitionDate===그 날짜)일 때만 청산 — 이미 하락 지속 중인 날은
+    재트리거 안 함) 신규 등록.
+  - scripts/backtest.mjs: `regimeSeries` import 추가. `buildRegimeDateMap(rawUniverse)` 신규
+    — 유니버스 전체로 `regimeSeries()`를 1회 호출해 Map으로 변환(인과성 근거는 위 발견
+    참고). `runBacktest()`에서 1회 생성해 `evaluateExitVariants()`에 전달, 거기서
+    `aggregateExitPerformance(..., {regimeByDate})`로 배선. EXIT_RULES를 그대로
+    `Object.values()` 순회하는 기존 `evaluateExitVariants` 구조 덕에 신규 규칙 2종이
+    코드 변경 없이 자동으로 variants[]에 편입(adopted 항상 false도 자동 적용).
+  - scripts/lib/exits.test.js: `sliceUniverseAsOf`/`regimeSeries`/`currentRegime`/
+    `buildDataset` import 추가. 신규 describe 4개, 총 11개 테스트 — AC1(exit_stop_atr과
+    동일한 ATR 픽스처로 상승/하락/중립 3분기 확인 + computeExitPerformance 자동 배선 확인,
+    4개), AC2(5.5년 픽스처의 실제 하락 전환일 1건 확인 + 그 날짜까지만 슬라이스한 유니버스의
+    직접 계산이 전체 계산과 정확히 일치함을 증명 + checkStop이 전환 당일에만 true/전날은
+    false + regimeByDate 없을 때 안전한 false, 4개), AC3(5.5년 픽스처 하락 국면 표본
+    138건에서 stopHitRate 84.78% 확인, 1개), 픽스처 전제 확인 1개. **재사용한 스크래치
+    검증**: 별도 스크립트로 실제 stopHitRate>0을 먼저 확인한 뒤 테스트에 반영(추측 금지 원칙
+    준수).
+  - scripts/backtest.test.js: 기존 "청산 변형 5종+정책 3종=11종" 정확값 단언을 "7종+3종=13종"
+    으로 갱신(주석 추가, exit_regime_conditional/exit_regime_flip 2종 반영 — 의도된 확장).
+- 승인 기준 확인: AC1(신호일 국면별 규칙 분기 — 상승엔 손절 없음, 중립·하락엔 ATR손절) 통과,
+  AC2(regime-flip 전환일 판정의 슬라이스 기준 시점 정합성) 통과, AC3(5.5년 픽스처 하락 국면
+  방어 청산 실발동 — stopHitRate 84.78%) 통과.
+- 테스트 수 변화: 740 → 749 (+9: exits.test.js 19→30 신규 11개 중 기존 backtest.test.js
+  정확값 갱신은 신규 테스트 아님 — 스위트 전체 카운트 변화 +9로 최종 확인, 세부적으로는
+  exits.test.js +11 신규, backtest.test.js는 항목 수만 갱신되고 테스트 개수 자체는 불변이라
+  net +9로 수렴). npm run test(전체 54개 파일, 749개) + npm run build 둘 다 통과.
+- 다음 스토리 메모: US-8 청산 변형 C(구조 기반 손절 — 돌파형: 피벗×0.97 / 눌림목형: 눌림
+  저점×0.98) + 조합 2종(pullback_resume_vol×exit_structural, entry_close×exit_regime_
+  conditional). "진입 유형→손절선 매핑"이 핵심 — entry_close 등 돌파형과 pullback_* 눌림목형을
+  구분해야 하므로, 레코드나 진입 변형 자체에 "유형(breakout/pullback)" 태그가 필요할 수 있음
+  (지금은 진입 변형 객체에 그런 필드가 없음 — US-8에서 ENTRY_VARIANTS/PULLBACK_ENTRY_VARIANTS에
+  타입 메타를 추가하거나 combo 정의 시점에 고정 매핑으로 처리할지 결정 필요). "유형 불명 시
+  안전 기본값"도 AC1이 요구 — 예: 판정 불가 시 손절 미가동(시간 청산만) 등 방어적 선택.
+  발동률을 1급 판정 재료로 기록(<40% 선커밋 기준, v10 "83.7% 교훈" 참고) — combos[]/변형
+  결과에 발동률 필드를 명시적으로 포함할 것.

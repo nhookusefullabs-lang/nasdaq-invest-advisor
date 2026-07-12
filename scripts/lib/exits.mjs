@@ -21,7 +21,16 @@ function hasExitSignalCode(series, idx, code) {
   return signals.some((s) => s.code === code)
 }
 
-// checkStop({entryClose,peak,close,series,entryIdx,idx}) → 그날 청산해야 하면 true.
+/** exit_stop_atr과 exit_regime_conditional이 공유하는 ATR 손절 판정(재구현 없이 함수로 공유). */
+function atrStopTriggered({ entryClose, close, series, entryIdx }) {
+  const atr14 = atr(series.slice(0, entryIdx + 1), 14)
+  if (atr14 == null) return false
+  return close <= entryClose - ATR_STOP_MULT * atr14
+}
+
+// checkStop({entryClose,peak,close,series,entryIdx,idx,regime,regimeByDate}) → 그날 청산해야 하면 true.
+// regime(신호일 국면)·regimeByDate(날짜→국면 맵, US-7)는 computeExitPerformance가 호출부에서
+// 채워 넘긴다 — 대부분의 규칙은 이 필드들을 쓰지 않는다.
 export const EXIT_RULES = {
   exit_stop8_time60: {
     name: 'exit_stop8_time60',
@@ -37,11 +46,7 @@ export const EXIT_RULES = {
   exit_stop_atr: {
     name: 'exit_stop_atr',
     description: '체결가 − 2.5×ATR14(체결일 기준 1회 산정) 손절, 미도달 시 60거래일 시간 청산',
-    checkStop: ({ entryClose, close, series, entryIdx }) => {
-      const atr14 = atr(series.slice(0, entryIdx + 1), 14)
-      if (atr14 == null) return false
-      return close <= entryClose - ATR_STOP_MULT * atr14
-    },
+    checkStop: (ctx) => atrStopTriggered(ctx),
   },
   exit_sma50_break: {
     name: 'exit_sma50_break',
@@ -53,6 +58,32 @@ export const EXIT_RULES = {
     description: 'X4(클라이맥스 런) 신호 발생 당일 청산, 미발생 시 60거래일 시간 청산',
     checkStop: ({ series, idx }) => hasExitSignalCode(series, idx, 'X4'),
   },
+  // --- v11 US-7: 청산 변형 A(국면 조건부) + regime-flip ---
+  exit_regime_conditional: {
+    name: 'exit_regime_conditional',
+    description: '신호일 국면 상승 → 손절 없이 60거래일 보유 / 신호일 국면 중립·하락 → ATR손절(2.5×ATR14) 가동, 미도달 시 60거래일 시간 청산',
+    // regime은 신호(진입) 시점의 국면으로 고정 — 보유 중 국면이 바뀌어도 이 규칙 자체는
+    // 재판정하지 않는다(그 재판정은 별도 규칙 exit_regime_flip이 담당).
+    checkStop: (ctx) => ctx.regime !== 'up' && atrStopTriggered(ctx),
+  },
+  // (Should) regime-flip: 보유 중 국면이 하락으로 "전환"되는 날 당일 청산. regimeByDate는
+  // regime.js의 regimeSeries()를 유니버스 전체(미절단)에 한 번만 호출해 만든 날짜→국면 맵
+  // (backtest.mjs의 buildRegimeDateMap) — 국면 판정 자체가 breadth(당일 이하 SMA200 비교
+  // 창)와 히스테리시스 상태기계(과거 상태를 그대로 이어받아 전진 계산, 미래 값 참조 없음)로만
+  // 이뤄지므로, 미리 전체를 한 번 계산해도 "그 날짜까지의 슬라이스"로 계산한 것과 결과가
+  // 동일하다(exits.test.js AC2가 이를 직접 검증). idx일의 regimeByDate 조회값이 그 날짜
+  // 자체를 전환일(transitionDate)로 갖는 'down' 상태일 때만 청산한다(전환 첫날만 — 이미
+  // 하락 국면이 지속 중인 날은 재트리거하지 않음, 진입 자체가 하락장 한복판이었을 수 있으므로).
+  exit_regime_flip: {
+    name: 'exit_regime_flip',
+    description: '보유 중 국면이 하락으로 전환되는 날 당일 청산 (국면 판정은 그 날짜까지의 데이터만 반영 — 미래 참조 없음), 미발생 시 60거래일 시간 청산',
+    checkStop: ({ series, idx, regimeByDate }) => {
+      if (!regimeByDate) return false
+      const date = series[idx].date
+      const info = regimeByDate.get(date)
+      return info?.regime === 'down' && info?.transitionDate === date
+    },
+  },
 }
 
 /**
@@ -60,9 +91,11 @@ export const EXIT_RULES = {
  * entryIdx 이전 데이터는 전혀 참조하지 않는다(peak은 진입가부터 시작, 이후만 갱신).
  * entryPrice(선택, 기본=진입일 종가): 조합 실험(US-9 combos)에서는 진입 변형의 체결가가
  * entryIdx(신호일)의 종가와 다를 수 있어(피벗 트리거 등) 별도로 받는다.
+ * context(선택, US-7): checkStop에 그대로 병합되는 추가 필드 — regime(신호일 국면)·
+ * regimeByDate(날짜→국면 맵) 등, exit_regime_conditional/exit_regime_flip 전용.
  * 반환: { exitIdx, exitClose, holdingDaysActual, stopHit } | null(경로가 데이터 범위를 벗어남).
  */
-export function walkExit(series, entryIdx, exitRule, entryPrice = series[entryIdx].close) {
+export function walkExit(series, entryIdx, exitRule, entryPrice = series[entryIdx].close, context = {}) {
   let peak = entryPrice
 
   for (let offset = 1; offset <= MAX_HOLDING_DAYS; offset++) {
@@ -70,7 +103,7 @@ export function walkExit(series, entryIdx, exitRule, entryPrice = series[entryId
     if (idx >= series.length) return null
     const close = series[idx].close
     if (close > peak) peak = close
-    if (exitRule.checkStop({ entryClose: entryPrice, peak, close, series, entryIdx, idx })) {
+    if (exitRule.checkStop({ entryClose: entryPrice, peak, close, series, entryIdx, idx, ...context })) {
       return { exitIdx: idx, exitClose: close, holdingDaysActual: offset, stopHit: true }
     }
   }
@@ -82,13 +115,15 @@ export function walkExit(series, entryIdx, exitRule, entryPrice = series[entryId
 /**
  * 신호 레코드 하나를 경로 의존 청산 규칙으로 확장한다. 벤치마크는 실제 도달한
  * holdingDaysActual 구간으로 계산(고정 60일이 아님 — "청산만 상이" 원칙).
+ * context(선택, US-7): walkExit에 그대로 전달 — record.regime(신호일 국면)이 항상
+ * 자동으로 병합되어 exit_regime_conditional이 별도 배선 없이 바로 쓸 수 있다.
  * 반환: { ...record, returnPct, benchmarkReturn, excessReturn, mdd, holdingDaysActual, stopHit } | null
  */
-export function computeExitPerformance(record, priceIndex, exitRule) {
+export function computeExitPerformance(record, priceIndex, exitRule, context = {}) {
   const point = entryPoint(priceIndex, record.ticker, record.date)
   if (!point) return null
 
-  const result = walkExit(point.series, point.idx, exitRule)
+  const result = walkExit(point.series, point.idx, exitRule, undefined, { ...context, regime: record.regime })
   if (!result) return null
 
   const entryClose = point.series[point.idx].close
@@ -114,8 +149,8 @@ export function computeExitPerformance(record, priceIndex, exitRule) {
  * 반환: { signals, winRate, avgExcess, medianExcess, avgReturn, mdd, avgHoldingDays, stopHitRate }
  * (표본 0이면 전부 null — NaN 금지).
  */
-export function aggregateExitPerformance(records, priceIndex, exitRule) {
-  const items = records.map((r) => computeExitPerformance(r, priceIndex, exitRule)).filter(Boolean)
+export function aggregateExitPerformance(records, priceIndex, exitRule, context = {}) {
+  const items = records.map((r) => computeExitPerformance(r, priceIndex, exitRule, context)).filter(Boolean)
 
   if (!items.length) {
     return { signals: 0, winRate: null, avgExcess: null, medianExcess: null, avgReturn: null, mdd: null, avgHoldingDays: null, stopHitRate: null }
