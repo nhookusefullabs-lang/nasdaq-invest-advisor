@@ -8,8 +8,8 @@
 // v1 문서는 이 필드가 없으며, 하위 호환을 위해 v1에서는 검증하지 않는다(research.json
 // v1→v2 riskFlags 패턴과 동일: 정규화는 로더에서, 검증은 버전별로 분기).
 
-const SCHEMA_VERSION = 3
-const SUPPORTED_SCHEMA_VERSIONS = [1, 2, 3]
+const SCHEMA_VERSION = 4
+const SUPPORTED_SCHEMA_VERSIONS = [1, 2, 3, 4]
 const STRATEGY_KEYS = ['trend', 'minervini', 'consensus_2star', 'consensus_1star']
 const SAMPLE_VALUES = ['in', 'out']
 const BASIS_VALUES = ['top5', 'allSignals']
@@ -227,6 +227,10 @@ function validateEntryVariant(item, path, errors) {
   if (!isNonEmptyString(item.name)) errors.push(`${path}.name: 필수 문자열입니다`)
   if (!isNumber(item.signals)) errors.push(`${path}.signals: 숫자여야 합니다`)
   if (!isNullableNumber(item.fillRate)) errors.push(`${path}.fillRate: 숫자 또는 null이어야 합니다`)
+  // strategyKey(v11 US-4): 선택 필드 — 없으면(v1~v3 산출물, 단일 trend 풀) 검증 생략.
+  if (item.strategyKey !== undefined && !STRATEGY_KEYS.includes(item.strategyKey)) {
+    errors.push(`${path}.strategyKey: ${STRATEGY_KEYS.join('/')} 중 하나여야 합니다`)
+  }
   if (!Array.isArray(item.byHolding)) {
     errors.push(`${path}.byHolding: 배열이어야 합니다`)
   } else {
@@ -279,7 +283,25 @@ function validateStateAxisItem(item, path, errors) {
   }
 }
 
-/** backtest.json(버전 1, 2 또는 3) 구조를 검증한다. 반환: { valid, errors } */
+// stateRegimeAxis(v11 US-4): { strategyKey, sample, state, regime, byHolding[] } — stateAxis와
+// regimeAxis의 2D 교집합. 선택 필드(하위 호환 패턴 동일) — 없으면(v1~v3 산출물) 검증 생략.
+function validateStateRegimeAxisItem(item, path, errors) {
+  if (typeof item !== 'object' || item === null) {
+    errors.push(`${path}: 객체여야 합니다`)
+    return
+  }
+  if (!STRATEGY_KEYS.includes(item.strategyKey)) errors.push(`${path}.strategyKey: ${STRATEGY_KEYS.join('/')} 중 하나여야 합니다`)
+  if (!SAMPLE_VALUES.includes(item.sample)) errors.push(`${path}.sample: ${SAMPLE_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!STATE_VALUES.includes(item.state)) errors.push(`${path}.state: ${STATE_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!REGIME_VALUES.includes(item.regime)) errors.push(`${path}.regime: ${REGIME_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!Array.isArray(item.byHolding)) {
+    errors.push(`${path}.byHolding: 배열이어야 합니다`)
+  } else {
+    item.byHolding.forEach((h, i) => validateByHoldingItem(h, `${path}.byHolding[${i}]`, errors))
+  }
+}
+
+/** backtest.json(버전 1, 2, 3 또는 4) 구조를 검증한다. 반환: { valid, errors } */
 export function validateBacktest(data) {
   const errors = []
 
@@ -346,6 +368,14 @@ export function validateBacktest(data) {
       errors.push('stateAxis: 배열이어야 합니다')
     } else {
       data.stateAxis.forEach((s, i) => validateStateAxisItem(s, `stateAxis[${i}]`, errors))
+    }
+  }
+
+  if (data.stateRegimeAxis !== undefined) {
+    if (!Array.isArray(data.stateRegimeAxis)) {
+      errors.push('stateRegimeAxis: 배열이어야 합니다')
+    } else {
+      data.stateRegimeAxis.forEach((s, i) => validateStateRegimeAxisItem(s, `stateRegimeAxis[${i}]`, errors))
     }
   }
 

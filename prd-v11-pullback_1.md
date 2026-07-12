@@ -72,7 +72,7 @@
 ---
 
 ### US-4. schemaVersion 4 골격 + 집계 축 2종
-- [ ] **운영자로서, 상태×국면 2차원과 모드별 진입 변형 성과를 분해해 보고 싶다.**
+- [x] **운영자로서, 상태×국면 2차원과 모드별 진입 변형 성과를 분해해 보고 싶다.**
 
 **구현:** `scripts/backtest.mjs` + `src/lib/backtestSchema.js`
 - schemaVersion 4: `stateRegimeAxis[]`(진입 상태 0~3/산정불가 × 국면 × 전략 × sample × byHolding),

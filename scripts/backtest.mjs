@@ -195,6 +195,8 @@ const BASES = ['top5', 'allSignals']
 const REGIME_VALUES = ['up', 'neutral', 'down']
 // v10 US-10: 진입 상태 4종 + 산정불가 — entryPoint.js의 judgeEntryState() 반환값과 동일.
 const STATE_VALUES = [0, 1, 2, 3, '산정불가']
+// v11 US-4: entryVariants의 모드별 분해 대상 풀 — PRD가 명시한 3개 풀만(consensus_1star 제외).
+const ENTRY_VARIANT_MODE_POOLS = ['trend', 'minervini', 'consensus_2star']
 
 /**
  * 유니버스 메타 통계(v10 US-11) — hasFullYearData(252거래일) 미만 종목 수/비율.
@@ -316,7 +318,17 @@ export function runBacktest(
   // v10 US-8: 진입 변형 4종 — 기존 변형 D(exitVariants)와 동일 스코프(trend·top5·Out)에서
   // 비교해야 §7의 최종 조합 실험(진입×청산)이 같은 기준선을 공유한다.
   const outTrendTop5 = outRecords.filter((r) => r.strategyKey === 'trend' && r.basis === 'top5')
-  const entryVariants = Object.values(ENTRY_VARIANTS).map((variant) => aggregateEntryVariant(outTrendTop5, priceIndex, variant, holdingDays))
+  // v11 US-4: entryVariants에 strategyKey 축 추가 — 진입 변형(피벗 트리거 등)은 티커/가격
+  // 구조 기반이라 모드 무관이지만, 실제 효과가 모드별 풀에서도 같은지는 실측이 없었다
+  // (v10까지는 trend·top5 기준만 측정). 각 모드의 자기 top5·Out 레코드로 독립 계산한다
+  // (풀 간 신호 누출 없음 — US-4 AC2).
+  const entryVariants = ENTRY_VARIANT_MODE_POOLS.flatMap((strategyKey) => {
+    const poolTop5 = outRecords.filter((r) => r.strategyKey === strategyKey && r.basis === 'top5')
+    return Object.values(ENTRY_VARIANTS).map((variant) => ({
+      strategyKey,
+      ...aggregateEntryVariant(poolTop5, priceIndex, variant, holdingDays),
+    }))
+  })
 
   // v10 US-9: 진입×청산 조합 3종(§7 최종 대결 재료) — 채택 결정은 하지 않는다(adopted 항상 false).
   const combos = COMBOS.map((combo) => ({
@@ -329,8 +341,11 @@ export function runBacktest(
   const stateAxis = buildStateAxis(inRecords, outRecords, priceIndex, holdingDays)
   const policyVariants = buildPolicyVariants(outRecords, priceIndex)
 
+  // v11 US-4: 상태×국면 2차원 분해 (schemaVersion 4)
+  const stateRegimeAxis = buildStateRegimeAxis(inRecords, outRecords, priceIndex, holdingDays)
+
   return {
-    schemaVersion: 3,
+    schemaVersion: 4,
     generatedAt: rawUniverse.generatedAt,
     config: {
       dataFrom: calendarDates[0] ?? null,
@@ -353,6 +368,7 @@ export function runBacktest(
     entryVariants,
     combos,
     stateAxis,
+    stateRegimeAxis,
   }
 }
 
@@ -402,6 +418,34 @@ function buildStateAxis(inRecords, outRecords, priceIndex, holdingDays) {
           .filter((g) => g.strategyKey === key)
           .map((g) => ({ days: g.days, signals: g.signals, winRate: g.winRate, avgExcess: g.avgExcess, medianExcess: g.medianExcess, avgReturn: g.avgReturn, mdd: g.mdd }))
         axis.push({ strategyKey: key, sample, state, byHolding })
+      }
+    }
+  }
+  return axis
+}
+
+/**
+ * 전략×sample×진입상태×국면×보유기간 성과표 (v11 US-4, PRD §4.5) — v10 발견 #6(상태0 눌림목
+ * 교집합)의 "구조 몫(상태) vs 국면 몫(V자 회복)" 분리가 1차 목표. stateAxis/regimeAxis와
+ * 동일 패턴(allSignals 기준만, aggregatePerformance 재사용)을 2차원으로 조합한다.
+ */
+function buildStateRegimeAxis(inRecords, outRecords, priceIndex, holdingDays) {
+  const axis = []
+  for (const [sample, records] of [
+    ['in', inRecords],
+    ['out', outRecords],
+  ]) {
+    const allSignalsRecords = records.filter((r) => r.basis === 'allSignals')
+    for (const state of STATE_VALUES) {
+      for (const regime of REGIME_VALUES) {
+        const cellRecords = allSignalsRecords.filter((r) => r.entryState === state && r.regime === regime)
+        const groups = aggregatePerformance(cellRecords, priceIndex, holdingDays, { strategyKeys: STRATEGY_KEYS, bases: ['allSignals'] })
+        for (const key of STRATEGY_KEYS) {
+          const byHolding = groups
+            .filter((g) => g.strategyKey === key)
+            .map((g) => ({ days: g.days, signals: g.signals, winRate: g.winRate, avgExcess: g.avgExcess, medianExcess: g.medianExcess, avgReturn: g.avgReturn, mdd: g.mdd }))
+          axis.push({ strategyKey: key, sample, state, regime, byHolding })
+        }
       }
     }
   }
@@ -556,6 +600,22 @@ export function formatRegimeReinterpretation(backtest) {
   return lines.join('\n')
 }
 
+// v11 US-4: 상태0(원거리 눌림목 후보) × 국면 표 — v10 발견 #6의 "구조 몫 vs 국면 몫" 분리가
+// 1차 목표(PRD §4.5). trend/out/20거래일 기준으로 국면별 성과를 나란히 보여준다.
+export function formatState0RegimeTable(backtest) {
+  const lines = []
+  for (const regime of REGIME_VALUES) {
+    const entry = backtest.stateRegimeAxis?.find((r) => r.strategyKey === 'trend' && r.sample === 'out' && r.state === 0 && r.regime === regime)
+    const d20 = entry?.byHolding?.find((h) => h.days === 20)
+    if (!d20 || d20.signals === 0) {
+      lines.push(`  상태0 × ${regime}: 표본 부족`)
+      continue
+    }
+    lines.push(`  상태0 × ${regime}: 초과수익 ${(d20.avgExcess * 100).toFixed(2)}%p · 승률 ${(d20.winRate * 100).toFixed(1)}% (표본 ${d20.signals})`)
+  }
+  return lines.join('\n')
+}
+
 function loadFundamentalsIfPresent(dataPath, fundamentalsFileName = NDX_FUNDAMENTALS_FILENAME) {
   // nasdaq100.json과 같은 디렉터리의 fundamentals(_ngx).json을 선택적으로 사용한다(US-6/US-11) —
   // 없으면 조용히 null(엔진은 fundamentalAxis:null로 정상 완주, graceful degradation).
@@ -676,6 +736,8 @@ function main() {
   console.log(formatFreshnessCohortSummary(backtest))
   console.log('국면별 재해석 (In/Out 역전을 국면 지식으로 재해석, v10 US-7):')
   console.log(formatRegimeReinterpretation(backtest))
+  console.log('상태0 × 국면 (v10 발견 #6의 구조 몫 vs 국면 몫 분리, v11 US-4, trend·Out·20거래일):')
+  console.log(formatState0RegimeTable(backtest))
   console.log(backtest.fundamentalAxis ? `펀더멘털 축: coveredFrom=${backtest.fundamentalAxis.coveredFrom}` : '펀더멘털 축: fundamentals.json 없음(생략)')
   if (universe === 'ngx') {
     console.log('NGX vs 나스닥100 ★★ 컨센서스 비교 (v10 US-11, PRD §7 판정 기준 재료):')

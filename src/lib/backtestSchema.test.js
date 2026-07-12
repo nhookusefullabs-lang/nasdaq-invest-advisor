@@ -338,3 +338,89 @@ describe('validateBacktest — stateAxis (v10 US-10)', () => {
     expect(errors.some((e) => e.includes('stateAxis[0].state'))).toBe(true)
   })
 })
+
+describe('validateBacktest — stateRegimeAxis + entryVariants.strategyKey (v11 US-4 승인 기준 3)', () => {
+  it('v1 픽스처(schemaVersion 1)는 stateRegimeAxis/entryVariants.strategyKey가 없어도 통과한다 (하위 호환)', () => {
+    const { valid, errors } = validateBacktest(loadFixture('backtest.valid.json'))
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('schemaVersion 3 픽스처도 stateRegimeAxis 없이 그대로 통과한다 (하위 호환)', () => {
+    // v2는 strategies[].signalQuality가 필수라 v1 베이스 픽스처를 그대로 버전만 올려 쓸 수
+    // 없다(다른 describe들도 이 이유로 v2는 별도 v2Valid() 픽스처를 쓴다) — v3만 검증한다.
+    const data = { ...loadFixture('backtest.valid.json'), schemaVersion: 3 }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('schemaVersion 4를 지원 버전으로 허용하고, 유효한 stateRegimeAxis 항목은 통과한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      schemaVersion: 4,
+      stateRegimeAxis: [
+        {
+          strategyKey: 'trend',
+          sample: 'out',
+          state: 0,
+          regime: 'down',
+          byHolding: [{ days: 20, signals: 5, winRate: 0.6, avgExcess: 0.02, medianExcess: 0.015, avgReturn: 0.03, mdd: 0.01 }],
+        },
+      ],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('v4 무효 픽스처 거부 — stateRegimeAxis.state enum 오류', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      schemaVersion: 4,
+      stateRegimeAxis: [{ strategyKey: 'trend', sample: 'out', state: 9, regime: 'down', byHolding: [] }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('stateRegimeAxis[0].state'))).toBe(true)
+  })
+
+  it('v4 무효 픽스처 거부 — stateRegimeAxis.regime enum 오류', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      schemaVersion: 4,
+      stateRegimeAxis: [{ strategyKey: 'trend', sample: 'out', state: 0, regime: 'sideways', byHolding: [] }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('stateRegimeAxis[0].regime'))).toBe(true)
+  })
+
+  it('v4 무효 픽스처 거부 — stateRegimeAxis.strategyKey enum 오류', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      schemaVersion: 4,
+      stateRegimeAxis: [{ strategyKey: 'bogus', sample: 'out', state: 0, regime: 'down', byHolding: [] }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('stateRegimeAxis[0].strategyKey'))).toBe(true)
+  })
+
+  it('entryVariants.strategyKey는 선택 필드이며(구버전 산출물 호환), 있으면 enum 검증한다', () => {
+    const summary = { signals: 3, winRate: 0.6, avgExcess: 0.02, medianExcess: 0.015, avgReturn: 0.03, mdd: 0.01 }
+    const okData = {
+      ...loadFixture('backtest.valid.json'),
+      entryVariants: [{ name: 'entry_close', strategyKey: 'minervini', signals: 3, fillRate: 1, byHolding: [{ days: 20, conditional: summary, opportunity: summary }] }],
+    }
+    expect(validateBacktest(okData).valid).toBe(true)
+
+    const badData = {
+      ...loadFixture('backtest.valid.json'),
+      entryVariants: [{ name: 'entry_close', strategyKey: 'bogus', signals: 3, fillRate: 1, byHolding: [] }],
+    }
+    const { valid, errors } = validateBacktest(badData)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('entryVariants[0].strategyKey'))).toBe(true)
+  })
+})

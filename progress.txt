@@ -1525,4 +1525,45 @@
 - 다음 스토리 메모: US-4 schemaVersion 4 골격 + 집계 축 2종 — stateRegimeAxis[](진입
   상태×국면×전략×sample, US-10 stateAxis/US-7 regimeAxis 조합 패턴 재사용), entryVariants에
   strategyKey 축 추가(모드별 분해), 검증기 v4 + 로더 v1~v3 하위호환, v1~v3 회귀 테스트
+
+## Iteration 4 — US-4. schemaVersion 4 골격 + 집계 축 2종
+- 완료 스토리: US-4
+- 변경 파일:
+  - scripts/backtest.mjs: `ENTRY_VARIANT_MODE_POOLS = ['trend', 'minervini', 'consensus_2star']`
+    신규 상수. `entryVariants` 계산을 이 3개 풀에 대해 `.flatMap()`으로 재구성 — 각 풀은
+    자기 자신의 `outRecords.filter(strategyKey===pool && basis==='top5')`만으로 독립 집계
+    하고(풀 간 신호 누출 없음), 결과마다 `strategyKey`를 태그한다. 신규 함수
+    `buildStateRegimeAxis(inRecords, outRecords, priceIndex, holdingDays)` 추가 — stateAxis
+    (US-10)/regimeAxis(US-7)와 동일 패턴으로 state×regime 2차원 셀을 순회하며
+    `aggregatePerformance()`를 재사용(재구현 없음). `runBacktest()` 반환 객체에
+    `schemaVersion: 4`, `stateRegimeAxis` 추가. 신규 `formatState0RegimeTable(backtest)` —
+    trend·Out·20거래일 기준 상태0×국면 3행 콘솔 표(v10 발견 #6 "구조 몫 vs 국면 몫" 분리
+    재료), `main()`에 출력 라인 추가.
+  - src/lib/backtestSchema.js: `SCHEMA_VERSION` 3→4, `SUPPORTED_SCHEMA_VERSIONS`에 4 추가.
+    `validateEntryVariant`에 선택 필드 `strategyKey` enum 검증(STRATEGY_KEYS) 추가 — 없으면
+    (v1~v3 산출물) 검증 생략. 신규 `validateStateRegimeAxisItem` — stateAxis/regimeAxis
+    검증기를 그대로 조합(strategyKey/sample/state/regime enum + byHolding 재사용),
+    `validateBacktest()`에 선택 필드로 배선.
+  - scripts/backtest.test.js: 기존 schemaVersion 3 단언 → 4로 교체(주석 추가, v9.1 US-1
+    describe). 기존 entryVariants "4종" 단언을 trend 풀로 좁힘(`trendVariants()` 헬퍼 추가,
+    회귀 없음 — 다른 두 풀이 추가됐을 뿐). 신규 describe "v11 US-4" 3개 테스트: AC1
+    stateRegimeAxis (state,regime) 셀 합 = stateAxis 합(4키×2sample×3days=24케이스 전수
+    확인), AC2 각 모드 풀 entryVariants.signals가 자기 풀 own top5 표본 유무와만 대응함을
+    확인(다른 풀 신호 섞임 없음의 근사 증거).
+  - src/lib/backtestSchema.test.js: 신규 describe "stateRegimeAxis + entryVariants.
+    strategyKey" 7개 테스트 — v1/v3 하위 호환 2개, 유효 stateRegimeAxis 통과 1개, 무효
+    픽스처 거부 3케이스(state/regime/strategyKey enum 각각, AC3 "3케이스 이상" 충족),
+    entryVariants.strategyKey 선택 필드 통과+enum 거부 1개. (v2는 베이스 픽스처가 v1이라
+    signalQuality 필수 조건과 충돌해 규모 조정 — regimeAxis 등 기존 describe들과 동일한
+    이유로 v3만 테스트.)
+- 승인 기준 확인: AC1(stateRegimeAxis 합산 정합성) 통과, AC2(모드별 entryVariants 독립
+  계산·풀 간 누출 없음) 통과, AC3(v1~v3 로더 하위호환 + v4 무효 픽스처 거부 3케이스 이상)
+  통과 — schemaVersion.test.js에서 정확히 3케이스(state/regime/strategyKey enum) 확보.
+- 테스트 수 변화: 692 → 702 (+10: backtest.test.js 74→77 신규 3개 + backtestSchema.test.js
+  33→40 신규 7개). npm run test(전체 53개 파일, 702개) + npm run build 둘 다 통과.
+- 다음 스토리 메모: US-5 눈림목 판정 lib(`src/lib/pullback.js` 신규) — PRD §4.5 눈림목
+  정의(추세 상단 이탈 후 지지선 근접 재접근) 참고. schemaVersion 4의 stateRegimeAxis가
+  이미 확인한 "상태0×down국면" 셀이 v10 발견 #6의 근거이므로, US-5는 그 상태0 신호를
+  세분화하는 판정 함수가 될 가능성이 높음 — US-6(진입 변형 3종 + pullbackAxis)이 이
+  lib을 바로 소비하도록 순수 함수·부작용 없음으로 설계할 것.
   필수(entryVariants 스키마 변경이 US-8 산출물 깨지 않는지 특히 주의).
