@@ -1496,3 +1496,33 @@
 - 다음 스토리 메모: US-3 부분 포지션 인프라(scripts/lib/performance.mjs 확장) — 청산
   이벤트 배열[{일자,비율,체결가}] 지원, 포지션 수익률=Σ(비율×구간수익률), 벤치마크도
   동일 가중 구조, 기존 전량청산 경로(비율=1 단일 이벤트로 취급) 결과 불변 회귀 확인.
+
+## Iteration 3 — US-3. 부분 포지션 인프라
+- 완료 스토리: US-3
+- 변경 파일:
+  - scripts/lib/performance.mjs: `computePartialPositionPerformance(record, priceIndex,
+    exitEvents, finalHoldingDays)` 신규 — 기존 `computeSignalPerformance()`는 전량청산
+    전용으로 완전히 그대로 두고(회귀 없음) 별개 함수로 추가. exitEvents=[{date,ratio}]의
+    비율 합이 1 미만이면 잔여분을 finalHoldingDays 시점에 청산하는 레그로 자동 추가.
+    **레그마다 보유기간이 다르므로 벤치마크도 레그별로 개별 계산**(universeBenchmarkReturn
+    을 레그 보유기간만큼씩 따로 호출) 후 비중 가중합 — 하나의 벤치마크로 뭉뚱그리면
+    정합성이 깨진다는 점을 명시. MDD는 "잔여 포지션 가중 곡선"(이미 청산된 레그는 그
+    시점 수익률로 고정, 미청산 비중만 그날그날 종가로 계속 평가) 기준으로 기존
+    maxDrawdown()을 그대로 재사용해 계산. 비율 합이 1 초과·청산일이 캘린더에 없음·
+    잔여분 만기청산일이 데이터 범위 밖인 경우 전부 null.
+  - scripts/lib/performance.test.js: 8개 추가 — 50%중도+50%만기 가중 수익률/벤치마크
+    손계산 일치(AC1), 100%중도청산이 동일 보유기간 전량청산과 일치, **0%중도청산(이벤트
+    없음)이 기존 computeSignalPerformance와 완전히 동일**(AC3 회귀 없음의 직접 증명),
+    legs 배열 상세 기록 확인, 비율합=1 정확 경계(레그 2개, 잔여 없음), 비율합>1 무효
+    입력 거부(AC2 "비율 합=1 검증"), 레그별 벤치마크가 실제로 다름을 먼저 확인한 뒤
+    가중합 정합성 검증, 조기 절반청산이 후반 급락 노출을 줄여 MDD가 전량보유 이하임을
+    V자 하락 픽스처로 확인, 청산일 캘린더 부재/잔여분 만기 범위초과 각각 null.
+- 승인 기준 확인: AC1(손계산 픽스처 6개 이상 → 8개) 통과, AC2(가중 벤치마크·초과수익
+  정합성 + 비율합 검증) 통과, AC3(기존 전량청산 경로 결과 불변 — 별도 함수로 추가했으므로
+  구조적으로 보장 + 0%중도청산 케이스로 수치까지 동일함을 직접 증명) 통과.
+- 테스트 수 변화: 682 → 692 (+10, performance.test.js 13→21 신규 8개 반영 확인 — 전체
+  스위트 카운트 변화가 새 테스트 수와 정확히 일치). npm run test/build 둘 다 통과.
+- 다음 스토리 메모: US-4 schemaVersion 4 골격 + 집계 축 2종 — stateRegimeAxis[](진입
+  상태×국면×전략×sample, US-10 stateAxis/US-7 regimeAxis 조합 패턴 재사용), entryVariants에
+  strategyKey 축 추가(모드별 분해), 검증기 v4 + 로더 v1~v3 하위호환, v1~v3 회귀 테스트
+  필수(entryVariants 스키마 변경이 US-8 산출물 깨지 않는지 특히 주의).

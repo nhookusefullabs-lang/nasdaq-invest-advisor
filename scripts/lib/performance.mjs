@@ -91,6 +91,84 @@ export function computeSignalPerformance(record, priceIndex, holdingDays) {
   }
 }
 
+/**
+ * 부분 청산 지원 포지션 성과 계산 (PRD_Nasdaq11 §4.3 청산 E/US-3) — 청산E(클라이맥스
+ * 부분 청산) 등 "포지션의 일부만 특정 시점에 청산하고 나머지는 만기까지 보유"하는
+ * 규칙의 정확한 가중 수익률/벤치마크/MDD를 계산한다. 기존 computeSignalPerformance()는
+ * 전량 청산(단일 만기) 전용으로 그대로 두고(회귀 없음), 이 함수는 완전히 별개로 추가한다.
+ *
+ * exitEvents: [{date, ratio}] — date(그 시점 청산 비중 ratio, 0~1)의 배열. ratio 합이
+ * 1 미만이면 잔여분(1−합)은 record.date로부터 finalHoldingDays 거래일 후에 청산한다.
+ * ratio 합이 1을 초과하면(무효 입력) null. 각 청산분(레그)은 자신의 보유기간에 맞는
+ * universeBenchmarkReturn()으로 개별 벤치마킹한 뒤 비중대로 가중합한다(레그마다 보유
+ * 기간이 다르므로 전체를 하나의 벤치마크로 뭉뚱그리면 정합성이 깨진다).
+ *
+ * 반환: { ...record, returnPct, benchmarkReturn, excessReturn, mdd, legs } | null
+ * (legs: [{date, weight, returnPct}] — 근거 확인용)
+ */
+export function computePartialPositionPerformance(record, priceIndex, exitEvents, finalHoldingDays) {
+  const entry = priceIndex.get(record.ticker)
+  if (!entry) return null
+  const entryIdx = entry.dateIndex.get(record.date)
+  if (entryIdx == null) return null
+  const { series } = entry
+  const entryClose = series[entryIdx].close
+
+  const totalPartialRatio = exitEvents.reduce((s, e) => s + e.ratio, 0)
+  if (totalPartialRatio < 0 || totalPartialRatio > 1 + 1e-9) return null
+
+  const legs = []
+  for (const event of exitEvents) {
+    const exitIdx = entry.dateIndex.get(event.date)
+    if (exitIdx == null || exitIdx <= entryIdx) return null
+    legs.push({ exitIdx, weight: event.ratio })
+  }
+
+  const remainderWeight = Math.max(0, 1 - totalPartialRatio)
+  if (remainderWeight > 1e-9) {
+    const finalExitIdx = entryIdx + finalHoldingDays
+    if (finalExitIdx >= series.length) return null
+    legs.push({ exitIdx: finalExitIdx, weight: remainderWeight })
+  }
+  if (!legs.length) return null
+
+  let weightedReturn = 0
+  let weightedBenchmark = 0
+  const legDetails = []
+  for (const leg of legs) {
+    const exitClose = series[leg.exitIdx].close
+    const legReturn = exitClose / entryClose - 1
+    const legHoldingDays = leg.exitIdx - entryIdx
+    const legBenchmark = universeBenchmarkReturn(priceIndex, record.date, legHoldingDays)
+    if (legBenchmark == null) return null
+    weightedReturn += leg.weight * legReturn
+    weightedBenchmark += leg.weight * legBenchmark
+    legDetails.push({ date: series[leg.exitIdx].date, weight: leg.weight, returnPct: legReturn })
+  }
+
+  // MDD는 "잔여 포지션 가중 곡선" 기준 — 이미 청산된 레그는 그 시점 수익률로 고정(확정),
+  // 아직 청산 안 된 비중만 그날그날의 종가로 계속 평가한다.
+  const maxExitIdx = Math.max(...legs.map((l) => l.exitIdx))
+  const curve = []
+  for (let t = entryIdx; t <= maxExitIdx; t++) {
+    let value = 0
+    for (const leg of legs) {
+      const priceRatio = t >= leg.exitIdx ? series[leg.exitIdx].close / entryClose : series[t].close / entryClose
+      value += leg.weight * priceRatio
+    }
+    curve.push(value)
+  }
+
+  return {
+    ...record,
+    returnPct: weightedReturn,
+    benchmarkReturn: weightedBenchmark,
+    excessReturn: weightedReturn - weightedBenchmark,
+    mdd: maxDrawdown(curve),
+    legs: legDetails,
+  }
+}
+
 const DEFAULT_STRATEGY_KEYS = ['trend', 'minervini', 'consensus_2star', 'consensus_1star']
 const DEFAULT_BASES = ['top5', 'allSignals']
 
