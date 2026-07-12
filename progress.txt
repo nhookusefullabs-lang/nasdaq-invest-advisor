@@ -1041,3 +1041,26 @@
 - 테스트 수 변화: 506 → 518 (+12). npm run test/build 둘 다 통과.
 - 다음 스토리 메모: US-3 진입가 엔진 1/2(src/lib/entryPoint.js) — design-entry-point-engine.md
   §2(피벗)·§3(파생가격) 그대로 구현, PH_d는 당일 제외 63일 최고 종가.
+
+## Iteration 3 — US-3. 진입가 엔진 (1/2) — 피벗 산정 + 파생 가격
+- 완료 스토리: US-3
+- 변경 파일:
+  - src/lib/constants/entry.js(신규): PIVOT_LOOKBACK(63)/BREAKOUT_RECENCY(21)/BUFFER(0.3%)/
+    CHASE_LIMIT(5%)/FAR_BAND(10%)/STOP_PCT(8%)/ATR_STOP_MULT(2.5)/VOL_MULT(1.5) — 설계서 §9 표 그대로.
+  - src/lib/entryPoint.js(신규): `computePivot(series)`(§2.1 3규칙 — 머리 위 저항선/최근
+    돌파된 저항선/저항선 소멸), `derivedPrices({pivot,currentClose,atr14})`(§3 — 트리거/
+    유효상단/원거리경계는 pivot 기준, 손절 참고 2종은 현재 종가 기준).
+  - src/lib/entryPoint.test.js(신규): 13개 — 데이터부족·규칙1·당일제외·규칙2·21일 경계
+    (정확21=유효/22=무효)·규칙3(장기상승 소멸)·중복돌파 미기록 확인(AC1, 7개 — 요구 6개
+    이상), derivedPrices null전파·상수기반 산출·손절2종·atr14 미제공(AC3 등, 6개).
+- 승인 기준 확인: AC1(피벗 3규칙 픽스처, 요구 6개 이상 → 7개) 통과, AC2(당일 제외) 통과,
+  AC3(매직넘버 0 — 전부 constants/entry.js 값만 사용) 통과.
+- 설계 결정(코드 결정, 채택 아님): 21거래일 내 돌파 이벤트가 다수면 가장 최근 이벤트를
+  사용(PRD가 명시하지 않아 "현재와 가장 관련 있는 저항선"이라는 취지로 판단). 손절 참고
+  2종의 앵커는 pivot이 아니라 "현재 종가"(prd-v10-pipeline.md US-3 구현 지시 원문
+  "close − 2.5×ATR14" 그대로) — 실제 포지션의 체결가 기준 손절은 US-6 positionPlan.js가
+  별도로 담당(진입 전 종목에는 아직 체결가가 없으므로).
+- 테스트 수 변화: 518 → 531 (+13). npm run test/build 둘 다 통과.
+- 다음 스토리 메모: US-4 진입가 엔진 2/2 — entryPoint.js에 상태 판정(0~3) 함수 추가,
+  §5 의사코드 그대로(computePivot 재사용, 재구현 없음), 거래량 확인(SMA50 volume,
+  기존 volumeTrend와 다른 함수 필요 — SMA50은 indicators.sma() 재사용), 돌파 후 경과일.
