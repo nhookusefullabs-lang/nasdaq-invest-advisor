@@ -2,11 +2,12 @@
 // entryPoint.js(judgeEntryState/derivedPrices)·indicators.js(atr)를 그대로 재사용 —
 // 재구현 없음. tickerData(원본 series)가 없으면 아무것도 렌더링하지 않는다.
 import { judgeEntryState, derivedPrices } from '../lib/entryPoint.js'
+import { judgePullback } from '../lib/pullback.js'
 import { atr } from '../lib/indicators.js'
 import { VERIFICATION_STATUS } from '../lib/constants/verification.js'
 
 const STATE_BADGE = {
-  0: { label: '베이스 진행 중', className: 'bg-gray-100 text-gray-600' },
+  0: { label: '추세 내 눌림목 후보 (검증 진행 중)', className: 'bg-gray-100 text-gray-600' },
   1: { label: '돌파 대기', className: 'bg-blue-50 text-blue-700' },
   2: { label: '매수 유효 구간', className: 'bg-green-50 text-green-700' },
   3: { label: '확장 — 추격 금지', className: 'bg-red-50 text-red-700' },
@@ -40,6 +41,16 @@ export default function EntryPriceCard({ tickerData, generatedAt, expanded = fal
       {result.state === 0 && (
         <p className="text-gray-600 mt-0.5">
           트리거 {result.trigger.toFixed(2)} · 피벗까지 {result.distancePct.toFixed(1)}% — 관망
+          {(() => {
+            const pullback = judgePullback(tickerData.series)
+            if (pullback.insufficientData) return null
+            return (
+              <>
+                {' '}· 재개 트리거가 {pullback.triggerPrice.toFixed(2)}
+                <VerificationTag info={VERIFICATION_STATUS.pullbackCandidate} />
+              </>
+            )
+          })()}
         </p>
       )}
 
@@ -70,11 +81,14 @@ export default function EntryPriceCard({ tickerData, generatedAt, expanded = fal
               )
             })()}
           </p>
-          <p className="text-gray-600 mt-0.5">
-            돌파 후 {result.daysSinceBreakout}거래일 경과{result.volumeOK ? ' · 거래량 동반 돌파 확인' : ''}
+          <p className="text-gray-600 mt-0.5">돌파 후 {result.daysSinceBreakout}거래일 경과</p>
+          <p className="mt-0.5">
+            <span className={`inline-block px-1.5 py-0.5 rounded ${result.volumeOK ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
+              거래량 동반 돌파 확인 {result.volumeOK ? '✓' : '⚠ 미확인'}
+            </span>
+            <VerificationTag info={VERIFICATION_STATUS.volumeConfirmedBreakout} />
           </p>
           {result.earlyBreakout && <p className="text-amber-600 mt-0.5">돌파 직후 — 가짜 돌파 위험 구간</p>}
-          {!result.volumeOK && <p className="text-amber-600 mt-0.5">⚠ 무거래량 돌파 — 신뢰도 낮음</p>}
         </>
       )}
 

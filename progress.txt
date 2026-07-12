@@ -1942,3 +1942,77 @@
   상태 2에 "거래량 동반 돌파 확인 ✓/⚠ 미확인" 배지 1급 승격(순위·점수 무변화 — 스냅샷
   검증). (Should) 상태 0 배지 문구 변경 + pullback.js의 재개 트리거가 표시 + "측정 중"
   상태 동반. v10의 "열위" 라벨 렌더링 테스트 문법을 그대로 재사용할 것(구조가 같음).
+
+## Iteration 12 — US-12. UI — 거래량 배지 승격(승인된 채택 2) + 상태 0 문구
+- 완료 스토리: US-12
+- 예상 밖 발견/설계 결정: EntryPriceCard.jsx는 TrendModeView/MinerviniModeView 양쪽
+  카드에서 공유되는 단일 컴포넌트라(이미 v10부터 그런 구조), "양 모드 카드" 요구사항이
+  이 파일 하나만 고치면 자동으로 충족됐다 — 모드별 분기 코드 불필요. 상태0의 재개
+  트리거가는 pullback.js의 judgePullback()을 그대로 재사용했는데, judgeEntryState()가
+  이미 상태0 판정에 필요한 만큼의 데이터 길이(PIVOT_LOOKBACK+1)를 보장하므로
+  judgePullback()의 insufficientData가 사실상 항상 false가 되지만, 방어적으로
+  null 체크는 유지(그래프상 다른 이유로 실패할 여지를 열어둠). 테스트 작성 중 실수 하나
+  발견·수정: 거래량 배지가 `<span>`으로 감싸져 있어 `screen.getByText(/거래량 동반.../)`가
+  그 안쪽 span을 반환하고 형제 VerificationTag가 안 잡혔다 — `.closest('p')`로 바깥
+  문단을 잡도록 고쳐야 했다(기존 "손절 참고" 테스트는 텍스트가 문단의 직접 텍스트 노드라
+  이 문제가 없었던 것과 대조).
+- 변경 파일:
+  - src/lib/constants/verification.js: changelog에 2026-07-13 항목 +
+    `volumeConfirmedBreakout`(status:'조건부 품질 우위', basis에 실측 승률(+11.6pt)과
+    기회비용 경고를 한 문자열로 결합 — 분리 렌더가 원천적으로 불가능하도록) +
+    `pullbackCandidate`(status:'측정중') 신규.
+  - src/components/EntryPriceCard.jsx: `judgePullback` import 추가. STATE_BADGE[0].label을
+    '베이스 진행 중' → '추세 내 눌림목 후보 (검증 진행 중)'로 교체. 상태0 문단에 재개
+    트리거가(judgePullback().triggerPrice) + `VerificationTag(pullbackCandidate)` 추가
+    (insufficientData면 미표시). 상태2의 거래량 확인을 기존 인라인 문구("...경과 ·
+    거래량 동반 돌파 확인")+별도 경고문("⚠ 무거래량 돌파 — 신뢰도 낮음")에서 단일 1급
+    배지(pill, ✓/⚠ 미확인)로 승격하고 바로 옆에 `VerificationTag(volumeConfirmedBreakout)`을
+    항상 동반시켰다.
+  - src/components/EntryPriceCard.test.jsx: 기존 '베이스 진행 중' 텍스트 단언을 새 라벨로
+    갱신(의도된 문구 변경 — 회귀 아님). 신규 describe 2개, 총 3개 테스트 — 거래량
+    ✓/⚠ 미확인 양쪽 케이스 모두 양면 라벨(조건부 품질 우위+기회비용)이 같은 문단에
+    동반됨을 확인(승인 기준 1), 상태0에서 재개 트리거가+측정중 라벨 동반 확인(승인
+    기준 3).
+- 승인 기준 확인: 1(양면 라벨이 분리 렌더 불가 — status/basis 한 문자열에 우위+기회비용
+  결합, VerificationTag가 항상 함께 렌더링) 통과, 2(배지 승격이 순위·점수에 무영향 —
+  EntryPriceCard.jsx는 recommend.js/minervini.js를 전혀 import하지 않아 스코어링 경로와
+  완전히 분리, 기존 recommend-default-baseline.json 회귀 테스트 무수정 통과로 재확인)
+  통과, 3(상태0 문구·트리거가 렌더링 + "측정 중" 동반 테스트) 통과.
+- 테스트 수 변화: 786 → 789 (+3: EntryPriceCard.test.jsx 신규, 기존 1개 텍스트 갱신은
+  신규 테스트 아님). npm run test(전체 54개 파일, 789개) + npm run build 둘 다 통과.
+- 다음 스토리 메모: US-13(마지막 스토리) 해석 문서화 + 통합 검증·마감. README에 "v11
+  해석 지침" 절(국면 축이 1차 해석 틀, In/Out 분할은 보조 · PRD §5 판정 기준표 전재 ·
+  "측정 지속"이 정상 판정값 · 2022 구간 생존 편향 주의) + 운영 절차(수집 5.5y 양
+  유니버스 → step=5 공식 실행×2 → 교집합·눌림목·청산 비교표 확인 → 해석 세션) 추가.
+  PRD §8 성공 기준 8항목을 하나씩 점검해 README+progress.txt에 기록(실데이터 수집·실행은
+  Out of Scope이므로 코드/픽스처 완비 항목은 v10 §8 점검 때처럼 "[~] 부분 충족 — 운영자
+  실행 대기"로 표기). 전체 테스트+빌드 재확인 후 마감.
+
+## Iteration 13 — US-13. 해석 문서화 + 통합 검증·마감 (v11 전체 완료)
+- 완료 스토리: US-13 — prd-v11-pullback_1.md의 13개 스토리(US-1~13) 전부 [x] 완료.
+- 변경 파일:
+  - README.md: "v11 해석 지침" 절 신규 — 국면 축이 1차 해석 틀(In/Out 분할은 보조로
+    격하)·"측정 지속"이 정상 판정값·2022 구간 생존 편향 주의를 서술하고, PRD_Nasdaq11
+    §5 판정 기준표(눌림목/청산 A·C·E·F/NDX·NGX 허들 교집합)를 그대로 전재. 이어서
+    "v11 실데이터 순서"(수집 5.5y 양 유니버스 → step=5 공식 실행×2 → 교집합·눌림목·청산
+    비교표 확인 → 해석 세션) 4단계 절차 추가. "PRD_Nasdaq11 §8 성공 기준 점검" 절
+    신규 — 8항목 중 7개 [x], 1개(5.5년 실데이터 재수집)는 [~](코드·픽스처 완비, 실행은
+    Out of Scope라 운영자 몫) — v10 §8 점검 때와 동일한 표기 관례.
+  - prd-v11-pullback_1.md: US-13 체크 — 이로써 US-1~13 전부 체크 완료.
+- 승인 기준 확인: 1(README 해석 지침+판정 기준표+"측정 지속" 명기 존재) 통과, 2(성공
+  기준 점검 기록 완료 — README와 이 항목 양쪽에 기록) 통과, 3(전체 테스트 통과 + 빌드
+  성공) 통과.
+- 테스트 수 변화: 없음(문서 전용 스토리). npm run test(전체 54개 파일, 789개) +
+  npm run build 최종 재확인 둘 다 통과.
+- v11 전체 요약(US-1~13, 이 세션 + 어제 세션 합산): 5.5년 데이터 수집 기점 확장(US-1),
+  청산 F 90/120일 지평(US-2), 부분 포지션 인프라(US-3), schemaVersion 4 골격 +
+  stateRegimeAxis/entryVariants 모드분해(US-4), 눌림목 판정 lib(US-5), 눌림목 진입
+  변형 3종+pullbackAxis(US-6), 청산 A(exit_regime_conditional)+regime-flip(US-7),
+  청산 C(exit_structural)+조합 2종(US-8), 청산 E(exit_climax_partial)(US-9), 허들
+  교집합 축(US-10), relax_off_in_downturn 앱 반영(US-11), 거래량 배지 승격+상태0
+  문구(US-12), 해석 문서화+마감(US-13). 테스트 682(v11 착수 시점) → 789(+107).
+  US-1~10은 이번 세션 중 사용자 요청으로 이미 푸시·배포 확인 완료(commit 1d6d7f3..
+  0b0b860). US-11~13은 이 노트 작성 시점 기준 로컬 커밋만 존재 — 푸시는 별도 요청 시.
+  운영자에게 남은 실행 작업: 5.5년 실데이터 양 유니버스 재수집 → step=5 공식 백테스트
+  ×2 실행 → README "v11 해석 지침"의 판정 기준표로 눌림목/청산 A·C·E·F/NDX·NGX 허들
+  교집합 채택 여부 판정 → 필요 시 constants changelog 기록.
