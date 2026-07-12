@@ -1342,3 +1342,45 @@
 - 다음 스토리 메모: US-13 화면2 UI — Recommend.jsx에 국면 배지(regime.js)·진입 상태
   배지+가격세트(entryPoint.js)·매도 신호 배지(exitSignals.js)를 기존 카드 구조에 추가만
   (무변경 유지), backtest.json v3 regimeAxis 부재 시 국면 영역만 비표시.
+
+## Iteration 13 — US-13. 화면2 — 국면 배지 · 진입 상태 · 매도 신호 · 검증 상태
+- 완료 스토리: US-13
+- 변경 파일:
+  - src/components/RegimeBadge.jsx(신규): regime.js의 currentRegime() 결과 + backtest.json의
+    regimeAxis(strategyKey='consensus_2star'·sample='out'·해당 regime)를 표시. **backtest나
+    regimeAxis 자체가 없으면(v1~US-12 산출물) 영역 전체를 렌더링하지 않는다** — 국면 자체는
+    dataset만으로 계산 가능하지만 검증된 Out 성과 맥락 없이 보여주는 건 "측정이 먼저" 원칙에
+    어긋나 의도적으로 배지 표시 자체를 backtest.json v3 존재에 게이팅했다(BacktestConfidence
+    컴포넌트의 기존 게이팅 관례와 동일선).
+  - src/components/EntryPriceCard.jsx(신규): entryPoint.js의 judgeEntryState()/
+    derivedPrices(), indicators.js의 atr() 재사용(재구현 없음). 상태별 배지+가격세트(상태0
+    트리거+거리, 상태1 트리거+손절참고, 상태2 피벗+유효상단+손절참고2종+경과일+거래량배지,
+    상태3 가격 미제시), 손절 참고가마다 constants/verification.js의 검증상태를 같은
+    문단에 항상 동반(분리 렌더 불가), 산출 근거 펼침(expandedEntryEvidence, US-12 필드
+    재사용), 기준일·목표가없음·진입가 면책 고정 문구.
+  - src/components/ExitSignalBadge.jsx(신규): exitSignals.js의 evaluateExitSignals() 재사용
+    (재구현 없음). rsPercentileValue는 화면2 맥락에 없어 null 전달(X3만 계산 대상 제외,
+    X1/X2/X4/X5는 정상). "매도 신호 없음" 또는 "⚠ n건" + 펼침 상세.
+  - src/screens/Recommend.jsx: RegimeBadge를 최상단에 1회, EntryPriceCard/ExitSignalBadge를
+    SelectAndResearch(미너비니·컨센서스 공용) + TrendModeView 인라인 카드 양쪽에 배선.
+    tickerDataMap/generatedAt/expandedEntryEvidence/onToggleEntryEvidence를 3개 모드뷰에
+    전부 스레딩 — 기존 마크업·로직은 무수정(추가만).
+  - src/App.jsx: `tickerDataMap`(dataset.tickers dataSufficient만, ticker→원본 데이터),
+    `regimeInfo`(currentRegime(dataset.tickers), 클라이언트에서 바로 계산 — 백엔드 호출
+    없음), `toggleEntryEvidence` 신규, Recommend에 4개 prop 추가 배선.
+  - 신규 테스트 24개: RegimeBadge(10 — backtest/regimeAxis/regime null 3종 미표시(AC4),
+    국면 3종 렌더링(AC1), 표본충족/부족 문구, regimeAxis 항목 자체 없음, 고정 고지),
+    EntryPriceCard(11 — tickerData 없음 미표시(AC4), 산정불가·상태0~3 렌더링(상태3
+    가격 미제시 확인, AC2), earlyBreakout 문구, 검증열위 라벨 동반(상태1·2 둘 다, AC3),
+    펼침 토글, 기준일/면책 고지), ExitSignalBadge(3 — 미표시·신호없음·신호트리거+펼침).
+- 승인 기준 확인: AC1(국면 배지 3상태+표본부족+고지 동반) 통과, AC2(진입 상태 4종+상태3
+  가격 미제시+earlyBreakout) 통과, AC3(검증 열위 라벨이 같은 문단에 항상 동반 — 텍스트
+  분리 불가를 실제로 확인) 통과, AC4(기존 App.test.jsx 13개+Recommend.test.jsx 30개
+  전부 무수정 그대로 통과 — 신규 컴포넌트가 순수 추가임을 증명) 통과.
+- 검증: 기존 43개(App 13 + Recommend 30) 테스트가 이 세션에서 단 한 줄도 수정 없이
+  그대로 통과 — 진짜 "추가만" 구현되었다는 강한 증거. 브라우저/스크린샷 도구가 이
+  프로젝트에 없어(기존에 확인된 제약) jsdom 렌더 테스트가 실질적 시각 검증 수단.
+- 테스트 수 변화: 642 → 666 (+24). npm run test/build 둘 다 통과.
+- 다음 스토리 메모: US-14 화면3·4 청산계획 패널 + 문서 마감 — Simulation/Portfolio에
+  positionPlan.js(US-6) 연동(체결가 입력→R배수/손절/트레일링/이익보호), 매도신호배지
+  병기, README 분기 재검증 절차 + PRD §7 판정기준표 전재, PRD §8 성공기준 8항목 점검.

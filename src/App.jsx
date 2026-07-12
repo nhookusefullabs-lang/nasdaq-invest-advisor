@@ -7,6 +7,7 @@ import { applyFilters, countWeek52Excluded } from './lib/filters.js'
 import { recommend } from './lib/recommend.js'
 import { runMinerviniRecommend } from './lib/minervini.js'
 import { buildConsensusRanking } from './lib/consensus.js'
+import { currentRegime } from './lib/regime.js'
 import { PRESETS, DEFAULT_PRESET_KEY } from './lib/presets.js'
 import { loadPersistedState, savePersistedState, DEFAULT_UI_STATE } from './lib/persistence.js'
 import NavTabs from './components/NavTabs.jsx'
@@ -118,6 +119,15 @@ export default function App() {
     return dataset.tickers.filter((t) => t.dataSufficient)
   }, [dataset])
 
+  // 화면2 진입가/청산신호 카드(v10 US-13)가 티커별 원본 series를 조회하는 데 쓴다.
+  const tickerDataMap = useMemo(() => new Map(availableTickerData.map((t) => [t.ticker, t])), [availableTickerData])
+
+  // 화면2 국면 배지(v10 US-13) — regime.js가 dataset.tickers만으로 계산(백엔드 호출 없음).
+  const regimeInfo = useMemo(() => {
+    if (!dataset) return null
+    return currentRegime(dataset.tickers)
+  }, [dataset])
+
   const selectedTickerData = useMemo(() => {
     if (!dataset) return []
     const byTicker = new Map(dataset.tickers.map((t) => [t.ticker, t]))
@@ -167,6 +177,13 @@ export default function App() {
     setUiState((s) => ({ ...s, researchRequests: s.researchRequests.filter((t) => t !== ticker) }))
 
   const clearResearchRequests = () => setUiState((s) => ({ ...s, researchRequests: [] }))
+
+  // 화면2 진입가 산출 근거 카드 펼침/접힘 토글 (v10 US-12/US-13)
+  const toggleEntryEvidence = (ticker) =>
+    setUiState((s) => ({
+      ...s,
+      expandedEntryEvidence: { ...s.expandedEntryEvidence, [ticker]: !s.expandedEntryEvidence[ticker] },
+    }))
 
   if (loadError) {
     return <CenteredMessage>데이터 로드 실패: {loadError}</CenteredMessage>
@@ -227,6 +244,10 @@ export default function App() {
           onToggleSelect={toggleSelectedTicker}
           onGoToSimulation={() => setScreen('simulation')}
           backtest={backtest}
+          regimeInfo={regimeInfo}
+          tickerDataMap={tickerDataMap}
+          expandedEntryEvidence={uiState.expandedEntryEvidence}
+          onToggleEntryEvidence={toggleEntryEvidence}
         />
       )}
 

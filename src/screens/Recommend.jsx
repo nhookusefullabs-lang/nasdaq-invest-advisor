@@ -6,6 +6,9 @@ import FundamentalBadge from '../components/FundamentalBadge.jsx'
 import FundamentalFailSection from '../components/FundamentalFailSection.jsx'
 import ResearchCheckBadge from '../components/ResearchCheckBadge.jsx'
 import BacktestConfidence from '../components/BacktestConfidence.jsx'
+import RegimeBadge from '../components/RegimeBadge.jsx'
+import EntryPriceCard from '../components/EntryPriceCard.jsx'
+import ExitSignalBadge from '../components/ExitSignalBadge.jsx'
 import { PRESETS, PRESET_KEYS } from '../lib/presets.js'
 import { TREND_TEMPLATE, TREND_TEMPLATE_RELAXED_MIN_CONDITIONS } from '../lib/constants/v8.js'
 import { evaluateFundamentalHurdle } from '../lib/fundamentals.js'
@@ -58,6 +61,10 @@ function SelectAndResearch({
   children,
   fundamentalEvaluation,
   researchSection,
+  tickerData,
+  generatedAt,
+  expandedEntryEvidence,
+  onToggleEntryEvidence,
 }) {
   return (
     <div className="border border-gray-200 rounded px-3 py-2 hover:bg-gray-50">
@@ -77,6 +84,13 @@ function SelectAndResearch({
         </div>
       )}
       <FundamentalBadge evaluation={fundamentalEvaluation} />
+      <EntryPriceCard
+        tickerData={tickerData}
+        generatedAt={generatedAt}
+        expanded={!!expandedEntryEvidence?.[ticker]}
+        onToggleExpanded={() => onToggleEntryEvidence?.(ticker)}
+      />
+      <ExitSignalBadge tickerData={tickerData} />
       {researchSection}
     </div>
   )
@@ -130,6 +144,9 @@ function TrendModeView({
   selectedTickers,
   onToggleSelect,
   backtest,
+  tickerDataMap,
+  expandedEntryEvidence,
+  onToggleEntryEvidence,
 }) {
   const { relaxationApplied, insufficientSignal } = recommendation
   const { visible: afterFundamentals, failed } = splitByFundamentalVerdict(recommendation.list, fundamentalsMap)
@@ -228,6 +245,13 @@ function TrendModeView({
               </div>
             )}
             <FundamentalBadge evaluation={r.fundamentalEvaluation} />
+            <EntryPriceCard
+              tickerData={tickerDataMap?.get(r.ticker)}
+              generatedAt={generatedAt}
+              expanded={!!expandedEntryEvidence?.[r.ticker]}
+              onToggleExpanded={() => onToggleEntryEvidence?.(r.ticker)}
+            />
+            <ExitSignalBadge tickerData={tickerDataMap?.get(r.ticker)} />
             <ResearchCheckBadge research={researchMap?.get(r.ticker)} />
             {researchMap?.get(r.ticker) && isNonDefaultPreset && (
               <p className="text-xs text-gray-400 mt-1">리서치 풀은 기본형 기준으로 선정되었습니다.</p>
@@ -272,6 +296,10 @@ function MinerviniModeView({
   selectedTickers,
   onToggleSelect,
   backtest,
+  tickerDataMap,
+  generatedAt,
+  expandedEntryEvidence,
+  onToggleEntryEvidence,
 }) {
   const { relaxationApplied, insufficientSignal } = minerviniResult
   const { visible: afterFundamentals, failed } = splitByFundamentalVerdict(minerviniResult.list, fundamentalsMap)
@@ -310,6 +338,10 @@ function MinerviniModeView({
             researchRequests={researchRequests}
             onToggleResearchRequest={onToggleResearchRequest}
             fundamentalEvaluation={r.fundamentalEvaluation}
+            tickerData={tickerDataMap?.get(r.ticker)}
+            generatedAt={generatedAt}
+            expandedEntryEvidence={expandedEntryEvidence}
+            onToggleEntryEvidence={onToggleEntryEvidence}
             researchSection={
               <>
                 <ResearchCheckBadge research={researchMap?.get(r.ticker)} />
@@ -348,6 +380,10 @@ function ConsensusCard({
   onToggleResearchRequest,
   selectedTickers,
   onToggleSelect,
+  tickerDataMap,
+  generatedAt,
+  expandedEntryEvidence,
+  onToggleEntryEvidence,
 }) {
   const pctTop = Math.round(100 - entry.consensusPercentile)
   const summaryLine =
@@ -363,6 +399,10 @@ function ConsensusCard({
       researchRequests={researchRequests}
       onToggleResearchRequest={onToggleResearchRequest}
       fundamentalEvaluation={entry.fundamentalEvaluation}
+      tickerData={tickerDataMap?.get(entry.ticker)}
+      generatedAt={generatedAt}
+      expandedEntryEvidence={expandedEntryEvidence}
+      onToggleEntryEvidence={onToggleEntryEvidence}
       researchSection={
         <>
           <ResearchCheckBadge research={researchMap?.get(entry.ticker)} />
@@ -395,6 +435,10 @@ function ConsensusModeView({
   selectedTickers,
   onToggleSelect,
   backtest,
+  tickerDataMap,
+  generatedAt,
+  expandedEntryEvidence,
+  onToggleEntryEvidence,
 }) {
   const { trendInsufficientSignal, minerviniInsufficientSignal } = consensusResult
   const { visible: afterFundamentals, failed } = splitByFundamentalVerdict(consensusResult.list, fundamentalsMap)
@@ -425,6 +469,10 @@ function ConsensusModeView({
             onToggleResearchRequest={onToggleResearchRequest}
             selectedTickers={selectedTickers}
             onToggleSelect={onToggleSelect}
+            tickerDataMap={tickerDataMap}
+            generatedAt={generatedAt}
+            expandedEntryEvidence={expandedEntryEvidence}
+            onToggleEntryEvidence={onToggleEntryEvidence}
           />
         ))}
         {list.length === 0 && (
@@ -461,10 +509,16 @@ export default function Recommend({
   onToggleSelect,
   onGoToSimulation,
   backtest,
+  regimeInfo,
+  tickerDataMap,
+  expandedEntryEvidence,
+  onToggleEntryEvidence,
 }) {
   return (
     <div>
       <h2 className="text-xl font-bold mb-1">추천 결과</h2>
+
+      <RegimeBadge regimeInfo={regimeInfo} backtest={backtest} />
 
       <ModeSegment recommendMode={recommendMode} onModeChange={onModeChange} />
 
@@ -490,6 +544,9 @@ export default function Recommend({
           selectedTickers={selectedTickers}
           onToggleSelect={onToggleSelect}
           backtest={backtest}
+          tickerDataMap={tickerDataMap}
+          expandedEntryEvidence={expandedEntryEvidence}
+          onToggleEntryEvidence={onToggleEntryEvidence}
         />
       )}
 
@@ -504,6 +561,10 @@ export default function Recommend({
           selectedTickers={selectedTickers}
           onToggleSelect={onToggleSelect}
           backtest={backtest}
+          tickerDataMap={tickerDataMap}
+          generatedAt={generatedAt}
+          expandedEntryEvidence={expandedEntryEvidence}
+          onToggleEntryEvidence={onToggleEntryEvidence}
         />
       )}
 
@@ -518,6 +579,10 @@ export default function Recommend({
           selectedTickers={selectedTickers}
           onToggleSelect={onToggleSelect}
           backtest={backtest}
+          tickerDataMap={tickerDataMap}
+          generatedAt={generatedAt}
+          expandedEntryEvidence={expandedEntryEvidence}
+          onToggleEntryEvidence={onToggleEntryEvidence}
         />
       )}
 
