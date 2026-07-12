@@ -46,6 +46,21 @@ function breakoutIndices(closes, phSeries) {
 }
 
 /**
+ * 돌파 이벤트 전체 목록(오름차순, 21거래일 유효기간 필터 없이) — exitSignals.js(X5)도
+ * 재사용하는 공용 헬퍼. 데이터 부족이면 빈 배열.
+ */
+export function findBreakoutEvents(series) {
+  if (series.length < PIVOT_LOOKBACK + 1) return []
+  const closes = series.map((b) => b.close)
+  const phSeries = precedingHighSeries(closes)
+  return breakoutIndices(closes, phSeries).map((index) => ({
+    index,
+    date: series[index].date,
+    precedingHigh: phSeries[index],
+  }))
+}
+
+/**
  * 피벗 산정 (design-entry-point-engine.md §2.1 3규칙 그대로).
  * 반환: { pivot, valid, reason, breakoutIndex, breakoutDate, precedingHigh }
  * - valid=false면 pivot은 null (피벗 산정 불가 또는 저항선 소멸 — 상태 3 강제 배정 사유는

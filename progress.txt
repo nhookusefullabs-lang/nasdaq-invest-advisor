@@ -1086,3 +1086,35 @@
 - 테스트 수 변화: 531 → 544 (+13). npm run test/build 둘 다 통과.
 - 다음 스토리 메모: US-5 청산 신호 계층 1(src/lib/exitSignals.js) — X3(템플릿 붕괴)는
   minervini.js의 evaluateTrendTemplate() 그대로 재사용(재구현 금지, 조건 미충족 개수 집계).
+
+## Iteration 5 — US-5. 청산 신호 계층 1 (종목 수준)
+- 완료 스토리: US-5
+- 변경 파일:
+  - src/lib/constants/exit.js(신규): X1_STRONG_VOLUME_MULT/X2_RECENCY_DAYS/
+    X3_BREAKDOWN_MIN_MISSING/X4_RETURN_10D_MIN_PCT/X4_SMA50_DISPARITY_MIN_PCT/
+    X5_RECENCY_DAYS (X5 거래량 배수는 별도 상수 없이 constants/entry.js의 VOL_MULT 공유).
+  - src/lib/entryPoint.js: `findBreakoutEvents(series)` 신규 export — 기존 내부
+    precedingHighSeries/breakoutIndices를 그대로 노출한 공용 헬퍼(재구현 없이 X5가 재사용).
+  - src/lib/exitSignals.js(신규): `evaluateExitSignals(series,{rsPercentileValue})` —
+    X1(50일선 이탈, sma() 재사용)·X2(데드크로스 — goldenCrossWithin(ema26,ema12,5)를
+    인자 순서만 뒤집어 재사용, 재구현 없음)·X3(템플릿 붕괴 — minervini.evaluateTrendTemplate
+    직접 호출)·X4(클라이맥스 런 — disparity() 재사용)·X5(돌파 후 최대 낙폭일 —
+    findBreakoutEvents 재사용) 판정, 전부 "조건 충족" 사실 서술 evidence 문자열 반환.
+  - src/lib/exitSignals.test.js(신규): 20개 — X1 경계(SMA50 정확/직하·강도2종, 4개),
+    X2 최근5일 경계(발생전·당일·경계4일·경계5일밖, 4개), X3(재사용 확인·데이터부족·
+    건강/붕괴·3개경계트리거·2개경계미트리거, 6개), X4(트리거·미트리거, 2개), X5(트리거·
+    거래량미동반·경과6일밖·돌파이력없음, 4개).
+- 승인 기준 확인: AC1(경계 테스트 10개 이상 → 실질 14개) 통과. AC2(X3이 evaluateTrendTemplate
+  실호출 — strength 로직이 실제 missingConditions 배열에 의존하므로 재구현이면 통과 불가능한
+  테스트로 확인) 통과. AC3(금칙어 테스트 — 최초 X4 evidence 문구에 "매도"가 실제로 들어있어
+  테스트가 잡아냄 → "클라이맥스 런 패턴 감지"로 즉시 수정, 테스트가 의도대로 작동한 사례).
+- 테스트 픽스처 관련 함정(US-4와 유사): 데드크로스(X2) 테스트에서 EMA는 인과적(과거 데이터만
+  의존)이므로 시리즈를 다른 길이로 자르면 "오늘"만 바뀔 뿐 과거 인덱스의 EMA 값은 그대로 —
+  이 성질을 이용해 정확한 크로스 발생 인덱스를 먼저 스크립트로 역산한 뒤 길이별 경계
+  테스트(발생 전/당일/+4일/+5일)를 구성했다. X3의 "T1/T5 미포함 3개 붕괴(중)" 케이스는
+  실제 트렌드 템플릿 조건들이 서로 강하게 상관되어(T1·T4·T5가 대체로 함께 무너짐) 자연스러운
+  픽스처로 구성하기 어려워 별도 테스트 없이 강도 로직(2줄 조건문)은 코드 리뷰로 갈음.
+- 테스트 수 변화: 544 → 564 (+20). npm run test/build 둘 다 통과.
+- 다음 스토리 메모: US-6 포지션 계획 계층 2(src/lib/positionPlan.js) — 손절 참고 2종의
+  검증 상태 매핑은 constants/verification.js 신규(코드 문자열→상태), entryPoint.js의
+  derivedPrices()/STOP_PCT/ATR_STOP_MULT 재사용.
