@@ -226,6 +226,25 @@ function validateEntryVariant(item, path, errors) {
   }
 }
 
+// combos(v10 US-9): { name, adopted, signals, fillRate, winRate, avgExcess, medianExcess,
+// avgReturn, mdd, avgHoldingDays } — 선택 필드(하위 호환 패턴 동일).
+function validateCombo(item, path, errors) {
+  if (typeof item !== 'object' || item === null) {
+    errors.push(`${path}: 객체여야 합니다`)
+    return
+  }
+  if (!isNonEmptyString(item.name)) errors.push(`${path}.name: 필수 문자열입니다`)
+  if (!isBoolean(item.adopted)) errors.push(`${path}.adopted: boolean이어야 합니다`)
+  if (!isNumber(item.signals)) errors.push(`${path}.signals: 숫자여야 합니다`)
+  if (!isNullableNumber(item.fillRate)) errors.push(`${path}.fillRate: 숫자 또는 null이어야 합니다`)
+  if (!isNullableNumber(item.winRate)) errors.push(`${path}.winRate: 숫자 또는 null이어야 합니다`)
+  if (!isNullableNumber(item.avgExcess)) errors.push(`${path}.avgExcess: 숫자 또는 null이어야 합니다`)
+  if (!isNullableNumber(item.medianExcess)) errors.push(`${path}.medianExcess: 숫자 또는 null이어야 합니다`)
+  if (!isNullableNumber(item.avgReturn)) errors.push(`${path}.avgReturn: 숫자 또는 null이어야 합니다`)
+  if (!isNullableNumber(item.mdd)) errors.push(`${path}.mdd: 숫자 또는 null이어야 합니다`)
+  if (!isNullableNumber(item.avgHoldingDays)) errors.push(`${path}.avgHoldingDays: 숫자 또는 null이어야 합니다`)
+}
+
 /** backtest.json(버전 1, 2 또는 3) 구조를 검증한다. 반환: { valid, errors } */
 export function validateBacktest(data) {
   const errors = []
@@ -277,6 +296,14 @@ export function validateBacktest(data) {
       errors.push('entryVariants: 배열이어야 합니다')
     } else {
       data.entryVariants.forEach((v, i) => validateEntryVariant(v, `entryVariants[${i}]`, errors))
+    }
+  }
+
+  if (data.combos !== undefined) {
+    if (!Array.isArray(data.combos)) {
+      errors.push('combos: 배열이어야 합니다')
+    } else {
+      data.combos.forEach((c, i) => validateCombo(c, `combos[${i}]`, errors))
     }
   }
 

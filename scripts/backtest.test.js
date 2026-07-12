@@ -261,11 +261,14 @@ describe('runBacktest — v9.1 US-1 완화/정상 분리 집계 (schemaVersion v
 describe('runBacktest — v9.1 US-2 변형 D 청산 규칙 (경로 의존 성과)', () => {
   const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
   const backtest = runBacktest(raw)
-  const exitVariantNames = ['exit_stop8_time60', 'exit_stop8_trail15']
+  // v10 US-9가 EXIT_RULES에 exit_stop_atr/exit_sma50_break/exit_climax 3종을 추가했고,
+  // evaluateExitVariants()는 Object.values(EXIT_RULES)를 그대로 순회하므로(코드 변경 없이)
+  // variants[]에 자동으로 함께 나타난다 — 의도된 확장이지 회귀가 아니다.
+  const exitVariantNames = ['exit_stop8_time60', 'exit_stop8_trail15', 'exit_stop_atr', 'exit_sma50_break', 'exit_climax']
 
-  it('기존 변형 A/B/C 3종 + 청산 변형 D 2종, 총 5종이 variants[]에 있다', () => {
+  it('기존 변형 A/B/C 3종 + 청산 변형 5종(D 2종 + v10 US-9 3종), 총 8종이 variants[]에 있다', () => {
     expect(backtest.variants.map((v) => v.name).sort()).toEqual(
-      ['adx_gate', 'consensus_weighted', 'disparity_inverted_u', 'exit_stop8_time60', 'exit_stop8_trail15'].sort()
+      ['adx_gate', 'consensus_weighted', 'disparity_inverted_u', ...exitVariantNames].sort()
     )
   })
 
@@ -531,5 +534,26 @@ describe('runBacktest — v10 US-8 진입 변형 4종 (통합)', () => {
     if (outTrendTop5Count.byHolding.some((h) => h.signals > 0)) {
       expect(backtest.entryVariants.every((v) => v.signals > 0)).toBe(true)
     }
+  })
+})
+
+describe('runBacktest — v10 US-9 청산 변형 3종 + 조합 3종 (통합)', () => {
+  const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
+  const backtest = runBacktest(raw)
+
+  it('스키마를 통과하고 신규 청산 3종이 variants[]에 포함된다(기존 변형 D 2종과 공존)', () => {
+    expect(validateBacktest(backtest).valid).toBe(true)
+    const names = backtest.variants.map((v) => v.name)
+    for (const n of ['exit_stop_atr', 'exit_sma50_break', 'exit_climax', 'exit_stop8_time60', 'exit_stop8_trail15']) {
+      expect(names).toContain(n)
+    }
+  })
+
+  it('combos 3종이 모두 발행되고 전부 adopted=false다', () => {
+    expect(backtest.combos).toHaveLength(3)
+    expect(backtest.combos.every((c) => c.adopted === false)).toBe(true)
+    expect(backtest.combos.map((c) => c.name).sort()).toEqual(
+      ['entry_pivot_confirm2_x_exit_stop_atr', 'entry_pivot_trigger_vol_x_exit_sma50_break', 'entry_pivot_confirm2_x_exit_sma50_break'].sort()
+    )
   })
 })

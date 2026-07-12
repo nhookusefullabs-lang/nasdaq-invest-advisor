@@ -1211,3 +1211,45 @@
 - 다음 스토리 메모: US-9 백테스트 청산 변형 3종 + 조합 3종(scripts/lib/exits.mjs 확장) —
   exit_stop_atr/exit_sma50_break/exit_climax, X1·X4는 exitSignals.js import(재구현 금지),
   조합은 entries.mjs의 결과와 결합.
+
+## Iteration 9 — US-9. 백테스트 — 청산 변형 3종 + 조합 3종
+- 완료 스토리: US-9
+- **인터페이스 변경(선행 리팩터, 비파괴적)**: exits.mjs의 `checkStop` 시그니처를
+  `(entryClose,peakClose,close)` 3개 위치 인자 → `{entryClose,peak,close,series,entryIdx,idx}`
+  단일 객체로 변경 — ATR·X1·X4 기반 규칙은 스칼라 3개만으로는 판정 불가(시리즈 전체 문맥
+  필요)하기 때문. 기존 테스트는 walkExit()을 통해서만 checkStop을 호출해 왔어서(직접 호출
+  없음) 이 변경이 안전했다(scripts/lib/exits.test.js 11개 그대로 통과 확인). `walkExit()`에
+  `entryPrice` 선택 인자 추가(기본값=진입일 종가, 하위 호환) — US-9 combos가 진입 변형의
+  체결가(신호일 종가와 다를 수 있음)를 넘길 수 있어야 했다.
+- 변경 파일:
+  - scripts/lib/exits.mjs: 신규 3종 — exit_stop_atr(체결가−2.5×ATR14 1회 산정 손절+60일,
+    indicators.atr() 재사용)/exit_sma50_break(X1)/exit_climax(X4) — 후자 2종은
+    `evaluateExitSignals(series.slice(0,idx+1))`를 매일 호출해 해당 코드의 트리거 여부만
+    확인(exitSignals.js 재사용, 재구현 없음). `COMBOS`(3개: confirm2×atr, trigger_vol×sma50break,
+    confirm2×sma50break) + `computeComboPerformance()`/`aggregateComboPerformance()` 신규 —
+    entries.mjs의 진입 변형으로 체결한 뒤 그 체결가/체결일부터 청산 규칙으로 보유를
+    시뮬레이션(진입·청산 두 모듈을 그대로 조합, 재구현 없음).
+  - scripts/lib/exits.test.js: 10개 추가 — exit_stop_atr 도달/미도달(AC1 2개),
+    exit_sma50_break 트리거/미트리거+exitSignals.js 직접 호출과 트리거일 일치 확인
+    (AC1/AC2 3개), exit_climax 트리거/미트리거(AC1 2개), combos 3종 파라미터 명시·조합
+    성과 필드 완전성·미체결 처리(AC3 3개).
+  - src/lib/backtestSchema.js: `entryVariants[]`(US-8 마무리 누락분 없음, 이미 존재)에 이어
+    `combos[]` 검증(선택 필드, adopted boolean 포함) 추가.
+  - src/lib/backtestSchema.test.js: 4개 추가 — combos 하위호환·유효항목·adopted 타입오류·
+    name누락.
+  - scripts/backtest.mjs: `entryVariants`와 동일 스코프(trend·top5·Out)로 `combos[]` 조립,
+    전부 adopted:false. 기존 `evaluateExitVariants()`는 `Object.values(EXIT_RULES)`를
+    이미 제네릭하게 순회하므로 코드 변경 없이 신규 3종이 자동으로 variants[]에 편입됨.
+  - scripts/backtest.test.js: 기존 "총 5종" 단언을 "총 8종"으로 갱신(의도된 확장 —
+    EXIT_RULES에 3종 추가 + 제네릭 순회 로직 불변, 회귀 아님). 신규 2개 — variants[]에
+    신규 3종 존재 확인, combos 3종 발행+전부 adopted:false 확인.
+- 승인 기준 확인: AC1(신규 청산 각각 픽스처 손계산, 요구 6개 이상 → 7개) 통과,
+  AC2(exitSignals.js 호출 확인 — 트리거일이 직접 호출 결과와 정확히 일치) 통과,
+  AC3(조합 레코드에 진입·청산 양쪽 파라미터 명시 + adopted=false — COMBOS 정의 자체의
+  entryVariant/exitRule 필드로 검증, adopted는 backtest.mjs 통합 레벨) 통과.
+- 테스트 수 변화: 605 → 621 (+16: exits 10 + schema 4 + backtest 2). npm run test/build
+  둘 다 통과. 전체 스위트 실행 시간이 늘어남(약 25→42초) — combos 시뮬레이션이 신호마다
+  진입+청산 전체 경로를 다시 걷기 때문. 아직 허용 범위지만 US-10 이후 계속 늘면 참고할 것.
+- 다음 스토리 메모: US-10 백테스트 상태별 분해 + 소프트 정책 변형 3종 — stateAxis[]는
+  judgeEntryState()의 상태(0/1/2/3/산정불가) 재사용, actionable_only_top5는 상태1·2만
+  top5 구성(v9.1 no_recent_breakout 코호트 열위 발견의 직접 검증).

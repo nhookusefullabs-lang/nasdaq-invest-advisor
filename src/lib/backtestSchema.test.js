@@ -269,3 +269,41 @@ describe('validateBacktest — entryVariants (v10 US-8 승인 기준 3)', () => 
     expect(errors.some((e) => e.includes('entryVariants[0].byHolding[0].opportunity'))).toBe(true)
   })
 })
+
+describe('validateBacktest — combos (v10 US-9 승인 기준 3)', () => {
+  it('combos 필드 자체가 없어도(v1~US-8 산출물) 통과한다 (하위 호환)', () => {
+    const { valid, errors } = validateBacktest(loadFixture('backtest.valid.json'))
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('유효한 combos 항목은 통과한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      combos: [{ name: 'entry_pivot_confirm2_x_exit_stop_atr', adopted: false, signals: 3, fillRate: 0.67, winRate: 0.6, avgExcess: 0.02, medianExcess: 0.015, avgReturn: 0.03, mdd: 0.01, avgHoldingDays: 12 }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('adopted가 boolean이 아니면 거부한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      combos: [{ name: 'x', adopted: 'false', signals: 3, fillRate: 0.5, winRate: 0.5, avgExcess: 0, medianExcess: 0, avgReturn: 0, mdd: 0, avgHoldingDays: 10 }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('combos[0].adopted'))).toBe(true)
+  })
+
+  it('name 누락을 거부한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      combos: [{ adopted: false, signals: 3, fillRate: 0.5, winRate: 0.5, avgExcess: 0, medianExcess: 0, avgReturn: 0, mdd: 0, avgHoldingDays: 10 }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('combos[0].name'))).toBe(true)
+  })
+})

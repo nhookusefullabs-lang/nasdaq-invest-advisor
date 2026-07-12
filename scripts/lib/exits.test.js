@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { walkExit, computeExitPerformance, aggregateExitPerformance, EXIT_RULES, EXIT_LIMITATION_NOTE } from './exits.mjs'
+import { walkExit, computeExitPerformance, aggregateExitPerformance, EXIT_RULES, EXIT_LIMITATION_NOTE, COMBOS, computeComboPerformance, aggregateComboPerformance } from './exits.mjs'
 import { buildPriceIndex } from './performance.mjs'
+import { evaluateExitSignals } from '../../src/lib/exitSignals.js'
+import { ENTRY_VARIANTS } from './entries.mjs'
 
 function makeDates(n) {
   return Array.from({ length: n }, (_, i) => new Date((19723 + i) * 86400000).toISOString().slice(0, 10))
@@ -118,5 +120,110 @@ describe('aggregateExitPerformance — US-2 승인 기준 3', () => {
 
   it('한계 고지 고정 문구가 export되어 있다', () => {
     expect(EXIT_LIMITATION_NOTE).toBe('종가 기준 판정 — 장중 이탈 미반영으로 실제 손절 체결가는 이보다 불리할 수 있음')
+  })
+})
+
+// --- v10 US-9: 신규 청산 3종 픽스처 (60일 평평 베이스 → entryIdx=59 → 이후 시나리오별 경로) ---
+function makeExtendedSeries(afterEntryCloses, { baseHigh = 100.3, baseLow = 99.7 } = {}) {
+  const bars = []
+  for (let i = 0; i < 60; i++) {
+    bars.push({ date: `pre-${i}`, close: 100, high: baseHigh, low: baseLow, volume: 1_000_000 })
+  }
+  afterEntryCloses.forEach((close, k) => {
+    bars.push({ date: `post-${k}`, close, high: close, low: close, volume: 1_000_000 })
+  })
+  return bars
+}
+const ENTRY_IDX = 59 // 60일 베이스의 마지막 인덱스(entryClose=100)
+
+describe('exits.mjs — exit_stop_atr (US-9 AC1)', () => {
+  it('ATR 기반 손절선 이하로 하락하면 그날 청산된다', () => {
+    const series = makeExtendedSeries([100, 97]) // day61(offset2)=97 — ATR14≈0.6 → stop≈98.5
+    const result = walkExit(series, ENTRY_IDX, EXIT_RULES.exit_stop_atr)
+    expect(result.stopHit).toBe(true)
+    expect(result.holdingDaysActual).toBe(2)
+  })
+
+  it('ATR 기반 손절선에 도달하지 않으면 60거래일 시간 청산된다', () => {
+    const series = makeExtendedSeries(new Array(60).fill(100))
+    const result = walkExit(series, ENTRY_IDX, EXIT_RULES.exit_stop_atr)
+    expect(result.stopHit).toBe(false)
+    expect(result.holdingDaysActual).toBe(60)
+  })
+})
+
+describe('exits.mjs — exit_sma50_break (X1, US-9 AC1/AC2)', () => {
+  it('종가가 SMA50 아래로 이탈하면 그날 청산된다(X1)', () => {
+    const series = makeExtendedSeries([95, 95]) // offset1(day60)=95 < SMA50(≈99.9)
+    const result = walkExit(series, ENTRY_IDX, EXIT_RULES.exit_sma50_break)
+    expect(result.stopHit).toBe(true)
+    expect(result.holdingDaysActual).toBe(1)
+  })
+
+  it('SMA50 위를 유지하면 60거래일 시간 청산된다', () => {
+    const series = makeExtendedSeries(new Array(60).fill(101))
+    const result = walkExit(series, ENTRY_IDX, EXIT_RULES.exit_sma50_break)
+    expect(result.stopHit).toBe(false)
+    expect(result.holdingDaysActual).toBe(60)
+  })
+
+  it('exitSignals.js 재사용 확인: walkExit의 트리거일이 evaluateExitSignals()가 직접 판정한 X1 트리거일과 정확히 같다', () => {
+    const series = makeExtendedSeries([95, 95])
+    const result = walkExit(series, ENTRY_IDX, EXIT_RULES.exit_sma50_break)
+    const direct = evaluateExitSignals(series.slice(0, ENTRY_IDX + 1 + 1)) // offset1 = ENTRY_IDX+1
+    expect(direct.signals.some((s) => s.code === 'X1')).toBe(true)
+    expect(result.holdingDaysActual).toBe(1)
+  })
+})
+
+describe('exits.mjs — exit_climax (X4, US-9 AC1/AC2)', () => {
+  it('10거래일 수익률·SMA50 이격이 +25% 이상이면 그날 청산된다(X4)', () => {
+    const spike = Array.from({ length: 10 }, (_, k) => 100 + 3 * (k + 1)) // day60~69: 103..130
+    const series = makeExtendedSeries([...spike, ...new Array(50).fill(130)])
+    const result = walkExit(series, ENTRY_IDX, EXIT_RULES.exit_climax)
+    expect(result.stopHit).toBe(true)
+    expect(result.holdingDaysActual).toBe(10)
+  })
+
+  it('완만한 상승(클라이맥스 미달)이면 60거래일 시간 청산된다', () => {
+    const gentle = Array.from({ length: 60 }, (_, k) => 100 + 0.1 * (k + 1))
+    const series = makeExtendedSeries(gentle)
+    const result = walkExit(series, ENTRY_IDX, EXIT_RULES.exit_climax)
+    expect(result.stopHit).toBe(false)
+    expect(result.holdingDaysActual).toBe(60)
+  })
+})
+
+describe('exits.mjs — combos (US-9 AC3: 진입·청산 양쪽 파라미터 명시 — adopted=false는 backtest.mjs 통합 레벨에서 부여)', () => {
+  it('COMBOS가 정확히 3개 등록되어 있고 각각 entryVariant/exitRule을 명시한다', () => {
+    expect(COMBOS).toHaveLength(3)
+    for (const combo of COMBOS) {
+      expect(typeof combo.name).toBe('string')
+      expect(combo.entryVariant).toBeDefined()
+      expect(combo.exitRule).toBeDefined()
+      expect(Object.values(ENTRY_VARIANTS)).toContain(combo.entryVariant)
+      expect(Object.values(EXIT_RULES)).toContain(combo.exitRule)
+    }
+  })
+
+  it('조합 성과 집계는 체결률·성과·MDD·평균 보유일을 포함한다', () => {
+    const tickers2 = [{ ticker: 'COMBOX', dataSufficient: true, series: makeExtendedSeries([101, 130, 130]) }]
+    const priceIndex2 = buildPriceIndex(tickers2)
+    const record = { date: tickers2[0].series[ENTRY_IDX].date, ticker: 'COMBOX', strategyKey: 'trend', basis: 'top5' }
+    const agg = aggregateComboPerformance([record], priceIndex2, ENTRY_VARIANTS.entry_pivot_confirm2, EXIT_RULES.exit_stop_atr)
+    expect(typeof agg.signals).toBe('number')
+    expect('fillRate' in agg).toBe(true)
+    expect('avgExcess' in agg).toBe(true)
+    expect('mdd' in agg).toBe(true)
+    expect('avgHoldingDays' in agg).toBe(true)
+  })
+
+  it('computeComboPerformance는 미체결 신호를 filled:false로 남긴다(fillRate 집계용)', () => {
+    // 60일 평평 베이스는 rule1 피벗(P=100)이라 confirm2가 확인할 "피벗 위 유지"가 전혀 없다
+    const tickers2 = [{ ticker: 'NOFILLX', dataSufficient: true, series: makeExtendedSeries(new Array(25).fill(99)) }]
+    const priceIndex2 = buildPriceIndex(tickers2)
+    const record = { date: tickers2[0].series[ENTRY_IDX].date, ticker: 'NOFILLX', strategyKey: 'trend', basis: 'top5' }
+    const perf = computeComboPerformance(record, priceIndex2, ENTRY_VARIANTS.entry_pivot_confirm2, EXIT_RULES.exit_stop_atr)
+    expect(perf.filled).toBe(false)
   })
 })

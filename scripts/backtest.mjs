@@ -13,7 +13,7 @@ import { sliceUniverseAsOf, buildEvaluationDates, getCalendarDates } from './lib
 import { buildPriceIndex, aggregatePerformance } from './lib/performance.mjs'
 import { buildFundamentalAxis } from './lib/fundamentalHistory.mjs'
 import { VARIANTS, evaluateVariant } from './lib/variants.mjs'
-import { EXIT_RULES, aggregateExitPerformance, EXIT_LIMITATION_NOTE } from './lib/exits.mjs'
+import { EXIT_RULES, aggregateExitPerformance, EXIT_LIMITATION_NOTE, COMBOS, aggregateComboPerformance } from './lib/exits.mjs'
 import { ENTRY_VARIANTS, aggregateEntryVariant } from './lib/entries.mjs'
 import { goldenCrossFreshnessDays, pivotBreakoutFreshnessDays, freshnessCohort, aggregateFreshnessCohorts } from './lib/freshness.mjs'
 import { atomicWriteBacktest } from './validate-backtest.mjs'
@@ -276,6 +276,13 @@ export function runBacktest(
   const outTrendTop5 = outRecords.filter((r) => r.strategyKey === 'trend' && r.basis === 'top5')
   const entryVariants = Object.values(ENTRY_VARIANTS).map((variant) => aggregateEntryVariant(outTrendTop5, priceIndex, variant, holdingDays))
 
+  // v10 US-9: 진입×청산 조합 3종(§7 최종 대결 재료) — 채택 결정은 하지 않는다(adopted 항상 false).
+  const combos = COMBOS.map((combo) => ({
+    name: combo.name,
+    adopted: false,
+    ...aggregateComboPerformance(outTrendTop5, priceIndex, combo.entryVariant, combo.exitRule),
+  }))
+
   return {
     schemaVersion: 3,
     generatedAt: rawUniverse.generatedAt,
@@ -296,6 +303,7 @@ export function runBacktest(
     freshnessCohorts,
     regimeAxis,
     entryVariants,
+    combos,
   }
 }
 
