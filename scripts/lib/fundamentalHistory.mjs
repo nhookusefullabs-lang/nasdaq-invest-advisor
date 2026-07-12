@@ -78,37 +78,53 @@ export function fundamentalVerdictAsOf(history, evaluationDate) {
 const AXIS_VERDICTS = ['pass', 'partial', 'fail']
 
 /**
- * 신호 레코드(US-3) + fundamentals.json 데이터 → backtest.json fundamentalAxis (PRD §7).
- * fundamentalsData가 없으면(null) 엔진은 정상 완주하되 fundamentalAxis는 null.
- * 대상 신호는 trend 모드의 allSignals(1단계 통과 전체) — 펀더멘털 축은 특정 전략에 종속되지
- * 않는 단일 교차표(PRD §7 스키마에 strategyKey 구분 없음)이므로 모드 중립적인 기준 집합
- * 하나를 고정해야 하며, 가장 넓은 표본(추세추종 전체 신호)을 택했다.
- * insufficientFundamentals 판정 신호는 이 3분류 교차표에서 제외한다(Pass/Partial/Fail만).
+ * fundamentals.json 데이터 + 신호 레코드 배열 → coveredFrom 이후·판정 가능(Pass/Partial/Fail)
+ * 신호만 골라 verdict별로 분류한다(evaluateFundamentalHurdle 재사용, 재구현 없음).
+ * buildFundamentalAxis(v9 US-6)와 hurdleIntersection(v11 US-10)이 공유하는 분류 로직 —
+ * 대상 레코드 필터(strategyKey/basis/국면 등)는 호출부 책임이다. insufficientFundamentals
+ * 판정 신호는 이 3분류에서 제외한다(Pass/Partial/Fail만 — pass+partial+fail이 "판정 가능한
+ * 신호 전체"와 정확히 같다는 것이 이 함수의 핵심 불변식).
+ * 반환: { coveredFrom, byVerdict:{pass:[],partial:[],fail:[]} } | null(fundamentalsData 없음)
  */
-export function buildFundamentalAxis(fundamentalsData, records, priceIndex, holdingDays) {
+export function classifyRecordsByFundamentalVerdict(fundamentalsData, records) {
   if (!fundamentalsData) return null
 
   const historyByTicker = new Map(fundamentalsData.tickers.map((item) => [item.ticker, reconstructFundamentalHistory(item)]))
 
   const coveredFromCandidates = [...historyByTicker.values()].map((h) => h[0]?.asOfDate).filter(Boolean).sort()
   const coveredFrom = coveredFromCandidates[0] ?? null
-  if (!coveredFrom) return { note: FUNDAMENTAL_AXIS_NOTE, coveredFrom: null, byVerdict: [] }
+  if (!coveredFrom) return { coveredFrom: null, byVerdict: { pass: [], partial: [], fail: [] } }
 
-  const eligibleSignals = records.filter((r) => r.strategyKey === 'trend' && r.basis === 'allSignals' && r.date >= coveredFrom)
-
-  const byVerdictRecords = { pass: [], partial: [], fail: [] }
-  for (const record of eligibleSignals) {
+  const byVerdict = { pass: [], partial: [], fail: [] }
+  for (const record of records) {
+    if (record.date < coveredFrom) continue
     const history = historyByTicker.get(record.ticker)
     if (!history) continue
     const point = fundamentalVerdictAsOf(history, record.date)
     const verdict = point?.verdict?.verdict
     if (!AXIS_VERDICTS.includes(verdict)) continue
-    byVerdictRecords[verdict].push(record)
+    byVerdict[verdict].push(record)
   }
+
+  return { coveredFrom, byVerdict }
+}
+
+/**
+ * 신호 레코드(US-3) + fundamentals.json 데이터 → backtest.json fundamentalAxis (PRD §7).
+ * fundamentalsData가 없으면(null) 엔진은 정상 완주하되 fundamentalAxis는 null.
+ * 대상 신호는 trend 모드의 allSignals(1단계 통과 전체) — 펀더멘털 축은 특정 전략에 종속되지
+ * 않는 단일 교차표(PRD §7 스키마에 strategyKey 구분 없음)이므로 모드 중립적인 기준 집합
+ * 하나를 고정해야 하며, 가장 넓은 표본(추세추종 전체 신호)을 택했다.
+ */
+export function buildFundamentalAxis(fundamentalsData, records, priceIndex, holdingDays) {
+  const eligibleSignals = records.filter((r) => r.strategyKey === 'trend' && r.basis === 'allSignals')
+  const classified = classifyRecordsByFundamentalVerdict(fundamentalsData, eligibleSignals)
+  if (!classified) return null
+  if (!classified.coveredFrom) return { note: FUNDAMENTAL_AXIS_NOTE, coveredFrom: null, byVerdict: [] }
 
   const byVerdict = AXIS_VERDICTS.map((verdict) => ({
     verdict,
-    byHolding: aggregatePerformance(byVerdictRecords[verdict], priceIndex, holdingDays, { strategyKeys: ['trend'], bases: ['allSignals'] }).map((g) => ({
+    byHolding: aggregatePerformance(classified.byVerdict[verdict], priceIndex, holdingDays, { strategyKeys: ['trend'], bases: ['allSignals'] }).map((g) => ({
       days: g.days,
       signals: g.signals,
       winRate: g.winRate,
@@ -119,5 +135,5 @@ export function buildFundamentalAxis(fundamentalsData, records, priceIndex, hold
     })),
   }))
 
-  return { note: FUNDAMENTAL_AXIS_NOTE, coveredFrom, byVerdict }
+  return { note: FUNDAMENTAL_AXIS_NOTE, coveredFrom: classified.coveredFrom, byVerdict }
 }

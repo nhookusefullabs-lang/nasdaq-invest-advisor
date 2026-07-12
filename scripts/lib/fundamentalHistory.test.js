@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { reconstructFundamentalHistory, fundamentalVerdictAsOf, buildFundamentalAxis, quarterToApproxReportDate, FUNDAMENTAL_AXIS_NOTE } from './fundamentalHistory.mjs'
+import {
+  reconstructFundamentalHistory,
+  fundamentalVerdictAsOf,
+  buildFundamentalAxis,
+  classifyRecordsByFundamentalVerdict,
+  quarterToApproxReportDate,
+  FUNDAMENTAL_AXIS_NOTE,
+} from './fundamentalHistory.mjs'
 import { evaluateFundamentalHurdle } from '../../src/lib/fundamentals.js'
 import { buildPriceIndex } from './performance.mjs'
 
@@ -100,5 +107,37 @@ describe('buildFundamentalAxis — US-6 승인 기준 2/3/4', () => {
   it('byVerdict는 pass/partial/fail 3종으로 고정 구성된다', () => {
     const axis = buildFundamentalAxis(fundamentalsData, [], priceIndex, [5])
     expect(axis.byVerdict.map((v) => v.verdict)).toEqual(['pass', 'partial', 'fail'])
+  })
+})
+
+describe('classifyRecordsByFundamentalVerdict — v11 US-10 승인 기준 1/2 (buildFundamentalAxis/hurdleIntersection 공유 분류 로직)', () => {
+  const fundamentalsData = { schemaVersion: 1, generatedAt: '2026-08-14', tickers: [SAMPLE_ITEM], excluded: [] }
+  const records = [
+    { date: '2025-09-01', ticker: 'AAA', strategyKey: 'trend', basis: 'allSignals' }, // coveredFrom(2025-11-14) 이전 → 제외
+    { date: '2025-12-01', ticker: 'AAA', strategyKey: 'trend', basis: 'allSignals' }, // coveredFrom 이후 → 판정 가능
+    { date: '2025-12-15', ticker: 'ZZZ', strategyKey: 'trend', basis: 'allSignals' }, // fundamentals 데이터 없는 티커 → 제외
+  ]
+
+  it('fundamentalsData가 없으면 null이다', () => {
+    expect(classifyRecordsByFundamentalVerdict(null, records)).toBeNull()
+  })
+
+  it('AC2: coveredFrom 이전 신호·fundamentals 데이터 없는 티커의 신호는 분류에서 제외된다', () => {
+    const result = classifyRecordsByFundamentalVerdict(fundamentalsData, records)
+    expect(result.coveredFrom).toBe('2025-11-14')
+    const totalClassified = result.byVerdict.pass.length + result.byVerdict.partial.length + result.byVerdict.fail.length
+    expect(totalClassified).toBe(1) // 2025-12-01/AAA만 판정 가능
+  })
+
+  it('AC1: 판정 가능한 신호는 pass/partial/fail 중 정확히 하나의 그룹에만 들어간다(상호 배타적 분류, 합=판정 가능 신호 전체)', () => {
+    const history = reconstructFundamentalHistory(SAMPLE_ITEM)
+    const expectedVerdict = fundamentalVerdictAsOf(history, '2025-12-01').verdict.verdict
+    const result = classifyRecordsByFundamentalVerdict(fundamentalsData, records)
+
+    expect(result.byVerdict[expectedVerdict]).toHaveLength(1)
+    expect(result.byVerdict[expectedVerdict][0].ticker).toBe('AAA')
+    for (const verdict of ['pass', 'partial', 'fail']) {
+      if (verdict !== expectedVerdict) expect(result.byVerdict[verdict]).toHaveLength(0)
+    }
   })
 })

@@ -688,6 +688,93 @@ describe('runBacktest — v11 US-9 청산 변형 E(클라이맥스 부분 청산
   })
 })
 
+describe('runBacktest — v11 US-10 허들 교집합 축 (양 유니버스)', () => {
+  const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
+  const fundamentalsData = {
+    schemaVersion: 1,
+    generatedAt: raw.generatedAt,
+    tickers: raw.tickers.slice(0, 3).map((t) => ({
+      ticker: t.ticker,
+      roe: 0.2,
+      missing: [],
+      quarters: [
+        { period: '2026-Q2', eps: 1.5, revenue: 1000, operatingMargin: 0.3 },
+        { period: '2026-Q1', eps: 1.2, revenue: 800, operatingMargin: 0.28 },
+        { period: '2025-Q4', eps: 1.0, revenue: 700, operatingMargin: 0.25 },
+      ],
+    })),
+    excluded: [],
+  }
+
+  it('fundamentalsData가 없으면 hurdleIntersection은 null이다(fundamentalAxis와 동일한 하위 호환 원칙)', () => {
+    const backtest = runBacktest(raw)
+    expect(backtest.hurdleIntersection).toBeNull()
+  })
+
+  it('스키마를 통과하고 sample×국면마다 허들 그룹 4종(pass/partial/partialOrBetter/fail)이 전부 존재한다', () => {
+    const backtest = runBacktest(raw, { fundamentalsData })
+    expect(validateBacktest(backtest).valid).toBe(true)
+    expect(Array.isArray(backtest.hurdleIntersection)).toBe(true)
+    for (const sample of ['in', 'out']) {
+      for (const regime of ['up', 'neutral', 'down']) {
+        const groups = backtest.hurdleIntersection.filter((h) => h.sample === sample && h.regime === regime).map((h) => h.hurdleGroup)
+        expect(new Set(groups)).toEqual(new Set(['pass', 'partial', 'partialOrBetter', 'fail']))
+      }
+    }
+  })
+
+  it('AC1 교집합 귀속 정합성: partialOrBetter 신호 수 = pass+partial 신호 수(매 sample×국면×보유기간에서)', () => {
+    const backtest = runBacktest(raw, { fundamentalsData })
+    let checked = 0
+    for (const sample of ['in', 'out']) {
+      for (const regime of ['up', 'neutral', 'down']) {
+        const find = (group) => backtest.hurdleIntersection.find((h) => h.sample === sample && h.regime === regime && h.hurdleGroup === group)
+        const pass = find('pass')
+        const partial = find('partial')
+        const partialOrBetter = find('partialOrBetter')
+        for (const days of [5, 20, 60]) {
+          const passSignals = pass.byHolding.find((h) => h.days === days).signals
+          const partialSignals = partial.byHolding.find((h) => h.days === days).signals
+          const partialOrBetterSignals = partialOrBetter.byHolding.find((h) => h.days === days).signals
+          expect(partialOrBetterSignals).toBe(passSignals + partialSignals)
+          checked++
+        }
+      }
+    }
+    expect(checked).toBe(2 * 3 * 3)
+  })
+
+  it('AC2: 각 항목에 coveredFrom·참고치 note가 존재한다', () => {
+    const backtest = runBacktest(raw, { fundamentalsData })
+    for (const item of backtest.hurdleIntersection) {
+      expect(item.note).toBe('근사 재구성 · 짧은 구간 참고치')
+      expect(item.coveredFrom === null || typeof item.coveredFrom === 'string').toBe(true)
+    }
+  })
+
+  it('AC3: NDX·NGX 양쪽에서 동일 코드로 독립적으로 hurdleIntersection이 산출된다(유니버스 하드코딩 없음)', () => {
+    const NGX_FIXTURE_PATH = path.resolve(__dirname, '../src/lib/__fixtures__/ngx100.sample.json')
+    const ngxRaw = JSON.parse(readFileSync(NGX_FIXTURE_PATH, 'utf-8'))
+    const ngxFundamentalsData = {
+      schemaVersion: 1,
+      generatedAt: ngxRaw.generatedAt,
+      tickers: ngxRaw.tickers.slice(0, 3).map((t) => ({
+        ticker: t.ticker,
+        roe: 0.2,
+        missing: [],
+        quarters: fundamentalsData.tickers[0].quarters,
+      })),
+      excluded: [],
+    }
+    const ndxBacktest = runBacktest(raw, { fundamentalsData })
+    const ngxBacktest = runBacktest(ngxRaw, { universe: 'ngx', fundamentalsData: ngxFundamentalsData })
+    expect(validateBacktest(ndxBacktest).valid).toBe(true)
+    expect(validateBacktest(ngxBacktest).valid).toBe(true)
+    expect(Array.isArray(ndxBacktest.hurdleIntersection)).toBe(true)
+    expect(Array.isArray(ngxBacktest.hurdleIntersection)).toBe(true)
+  })
+})
+
 describe('runBacktest — v10 US-10 진입 상태별 분해 + 소프트 정책 변형 3종 (통합)', () => {
   const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
   const backtest = runBacktest(raw)

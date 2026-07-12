@@ -13,7 +13,7 @@ import { judgeEntryState } from '../src/lib/entryPoint.js'
 import { hasFullYearData, rsRawScore, rsPercentile } from '../src/lib/indicators.js'
 import { sliceUniverseAsOf, buildEvaluationDates, getCalendarDates } from './lib/asOf.mjs'
 import { buildPriceIndex, aggregatePerformance } from './lib/performance.mjs'
-import { buildFundamentalAxis } from './lib/fundamentalHistory.mjs'
+import { buildFundamentalAxis, classifyRecordsByFundamentalVerdict, FUNDAMENTAL_AXIS_NOTE } from './lib/fundamentalHistory.mjs'
 import { VARIANTS, evaluateVariant, evaluatePolicyVariant } from './lib/variants.mjs'
 import { EXIT_RULES, aggregateExitPerformance, EXIT_LIMITATION_NOTE, COMBOS, aggregateComboPerformance, aggregateClimaxPartialPerformance } from './lib/exits.mjs'
 import { ENTRY_VARIANTS, PULLBACK_ENTRY_VARIANTS, aggregateEntryVariant } from './lib/entries.mjs'
@@ -235,6 +235,11 @@ const REGIME_VALUES = ['up', 'neutral', 'down']
 const STATE_VALUES = [0, 1, 2, 3, '산정불가']
 // v11 US-4: entryVariants의 모드별 분해 대상 풀 — PRD가 명시한 3개 풀만(consensus_1star 제외).
 const ENTRY_VARIANT_MODE_POOLS = ['trend', 'minervini', 'consensus_2star']
+// v11 US-10: 허들 교집합 4종 — pass/partial/fail은 classifyRecordsByFundamentalVerdict가 주는
+// 상호 배타적 3분류 그대로(AC1의 "합=판정 가능 신호 전체" 불변식이 이 3종에서 성립), partialOrBetter
+// (★★∩Partial+, PRD 전체에서 반복 인용되는 핵심 지표)는 pass∪partial을 합친 파생값이다 —
+// signalQuality의 'all'(=normal+relaxed 합)과 같은 "배타적 분류 + 편의상 합계" 패턴.
+const HURDLE_GROUPS = ['pass', 'partial', 'partialOrBetter', 'fail']
 
 /**
  * 유니버스 메타 통계(v10 US-11) — hasFullYearData(252거래일) 미만 종목 수/비율.
@@ -390,6 +395,9 @@ export function runBacktest(
   // v11 US-9: 청산 변형 E(클라이맥스 부분 청산) — 3자 비교(무청산/전량/부분)
   const climaxPartial = buildClimaxPartial(outTrendTop5, priceIndex, strategies, exitVariants)
 
+  // v11 US-10: 허들 교집합 축(양 유니버스) — ★★∩펀더멘털 판정 × sample × 국면
+  const hurdleIntersection = buildHurdleIntersection(fundamentalsData, inRecords, outRecords, priceIndex, holdingDays)
+
   return {
     schemaVersion: 4,
     generatedAt: rawUniverse.generatedAt,
@@ -417,6 +425,7 @@ export function runBacktest(
     stateRegimeAxis,
     pullbackAxis,
     climaxPartial,
+    hurdleIntersection,
   }
 }
 
@@ -551,6 +560,57 @@ function buildClimaxPartial(outTrendTop5, priceIndex, strategies, exitVariants) 
       partialClimaxExit: { signals: outDetail.signals, avgExcess: outDetail.avgExcess, medianExcess: outDetail.medianExcess },
     },
   }
+}
+
+/**
+ * 허들 교집합 축 (v11 US-10, 양 유니버스): ★★(consensus_2star) ∩ 펀더멘털 허들 판정 ×
+ * sample × 국면 × byHolding. fundamentalHistory.mjs의 classifyRecordsByFundamentalVerdict를
+ * 그대로 재사용(evaluateFundamentalHurdle 임계값 재구현 없음) — sample당 1회만 분류하고,
+ * 국면별 분해는 이미 분류된 pass/partial/fail 레코드를 regime으로 다시 필터링만 한다.
+ * fundamentalsData가 없으면 null(buildFundamentalAxis와 동일한 하위 호환 원칙).
+ */
+function buildHurdleIntersection(fundamentalsData, inRecords, outRecords, priceIndex, holdingDays) {
+  if (!fundamentalsData) return null
+
+  const axis = []
+  for (const [sample, records] of [
+    ['in', inRecords],
+    ['out', outRecords],
+  ]) {
+    const consensus2starAllSignals = records.filter((r) => r.strategyKey === 'consensus_2star' && r.basis === 'allSignals')
+    const classified = classifyRecordsByFundamentalVerdict(fundamentalsData, consensus2starAllSignals)
+    if (!classified || !classified.coveredFrom) continue
+
+    for (const regime of REGIME_VALUES) {
+      const pass = classified.byVerdict.pass.filter((r) => r.regime === regime)
+      const partial = classified.byVerdict.partial.filter((r) => r.regime === regime)
+      const fail = classified.byVerdict.fail.filter((r) => r.regime === regime)
+      const groupRecords = { pass, partial, partialOrBetter: [...pass, ...partial], fail }
+
+      for (const hurdleGroup of HURDLE_GROUPS) {
+        axis.push({
+          sample,
+          regime,
+          hurdleGroup,
+          coveredFrom: classified.coveredFrom,
+          note: FUNDAMENTAL_AXIS_NOTE,
+          byHolding: aggregatePerformance(groupRecords[hurdleGroup], priceIndex, holdingDays, {
+            strategyKeys: ['consensus_2star'],
+            bases: ['allSignals'],
+          }).map((g) => ({
+            days: g.days,
+            signals: g.signals,
+            winRate: g.winRate,
+            avgExcess: g.avgExcess,
+            medianExcess: g.medianExcess,
+            avgReturn: g.avgReturn,
+            mdd: g.mdd,
+          })),
+        })
+      }
+    }
+  }
+  return axis
 }
 
 /**

@@ -379,6 +379,28 @@ function validateClimaxPartial(item, path, errors) {
   }
 }
 
+// hurdleIntersection(v11 US-10): { sample, regime, hurdleGroup, coveredFrom, note, byHolding[] }
+// — hurdleGroup은 pass/partial/fail(상호 배타적 3분류) + partialOrBetter(pass∪partial 파생
+// 편의값, ★★∩Partial+) 4종. 선택 필드(하위 호환 패턴 동일).
+const HURDLE_GROUP_VALUES = ['pass', 'partial', 'partialOrBetter', 'fail']
+
+function validateHurdleIntersectionItem(item, path, errors) {
+  if (typeof item !== 'object' || item === null) {
+    errors.push(`${path}: 객체여야 합니다`)
+    return
+  }
+  if (!SAMPLE_VALUES.includes(item.sample)) errors.push(`${path}.sample: ${SAMPLE_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!REGIME_VALUES.includes(item.regime)) errors.push(`${path}.regime: ${REGIME_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!HURDLE_GROUP_VALUES.includes(item.hurdleGroup)) errors.push(`${path}.hurdleGroup: ${HURDLE_GROUP_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!isNullableString(item.coveredFrom)) errors.push(`${path}.coveredFrom: 문자열 또는 null이어야 합니다`)
+  if (!isNonEmptyString(item.note)) errors.push(`${path}.note: 필수 문자열입니다`)
+  if (!Array.isArray(item.byHolding)) {
+    errors.push(`${path}.byHolding: 배열이어야 합니다`)
+  } else {
+    item.byHolding.forEach((h, i) => validateByHoldingItem(h, `${path}.byHolding[${i}]`, errors))
+  }
+}
+
 /** backtest.json(버전 1, 2, 3 또는 4) 구조를 검증한다. 반환: { valid, errors } */
 export function validateBacktest(data) {
   const errors = []
@@ -467,6 +489,14 @@ export function validateBacktest(data) {
 
   if (data.climaxPartial !== undefined) {
     validateClimaxPartial(data.climaxPartial, 'climaxPartial', errors)
+  }
+
+  if (data.hurdleIntersection !== undefined && data.hurdleIntersection !== null) {
+    if (!Array.isArray(data.hurdleIntersection)) {
+      errors.push('hurdleIntersection: 배열 또는 null이어야 합니다')
+    } else {
+      data.hurdleIntersection.forEach((h, i) => validateHurdleIntersectionItem(h, `hurdleIntersection[${i}]`, errors))
+    }
   }
 
   return { valid: errors.length === 0, errors }
