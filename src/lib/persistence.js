@@ -6,12 +6,13 @@ import { CUSTOM_PARAM_RANGES } from './constants.js'
 // v1→v2(PRD_Nasdaq7, US-6): 신규 필터 상태·프리셋·고급설정·리서치 요청 목록 필드 추가.
 // v2→v3(PRD_Nasdaq8, US-9): 추천 모드·리스크/펀더멘털 토글 필드 추가. v1→v2와 동일한
 // 원칙 — 기존 필드는 전부 보존, 신규 필드만 기본값으로 채운다(완전 초기화 아님).
-// v1 데이터도 v3까지 한 번에 마이그레이션 가능(v2 전용 필드가 없어도 동일한 병합 로직이
-// 안전하게 기본값을 채워 넣으므로 별도의 v1→v2→v3 단계 분리가 필요 없음).
+// v3→v4(PRD_Nasdaq10, US-12): 포지션(체결가·체결일)·화면2 신규 카드 펼침 상태 필드 추가.
+// v1 데이터도 v4까지 한 번에 마이그레이션 가능(구버전 전용 필드가 없어도 동일한 병합
+// 로직이 안전하게 기본값을 채워 넣으므로 별도의 단계별 마이그레이션이 필요 없음).
 
 const STORAGE_KEY = 'nasdaqAdvisor.uiState'
-const SCHEMA_VERSION = 3
-const MIGRATABLE_FROM_VERSIONS = [1, 2]
+const SCHEMA_VERSION = 4
+const MIGRATABLE_FROM_VERSIONS = [1, 2, 3]
 const RECOMMEND_MODE_VALUES = ['consensus', 'trend', 'minervini']
 
 const DEFAULT_CUSTOM_PARAMS = { rsiMin: 50, goldenCrossWindow: 5, highScoreThreshold: 70 }
@@ -29,6 +30,8 @@ export const DEFAULT_UI_STATE = {
   recommendMode: 'consensus', // 'consensus' | 'trend' | 'minervini' (PRD_Nasdaq8 US-9)
   hideRiskFlagged: false, // 리서치 리스크 플래그 종목 숨기기 토글 (PRD_Nasdaq8 US-9)
   showFundamentalFail: false, // 펀더멘털 허들 Fail 종목 표시 토글 (PRD_Nasdaq8 US-9)
+  positions: {}, // { [ticker]: { entryPrice, entryDate? } } — 체결가·체결일 (PRD_Nasdaq10 US-12/14)
+  expandedEntryEvidence: {}, // { [ticker]: boolean } — 화면2 진입가 산출 근거 카드 펼침 상태 (US-13)
 }
 
 /** 허용 범위를 벗어난 파라미터만 개별적으로 기본형 값으로 되돌린다 (전체 리셋이 아님). */
@@ -46,6 +49,40 @@ function clampCustomParams(customParams) {
 
 function sanitizeTickerArray(arr, validTickerSet) {
   return Array.isArray(arr) ? arr.filter((t) => validTickerSet.has(t)) : []
+}
+
+/**
+ * positions 복원 (US-12): 사라진 티커는 제거하고, entryPrice가 유효(양수 숫자)하지 않은
+ * 항목은 통째로 무시한다(부분 필드만 무효화하지 않음 — 체결가 없는 포지션은 의미가 없음).
+ * entryDate는 선택값이라 없거나 형식이 이상하면 그 필드만 빠진다(포지션 자체는 유지).
+ */
+function sanitizePositions(positions, validTickerSet) {
+  const result = {}
+  if (!positions || typeof positions !== 'object') return result
+
+  for (const [ticker, pos] of Object.entries(positions)) {
+    if (!validTickerSet.has(ticker)) continue
+    if (!pos || typeof pos !== 'object') continue
+    const entryPrice = pos.entryPrice
+    if (typeof entryPrice !== 'number' || !Number.isFinite(entryPrice) || entryPrice <= 0) continue
+
+    const sanitized = { entryPrice }
+    if (typeof pos.entryDate === 'string' && pos.entryDate.length > 0) {
+      sanitized.entryDate = pos.entryDate
+    }
+    result[ticker] = sanitized
+  }
+  return result
+}
+
+/** { [ticker]: boolean } 형태의 화면 상태 맵을 사라진 티커 제거 + boolean 타입만 남기고 복원한다. */
+function sanitizeBooleanMap(map, validTickerSet) {
+  const result = {}
+  if (!map || typeof map !== 'object') return result
+  for (const [ticker, value] of Object.entries(map)) {
+    if (validTickerSet.has(ticker) && typeof value === 'boolean') result[ticker] = value
+  }
+  return result
 }
 
 /** validTickerSet: Set<string> — 현재 로드된 데이터의 티커 집합 */
@@ -82,6 +119,8 @@ export function loadPersistedState(validTickerSet) {
       hideRiskFlagged: typeof parsed.hideRiskFlagged === 'boolean' ? parsed.hideRiskFlagged : DEFAULT_UI_STATE.hideRiskFlagged,
       showFundamentalFail:
         typeof parsed.showFundamentalFail === 'boolean' ? parsed.showFundamentalFail : DEFAULT_UI_STATE.showFundamentalFail,
+      positions: sanitizePositions(parsed.positions, validTickerSet),
+      expandedEntryEvidence: sanitizeBooleanMap(parsed.expandedEntryEvidence, validTickerSet),
     }
   } catch {
     return { ...DEFAULT_UI_STATE }

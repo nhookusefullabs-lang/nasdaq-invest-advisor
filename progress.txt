@@ -1318,3 +1318,27 @@
 - v10 US-1~11 완료 — 코드 스토리는 여기까지가 전부(US-12/13/14는 UI+localStorage 스토리).
 - 다음 스토리 메모: US-12 localStorage 스키마 v4 — positions 필드, v3→v4 마이그레이션
   기존 필드 전부 보존, 사라진 티커 position 자동 제거, entryPrice 유효성(양수) 검증.
+
+## Iteration 12 — US-12. localStorage 스키마 v4
+- 완료 스토리: US-12
+- 변경 파일:
+  - src/lib/persistence.js: SCHEMA_VERSION 3→4, MIGRATABLE_FROM_VERSIONS=[1,2,3].
+    DEFAULT_UI_STATE에 `positions:{}`(ticker→{entryPrice,entryDate?})와
+    `expandedEntryEvidence:{}`(ticker→boolean, 화면2 US-13 진입가 근거 카드 펼침 상태)
+    추가. `sanitizePositions()` — entryPrice가 유한 양수가 아니면 포지션 전체를 버림
+    (부분 필드 무효화 아님 — 체결가 없는 포지션은 의미 없음), entryDate는 문자열이 아니면
+    그 필드만 빠짐(포지션 자체는 유지). `sanitizeBooleanMap()` — 사라진 티커 제거 +
+    boolean 아닌 값 제거, weights와 동일한 패턴.
+  - src/lib/persistence.test.js: 기존 v1→v2/v2→v3 마이그레이션 테스트의 schemaVersion
+    단언을 3→4로 갱신(의도된 확장) + 두 테스트 모두에 신규 v4 필드 기본값 확인 추가.
+    신규 "v3 → v4 마이그레이션" describe 8개 — AC1(v3 전 필드 무손실 보존, 신규
+    필드만 기본값), positions 왕복(entryPrice+entryDate 유효), AC2(사라진 티커 제거 /
+    entryPrice 0·음수·문자열 각각 포지션 전체 무효화 / entryDate만 이상해도 entryPrice는
+    보존 / expandedEntryEvidence 사라진티커·비boolean 제거), AC3(v4 필드 없는 기존
+    저장분도 기본값으로 정상 로드).
+- 승인 기준 확인: AC1(v3 무손실 마이그레이션, v8/v9 필드 포함) 통과, AC2(무효 position
+  정리 + 사라진 티커 제거) 통과, AC3(기존 스토리지 테스트 전체 통과) 통과.
+- 테스트 수 변화: 635 → 642 (+7). npm run test/build 둘 다 통과.
+- 다음 스토리 메모: US-13 화면2 UI — Recommend.jsx에 국면 배지(regime.js)·진입 상태
+  배지+가격세트(entryPoint.js)·매도 신호 배지(exitSignals.js)를 기존 카드 구조에 추가만
+  (무변경 유지), backtest.json v3 regimeAxis 부재 시 국면 영역만 비표시.

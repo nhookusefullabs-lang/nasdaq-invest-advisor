@@ -73,7 +73,7 @@ describe('persistence - schema v1 -> v2 migration', () => {
 
     const loaded = loadPersistedState(new Set(['AAPL', 'MSFT']))
 
-    expect(loaded.schemaVersion).toBe(3)
+    expect(loaded.schemaVersion).toBe(4) // v10 US-12가 스키마를 4로 올림(의도된 확장)
     expect(loaded.currentScreen).toBe('portfolio')
     expect(loaded.searchQuery).toBe('app')
     expect(loaded.selectedTickers).toEqual(['AAPL', 'MSFT'])
@@ -96,6 +96,9 @@ describe('persistence - schema v1 -> v2 migration', () => {
     expect(loaded.recommendMode).toBe('consensus')
     expect(loaded.hideRiskFlagged).toBe(false)
     expect(loaded.showFundamentalFail).toBe(false)
+    // brand-new v4 fields default (US-12) — a v1 record skips straight to v4 defaults
+    expect(loaded.positions).toEqual({})
+    expect(loaded.expandedEntryEvidence).toEqual({})
   })
 
   it('resets only the out-of-range customParams field, preserving in-range values (not a full reset)', () => {
@@ -149,7 +152,7 @@ describe('persistence - schema v2 -> v3 migration', () => {
 
     const loaded = loadPersistedState(new Set(['AAPL', 'MSFT']))
 
-    expect(loaded.schemaVersion).toBe(3)
+    expect(loaded.schemaVersion).toBe(4) // v10 US-12가 스키마를 4로 올림(의도된 확장)
     // existing v2 fields preserved (no data loss)
     expect(loaded.currentScreen).toBe('recommend')
     expect(loaded.selectedTickers).toEqual(['AAPL', 'MSFT'])
@@ -160,6 +163,9 @@ describe('persistence - schema v2 -> v3 migration', () => {
     expect(loaded.recommendMode).toBe('consensus')
     expect(loaded.hideRiskFlagged).toBe(false)
     expect(loaded.showFundamentalFail).toBe(false)
+    // brand-new v4 fields default (US-12)
+    expect(loaded.positions).toEqual({})
+    expect(loaded.expandedEntryEvidence).toEqual({})
   })
 
   it('resets an out-of-enum recommendMode value to "consensus"', () => {
@@ -186,5 +192,114 @@ describe('persistence - schema v2 -> v3 migration', () => {
     const loaded = loadPersistedState(new Set([]))
     expect(loaded.hideRiskFlagged).toBe(true)
     expect(loaded.showFundamentalFail).toBe(true)
+  })
+})
+
+// --- v3 → v4 마이그레이션 (PRD_Nasdaq10 §4.4/US-12) ---
+
+describe('persistence - schema v3 -> v4 migration', () => {
+  it('preserves every existing v3 field (v8/v9 필드 포함) and fills new v4 fields with defaults (AC1 무손실 마이그레이션)', () => {
+    const v3Record = {
+      schemaVersion: 3,
+      currentScreen: 'simulation',
+      searchQuery: 'app',
+      selectedTickers: ['AAPL', 'MSFT'],
+      weights: { AAPL: 60, MSFT: 40 },
+      filters: { disparityMin: 5, bollingerState: 'on' },
+      preset: 'aggressive',
+      customParams: { rsiMin: 45, goldenCrossWindow: 10, highScoreThreshold: 75 },
+      researchRequests: ['AAPL'],
+      recommendMode: 'minervini',
+      hideRiskFlagged: true,
+      showFundamentalFail: true,
+      // v3 레코드에는 positions/expandedEntryEvidence가 아예 없음
+    }
+    localStorage.setItem('nasdaqAdvisor.uiState', JSON.stringify(v3Record))
+
+    const loaded = loadPersistedState(new Set(['AAPL', 'MSFT']))
+
+    expect(loaded.schemaVersion).toBe(4)
+    // 기존 v3 필드 전부 보존
+    expect(loaded.currentScreen).toBe('simulation')
+    expect(loaded.searchQuery).toBe('app')
+    expect(loaded.selectedTickers).toEqual(['AAPL', 'MSFT'])
+    expect(loaded.weights).toEqual({ AAPL: 60, MSFT: 40 })
+    expect(loaded.filters.disparityMin).toBe(5)
+    expect(loaded.filters.bollingerState).toBe('on')
+    expect(loaded.preset).toBe('aggressive')
+    expect(loaded.customParams).toEqual({ rsiMin: 45, goldenCrossWindow: 10, highScoreThreshold: 75 })
+    expect(loaded.researchRequests).toEqual(['AAPL'])
+    expect(loaded.recommendMode).toBe('minervini')
+    expect(loaded.hideRiskFlagged).toBe(true)
+    expect(loaded.showFundamentalFail).toBe(true)
+    // 신규 v4 필드는 기본값
+    expect(loaded.positions).toEqual({})
+    expect(loaded.expandedEntryEvidence).toEqual({})
+  })
+
+  it('round-trips a valid position(entryPrice + entryDate)', () => {
+    localStorage.setItem(
+      'nasdaqAdvisor.uiState',
+      JSON.stringify({ schemaVersion: 4, positions: { AAPL: { entryPrice: 150.5, entryDate: '2026-01-05' } } })
+    )
+    const loaded = loadPersistedState(new Set(['AAPL']))
+    expect(loaded.positions).toEqual({ AAPL: { entryPrice: 150.5, entryDate: '2026-01-05' } })
+  })
+
+  it('drops a position for a ticker no longer present in the current universe (AC2 사라진 티커 제거)', () => {
+    localStorage.setItem(
+      'nasdaqAdvisor.uiState',
+      JSON.stringify({ schemaVersion: 4, positions: { AAPL: { entryPrice: 100 }, DELISTED: { entryPrice: 50 } } })
+    )
+    const loaded = loadPersistedState(new Set(['AAPL']))
+    expect(loaded.positions).toEqual({ AAPL: { entryPrice: 100 } })
+  })
+
+  it('discards a whole position entry when entryPrice is invalid (0/negative/non-number) — AC2 무효 position 정리', () => {
+    localStorage.setItem(
+      'nasdaqAdvisor.uiState',
+      JSON.stringify({
+        schemaVersion: 4,
+        positions: {
+          ZERO: { entryPrice: 0 },
+          NEG: { entryPrice: -10 },
+          NOTNUM: { entryPrice: '150' },
+          OK: { entryPrice: 100 },
+        },
+      })
+    )
+    const loaded = loadPersistedState(new Set(['ZERO', 'NEG', 'NOTNUM', 'OK']))
+    expect(loaded.positions).toEqual({ OK: { entryPrice: 100 } })
+  })
+
+  it('keeps a position without entryDate, and drops a malformed entryDate while keeping entryPrice', () => {
+    localStorage.setItem(
+      'nasdaqAdvisor.uiState',
+      JSON.stringify({
+        schemaVersion: 4,
+        positions: { AAPL: { entryPrice: 100 }, MSFT: { entryPrice: 200, entryDate: 12345 } },
+      })
+    )
+    const loaded = loadPersistedState(new Set(['AAPL', 'MSFT']))
+    expect(loaded.positions.AAPL).toEqual({ entryPrice: 100 })
+    expect(loaded.positions.MSFT).toEqual({ entryPrice: 200 })
+  })
+
+  it('round-trips expandedEntryEvidence and drops delisted-ticker/non-boolean entries', () => {
+    localStorage.setItem(
+      'nasdaqAdvisor.uiState',
+      JSON.stringify({
+        schemaVersion: 4,
+        expandedEntryEvidence: { AAPL: true, DELISTED: true, MSFT: 'yes' },
+      })
+    )
+    const loaded = loadPersistedState(new Set(['AAPL', 'MSFT']))
+    expect(loaded.expandedEntryEvidence).toEqual({ AAPL: true })
+  })
+
+  it('전체 스토리지 회귀: v4 필드가 없는 기존 저장분도 기본값으로 정상 로드된다 (AC3)', () => {
+    const state = loadPersistedState(new Set(['AAPL']))
+    expect(state.positions).toEqual({})
+    expect(state.expandedEntryEvidence).toEqual({})
   })
 })
