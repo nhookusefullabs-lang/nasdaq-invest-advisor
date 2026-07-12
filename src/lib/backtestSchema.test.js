@@ -307,3 +307,34 @@ describe('validateBacktest — combos (v10 US-9 승인 기준 3)', () => {
     expect(errors.some((e) => e.includes('combos[0].name'))).toBe(true)
   })
 })
+
+describe('validateBacktest — stateAxis (v10 US-10)', () => {
+  it('stateAxis 필드 자체가 없어도(v1~US-9 산출물) 통과한다 (하위 호환)', () => {
+    const { valid, errors } = validateBacktest(loadFixture('backtest.valid.json'))
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('유효한 stateAxis 항목(숫자 state, 문자열 state 각각)은 통과한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      stateAxis: [
+        { strategyKey: 'trend', sample: 'out', state: 2, byHolding: [{ days: 20, signals: 5, winRate: 0.6, avgExcess: 0.02, medianExcess: 0.015, avgReturn: 0.03, mdd: 0.01 }] },
+        { strategyKey: 'trend', sample: 'out', state: '산정불가', byHolding: [] },
+      ],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('state enum 오류(정의되지 않은 값)를 거부한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      stateAxis: [{ strategyKey: 'trend', sample: 'out', state: 4, byHolding: [] }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('stateAxis[0].state'))).toBe(true)
+  })
+})

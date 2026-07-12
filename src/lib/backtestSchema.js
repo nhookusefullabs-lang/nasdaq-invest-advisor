@@ -20,6 +20,8 @@ const FRESHNESS_STRATEGY_KEYS = ['trend', 'minervini']
 const FRESHNESS_COHORT_VALUES = ['0d', '1-2d', '3-4d', '5d+', 'no_recent_breakout']
 // regimeAxis(v10 US-7): 시장 국면 3상태 — regime.js의 히스테리시스 코드와 동일.
 const REGIME_VALUES = ['up', 'neutral', 'down']
+// stateAxis(v10 US-10): 진입 상태 4종 + 산정불가 — entryPoint.js의 judgeEntryState() 반환값과 동일.
+const STATE_VALUES = [0, 1, 2, 3, '산정불가']
 
 const isNonEmptyString = (v) => typeof v === 'string' && v.length > 0
 const isNullableString = (v) => v === null || typeof v === 'string'
@@ -245,6 +247,23 @@ function validateCombo(item, path, errors) {
   if (!isNullableNumber(item.avgHoldingDays)) errors.push(`${path}.avgHoldingDays: 숫자 또는 null이어야 합니다`)
 }
 
+// stateAxis(v10 US-10): { strategyKey, sample, state, byHolding[] } — state는 숫자 0~3 또는
+// '산정불가' 문자열 혼합값. 선택 필드(하위 호환 패턴 동일).
+function validateStateAxisItem(item, path, errors) {
+  if (typeof item !== 'object' || item === null) {
+    errors.push(`${path}: 객체여야 합니다`)
+    return
+  }
+  if (!STRATEGY_KEYS.includes(item.strategyKey)) errors.push(`${path}.strategyKey: ${STRATEGY_KEYS.join('/')} 중 하나여야 합니다`)
+  if (!SAMPLE_VALUES.includes(item.sample)) errors.push(`${path}.sample: ${SAMPLE_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!STATE_VALUES.includes(item.state)) errors.push(`${path}.state: ${STATE_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!Array.isArray(item.byHolding)) {
+    errors.push(`${path}.byHolding: 배열이어야 합니다`)
+  } else {
+    item.byHolding.forEach((h, i) => validateByHoldingItem(h, `${path}.byHolding[${i}]`, errors))
+  }
+}
+
 /** backtest.json(버전 1, 2 또는 3) 구조를 검증한다. 반환: { valid, errors } */
 export function validateBacktest(data) {
   const errors = []
@@ -304,6 +323,14 @@ export function validateBacktest(data) {
       errors.push('combos: 배열이어야 합니다')
     } else {
       data.combos.forEach((c, i) => validateCombo(c, `combos[${i}]`, errors))
+    }
+  }
+
+  if (data.stateAxis !== undefined) {
+    if (!Array.isArray(data.stateAxis)) {
+      errors.push('stateAxis: 배열이어야 합니다')
+    } else {
+      data.stateAxis.forEach((s, i) => validateStateAxisItem(s, `stateAxis[${i}]`, errors))
     }
   }
 

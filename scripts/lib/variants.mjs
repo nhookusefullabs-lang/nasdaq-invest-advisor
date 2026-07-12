@@ -200,3 +200,58 @@ export function evaluateVariant(rawUniverse, variant, { evaluationDates, splitDa
 
   return { name: variant.name, adopted: false, outVsBaseline, note: noteParts.filter(Boolean).join(' / ') }
 }
+
+// --- v10 US-10: 소프트 정책 변형 3종 (측정만, PRD §3 Should) ---
+// 변형 A/B/C와 달리 스코어링을 바꾸지 않고 이미 계산된 top5/allSignals 신호 레코드의
+// "구성 규칙"만 바꾼다 — 그래서 재시뮬레이션(runVariantSignalLoop)이 필요 없다.
+
+/**
+ * poolRecords(같은 (date,strategyKey) 후보군의 allSignals, rank 오름차순 정렬 대상)를
+ * 날짜별로 묶어 predicate를 만족하는 항목만 남긴 뒤 순위 상위 5개로 재구성한다.
+ * predicate가 항상 true인 날짜는 원래 top5(items.slice(0,5))와 정확히 같은 결과를 낸다
+ * (국면 조건부 정책이 "다른 국면에서는 불변"임을 보장하는 성질 — US-10 AC3).
+ */
+export function rebuildTop5WithPolicy(poolRecords, predicate) {
+  const byDate = new Map()
+  for (const r of poolRecords) {
+    if (!byDate.has(r.date)) byDate.set(r.date, [])
+    byDate.get(r.date).push(r)
+  }
+  const out = []
+  for (const dateRecords of byDate.values()) {
+    const survivors = [...dateRecords]
+      .sort((a, b) => a.rank - b.rank)
+      .filter(predicate)
+      .slice(0, 5)
+    out.push(...survivors.map((r) => ({ ...r, basis: 'top5' })))
+  }
+  return out
+}
+
+/**
+ * 정책 변형 하나를 이미 계산된 메인 신호 레코드에 적용해 현행 top5와 비교한다(§7 판정 기준
+ * 재료). sampleThreshold는 정책마다 다르다(PRD §7: 국면 조건부 정책=50, 상태 필터=100).
+ */
+export function evaluatePolicyVariant(name, { poolRecords, baselineRecords, predicate, priceIndex, holdingDays = COMPARISON_HOLDING_DAYS, sampleThreshold = MIN_OUT_SIGNALS, extraNote = null }) {
+  const variantTop5 = rebuildTop5WithPolicy(poolRecords, predicate)
+  const variantPerf = summarizeTop5(variantTop5, priceIndex, holdingDays)
+  const baselinePerf = summarizeTop5(baselineRecords, priceIndex, holdingDays)
+
+  const bothMeasurable = variantPerf.avgExcess != null && baselinePerf.avgExcess != null && variantPerf.winRate != null && baselinePerf.winRate != null
+  const outVsBaseline = {
+    avgExcessDelta: bothMeasurable ? round4(variantPerf.avgExcess - baselinePerf.avgExcess) : null,
+    winRateDelta: bothMeasurable ? round4(variantPerf.winRate - baselinePerf.winRate) : null,
+  }
+
+  const sufficientSample = (variantPerf.signals ?? 0) >= sampleThreshold
+  const meetsCriteria = sufficientSample && bothMeasurable && outVsBaseline.avgExcessDelta >= 0 && outVsBaseline.winRateDelta >= 0
+
+  const noteParts = [
+    `Out 표본: 변형 ${variantPerf.signals ?? 0}건 / 현행 ${baselinePerf.signals ?? 0}건 (top5·${holdingDays}거래일 기준)`,
+    sufficientSample ? null : `표본 수 ${sampleThreshold} 미만 — 판단 보류`,
+    meetsCriteria ? '채택 기준 충족(참고용 — 실제 채택은 운영자 승인 필요)' : '채택 기준 미충족',
+    extraNote,
+  ]
+
+  return { name, adopted: false, outVsBaseline, note: noteParts.filter(Boolean).join(' / ') }
+}

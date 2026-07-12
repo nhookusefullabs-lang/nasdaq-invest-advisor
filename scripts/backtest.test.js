@@ -9,6 +9,7 @@ import { runMinerviniRecommend } from '../src/lib/minervini.js'
 import { buildConsensusRanking } from '../src/lib/consensus.js'
 import { sliceUniverseAsOf, buildEvaluationDates } from './lib/asOf.mjs'
 import { validateBacktest } from '../src/lib/backtestSchema.js'
+import { rebuildTop5WithPolicy } from './lib/variants.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const FIXTURE_PATH = path.resolve(__dirname, '../src/lib/__fixtures__/nasdaq100.2y.sample.json')
@@ -265,10 +266,12 @@ describe('runBacktest — v9.1 US-2 변형 D 청산 규칙 (경로 의존 성과
   // evaluateExitVariants()는 Object.values(EXIT_RULES)를 그대로 순회하므로(코드 변경 없이)
   // variants[]에 자동으로 함께 나타난다 — 의도된 확장이지 회귀가 아니다.
   const exitVariantNames = ['exit_stop8_time60', 'exit_stop8_trail15', 'exit_stop_atr', 'exit_sma50_break', 'exit_climax']
+  // v10 US-10이 소프트 정책 변형 3종을 추가로 variants[]에 병합한다.
+  const policyVariantNames = ['relax_off_in_downturn', 'twostar_only_in_downturn', 'actionable_only_top5']
 
-  it('기존 변형 A/B/C 3종 + 청산 변형 5종(D 2종 + v10 US-9 3종), 총 8종이 variants[]에 있다', () => {
+  it('기존 변형 A/B/C 3종 + 청산 변형 5종 + 정책 변형 3종, 총 11종이 variants[]에 있다', () => {
     expect(backtest.variants.map((v) => v.name).sort()).toEqual(
-      ['adx_gate', 'consensus_weighted', 'disparity_inverted_u', ...exitVariantNames].sort()
+      ['adx_gate', 'consensus_weighted', 'disparity_inverted_u', ...exitVariantNames, ...policyVariantNames].sort()
     )
   })
 
@@ -555,5 +558,104 @@ describe('runBacktest — v10 US-9 청산 변형 3종 + 조합 3종 (통합)', (
     expect(backtest.combos.map((c) => c.name).sort()).toEqual(
       ['entry_pivot_confirm2_x_exit_stop_atr', 'entry_pivot_trigger_vol_x_exit_sma50_break', 'entry_pivot_confirm2_x_exit_sma50_break'].sort()
     )
+  })
+})
+
+describe('runBacktest — v10 US-10 진입 상태별 분해 + 소프트 정책 변형 3종 (통합)', () => {
+  const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
+  const backtest = runBacktest(raw)
+
+  it('스키마를 통과하고 stateAxis가 발행된다', () => {
+    expect(validateBacktest(backtest).valid).toBe(true)
+    expect(Array.isArray(backtest.stateAxis)).toBe(true)
+  })
+
+  it('전략×sample 조합마다 상태 5종(0/1/2/3/산정불가)이 전부 존재한다(표본 유무 무관)', () => {
+    for (const key of ['trend', 'minervini', 'consensus_2star', 'consensus_1star']) {
+      for (const sample of ['in', 'out']) {
+        const states = backtest.stateAxis.filter((s) => s.strategyKey === key && s.sample === sample).map((s) => s.state)
+        expect(new Set(states)).toEqual(new Set([0, 1, 2, 3, '산정불가']))
+      }
+    }
+  })
+
+  it('AC1 완전성·배타성: 상태별 신호 수 합 = 같은 (key,sample,day)의 allSignals·all 전략 신호 수', () => {
+    let checked = 0
+    for (const key of ['trend', 'minervini', 'consensus_2star', 'consensus_1star']) {
+      for (const sample of ['in', 'out']) {
+        for (const days of [5, 20, 60]) {
+          const stateSum = backtest.stateAxis
+            .filter((s) => s.strategyKey === key && s.sample === sample)
+            .reduce((sum, s) => sum + (s.byHolding.find((h) => h.days === days)?.signals ?? 0), 0)
+          const strategyTotal = backtest.strategies.find(
+            (s) => s.key === key && s.sample === sample && s.basis === 'allSignals' && s.signalQuality === 'all'
+          ).byHolding.find((h) => h.days === days).signals
+          expect(stateSum).toBe(strategyTotal)
+          checked++
+        }
+      }
+    }
+    expect(checked).toBe(4 * 2 * 3)
+  })
+
+  it('정책 변형 3종이 variants[]에 있고 전부 adopted=false, note에 판정 재료가 있다', () => {
+    for (const name of ['relax_off_in_downturn', 'twostar_only_in_downturn', 'actionable_only_top5']) {
+      const v = backtest.variants.find((x) => x.name === name)
+      expect(v).toBeDefined()
+      expect(v.adopted).toBe(false)
+      expect(v.note.length).toBeGreaterThan(0)
+    }
+  })
+})
+
+describe('rebuildTop5WithPolicy — US-10 AC2/AC3 (픽스처 기반 단위 테스트)', () => {
+  function poolFor(date, items) {
+    // items: [{ticker, rank, regime, relaxationApplied, strategyKey, entryState}]
+    return items.map((it) => ({ date, basis: 'allSignals', ...it }))
+  }
+
+  it('AC2: 상태 0·3을 제외하면 실제로 top5 구성이 현행과 달라진다(상태 1·2가 승격)', () => {
+    const pool = poolFor('2026-01-05', [
+      { ticker: 'A', rank: 1, entryState: 0 },
+      { ticker: 'B', rank: 2, entryState: 3 },
+      { ticker: 'C', rank: 3, entryState: 1 },
+      { ticker: 'D', rank: 4, entryState: 2 },
+      { ticker: 'E', rank: 5, entryState: 1 },
+      { ticker: 'F', rank: 6, entryState: 2 },
+      { ticker: 'G', rank: 7, entryState: 1 },
+    ])
+    const baselineTop5 = [...pool].sort((a, b) => a.rank - b.rank).slice(0, 5).map((r) => r.ticker)
+    const variantTop5 = rebuildTop5WithPolicy(pool, (r) => r.entryState === 1 || r.entryState === 2).map((r) => r.ticker)
+
+    expect(baselineTop5).toEqual(['A', 'B', 'C', 'D', 'E']) // 현행: 순위 그대로 top5
+    expect(variantTop5).toEqual(['C', 'D', 'E', 'F', 'G']) // 변형: A(상태0)·B(상태3) 빠지고 F·G 승격
+    expect(variantTop5).not.toEqual(baselineTop5)
+  })
+
+  it('AC3: 국면 조건부 정책은 down이 아닌 날짜에서 원래 top5와 완전히 동일하다', () => {
+    const pool = poolFor('2026-02-10', [
+      { ticker: 'A', rank: 1, regime: 'up', relaxationApplied: true },
+      { ticker: 'B', rank: 2, regime: 'up', relaxationApplied: false },
+      { ticker: 'C', rank: 3, regime: 'up', relaxationApplied: true },
+      { ticker: 'D', rank: 4, regime: 'up', relaxationApplied: false },
+      { ticker: 'E', rank: 5, regime: 'up', relaxationApplied: true },
+      { ticker: 'F', rank: 6, regime: 'up', relaxationApplied: false },
+    ])
+    const baselineTop5 = [...pool].sort((a, b) => a.rank - b.rank).slice(0, 5).map((r) => r.ticker)
+    const variantTop5 = rebuildTop5WithPolicy(pool, (r) => !(r.regime === 'down' && r.relaxationApplied)).map((r) => r.ticker)
+    expect(variantTop5).toEqual(baselineTop5) // up 국면 — 완화 신호가 섞여 있어도 규칙 미적용
+  })
+
+  it('AC3: 하락 국면 날짜에서는 완화 신호가 제외되고 다음 순위가 승격된다', () => {
+    const pool = poolFor('2026-03-01', [
+      { ticker: 'A', rank: 1, regime: 'down', relaxationApplied: false },
+      { ticker: 'B', rank: 2, regime: 'down', relaxationApplied: true },
+      { ticker: 'C', rank: 3, regime: 'down', relaxationApplied: false },
+      { ticker: 'D', rank: 4, regime: 'down', relaxationApplied: false },
+      { ticker: 'E', rank: 5, regime: 'down', relaxationApplied: false },
+      { ticker: 'F', rank: 6, regime: 'down', relaxationApplied: false },
+    ])
+    const variantTop5 = rebuildTop5WithPolicy(pool, (r) => !(r.regime === 'down' && r.relaxationApplied)).map((r) => r.ticker)
+    expect(variantTop5).toEqual(['A', 'C', 'D', 'E', 'F']) // B(완화) 제외, F 승격
   })
 })

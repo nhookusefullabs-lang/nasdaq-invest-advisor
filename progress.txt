@@ -1253,3 +1253,42 @@
 - 다음 스토리 메모: US-10 백테스트 상태별 분해 + 소프트 정책 변형 3종 — stateAxis[]는
   judgeEntryState()의 상태(0/1/2/3/산정불가) 재사용, actionable_only_top5는 상태1·2만
   top5 구성(v9.1 no_recent_breakout 코호트 열위 발견의 직접 검증).
+
+## Iteration 10 — US-10. 백테스트 — 상태별 분해 + 소프트 정책 변형 3종
+- 완료 스토리: US-10
+- 변경 파일:
+  - scripts/backtest.mjs: `buildSignalRecords()`의 trend/minervini/consensus 레코드 전부에
+    `entryState`(0/1/2/3/'산정불가') 추가 — entryPoint.js의 judgeEntryState() 재사용
+    (재구현 없음). `buildStateAxis()`(regimeAxis와 동일 패턴, aggregatePerformance 재사용,
+    allSignals 기준만) + `buildPolicyVariants()`(이미 계산된 outRecords에 정책 필터만
+    적용 — 재시뮬레이션 없음) 신규, 둘 다 runBacktest() 반환에 배선.
+  - scripts/lib/variants.mjs: `rebuildTop5WithPolicy(poolRecords,predicate)`(날짜별로 묶어
+    순위 정렬 후 predicate 통과 상위 5개 재구성 — predicate가 항상 true인 날짜는 원래
+    top5와 수학적으로 동일해짐, 이 성질이 AC3의 근거) + `evaluatePolicyVariant()`(변형
+    A/B/C의 `evaluateVariant()`와 반환 형태는 같지만 재시뮬레이션 없이 이미 있는 레코드만
+    사용 — sampleThreshold를 정책마다 다르게 받음, PRD §7: 국면조건부=50/상태필터=100).
+  - src/lib/backtestSchema.js: `stateAxis[]` 검증(선택 필드, state는 숫자0~3 또는
+    '산정불가' 문자열 혼합 enum).
+  - src/lib/backtestSchema.test.js: 3개 추가 — 하위호환·혼합타입 유효항목·state enum 오류.
+  - scripts/backtest.test.js: 기존 "총 8종" 단언을 "총 11종"으로 갱신(정책 변형 3종 추가 —
+    의도된 확장). 신규 8개 — stateAxis 발행·전략×sample당 상태5종 전부 존재·AC1
+    완전성(4키×2샘플×3보유일=24케이스 전수, US-7/US-9와 동일 패턴)·정책 변형 3종 존재+
+    adopted false, `rebuildTop5WithPolicy` 단위 테스트 3개(AC2: 상태0·3 제외 시 실제로
+    top5 구성이 달라짐 — F·G가 승격되는 것까지 직접 검증, AC3: up 국면에서는 원래 top5와
+    완전 동일 / down 국면에서는 완화 신호만 제외되고 다음 순위 승격).
+- 승인 기준 확인: AC1(완전성·배타성, 24케이스 전수) 통과, AC2(actionable_only_top5가
+  상태0·3을 실제로 제외하고 다른 순위가 승격되는 것을 티커 단위로 직접 확인) 통과,
+  AC3(국면 조건부 변형이 다른 국면에서 불변임을 직접 확인 — up 국면 픽스처로 baseline과
+  완전히 동일함을 증명) 통과.
+- 설계 결정: 정책 변형은 변형 A/B/C처럼 evaluationDates를 처음부터 재시뮬레이션하지
+  않는다 — 스코어링이 아니라 "이미 계산된 순위 목록의 구성 규칙"만 바꾸므로, 이미
+  가진 outRecords(allSignals)에 필터+재정렬만 적용하는 편이 정확하고 훨씬 저렴하다.
+  actionable_only_top5는 trend 전략에만 적용(진입/청산/조합 변형과 동일한 기존 스코프
+  선례를 따름 — PRD가 대상 전략을 명시하지 않아 판단).
+- 테스트 수 변화: 621 → 631 (+10: backtest 7 + schema 3). npm run test/build 둘 다 통과.
+  전체 스위트 실행 시간 42→44초로 소폭 증가(정책 변형이 outRecords 전체를 날짜별로
+  재그룹핑하는 추가 연산, combos 대비는 훨씬 저렴함).
+- 다음 스토리 메모: US-11 백테스트 NGX 전체 프로토콜(scripts/backtest.mjs 유니버스
+  경로화) — --data=/--out= 인자로 ngx100.json→backtest_ngx.json, RS 백분위·벤치마크가
+  입력 유니버스 내부 기준으로 자동 계산됨을 하드코딩 검출 테스트로 확인, UI 로더는
+  backtest_ngx.json을 참조하지 않아야 함(US-1에서 만든 ngx100.sample.json 픽스처 재사용).

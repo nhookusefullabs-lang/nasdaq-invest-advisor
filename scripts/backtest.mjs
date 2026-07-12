@@ -9,10 +9,11 @@ import { recommend } from '../src/lib/recommend.js'
 import { runMinerviniRecommend } from '../src/lib/minervini.js'
 import { buildConsensusRanking } from '../src/lib/consensus.js'
 import { currentRegime } from '../src/lib/regime.js'
+import { judgeEntryState } from '../src/lib/entryPoint.js'
 import { sliceUniverseAsOf, buildEvaluationDates, getCalendarDates } from './lib/asOf.mjs'
 import { buildPriceIndex, aggregatePerformance } from './lib/performance.mjs'
 import { buildFundamentalAxis } from './lib/fundamentalHistory.mjs'
-import { VARIANTS, evaluateVariant } from './lib/variants.mjs'
+import { VARIANTS, evaluateVariant, evaluatePolicyVariant } from './lib/variants.mjs'
 import { EXIT_RULES, aggregateExitPerformance, EXIT_LIMITATION_NOTE, COMBOS, aggregateComboPerformance } from './lib/exits.mjs'
 import { ENTRY_VARIANTS, aggregateEntryVariant } from './lib/entries.mjs'
 import { goldenCrossFreshnessDays, pivotBreakoutFreshnessDays, freshnessCohort, aggregateFreshnessCohorts } from './lib/freshness.mjs'
@@ -85,6 +86,17 @@ function findTickerData(datasetTickers, ticker) {
 }
 
 /**
+ * 신호일 기준 진입 상태(0/1/2/3/'산정불가') — entryPoint.js의 judgeEntryState()를 그대로
+ * 재사용한다(재구현 없음, v10 US-10 stateAxis/actionable_only_top5). datasetTickers가 없거나
+ * (픽스처 테스트 등) 해당 티커의 원본 series를 못 찾으면 null(계산 대상 아님).
+ */
+function computeEntryState(datasetTickers, ticker) {
+  const td = findTickerData(datasetTickers, ticker)
+  if (!td?.series) return null
+  return judgeEntryState(td.series).state
+}
+
+/**
  * 평가일 하나의 { trend, minervini, consensus } 결과를 평탄한 신호 레코드 배열로 변환한다.
  * basis: top5(상위 5) / allSignals(1단계 통과 전체, 추세추종·미너비니는 recommend()가 이미
  * 반환한 list 전체를, 컨센서스는 두 모드 통합 리스트 전체를 사용 — 별도 재구현 없음).
@@ -114,6 +126,7 @@ export function buildSignalRecords(date, { trend, minervini, consensus }, datase
       score: t.score,
       grade: null,
       relaxationApplied: trend.relaxationApplied,
+      entryState: computeEntryState(datasetTickers, t.ticker),
       ...(td ? { freshnessCohort: freshnessCohort(daysAgo) } : {}),
     }
   })
@@ -129,6 +142,7 @@ export function buildSignalRecords(date, { trend, minervini, consensus }, datase
       score: m.score,
       grade: null,
       relaxationApplied: minervini.relaxationApplied,
+      entryState: computeEntryState(datasetTickers, m.ticker),
       ...(td ? { freshnessCohort: freshnessCohort(daysAgo) } : {}),
     }
   })
@@ -141,6 +155,7 @@ export function buildSignalRecords(date, { trend, minervini, consensus }, datase
     score: c.consensusPercentile,
     grade: c.grade,
     relaxationApplied: consensusRelaxationApplied(c, trend, minervini),
+    entryState: computeEntryState(datasetTickers, c.ticker),
   }))
 
   return records
@@ -169,6 +184,8 @@ const STRATEGY_KEYS = ['trend', 'minervini', 'consensus_2star', 'consensus_1star
 const BASES = ['top5', 'allSignals']
 // v10 US-7: 국면 3상태 — regime.js의 히스테리시스 코드와 동일.
 const REGIME_VALUES = ['up', 'neutral', 'down']
+// v10 US-10: 진입 상태 4종 + 산정불가 — entryPoint.js의 judgeEntryState() 반환값과 동일.
+const STATE_VALUES = [0, 1, 2, 3, '산정불가']
 
 function computeRelaxedShare(records) {
   if (!records.length) return null
@@ -283,6 +300,10 @@ export function runBacktest(
     ...aggregateComboPerformance(outTrendTop5, priceIndex, combo.entryVariant, combo.exitRule),
   }))
 
+  // v10 US-10: 진입 상태별 분해 + 소프트 정책 변형 3종
+  const stateAxis = buildStateAxis(inRecords, outRecords, priceIndex, holdingDays)
+  const policyVariants = buildPolicyVariants(outRecords, priceIndex)
+
   return {
     schemaVersion: 3,
     generatedAt: rawUniverse.generatedAt,
@@ -299,11 +320,12 @@ export function runBacktest(
     },
     strategies,
     fundamentalAxis,
-    variants: [...variants, ...exitVariants],
+    variants: [...variants, ...exitVariants, ...policyVariants],
     freshnessCohorts,
     regimeAxis,
     entryVariants,
     combos,
+    stateAxis,
   }
 }
 
@@ -331,6 +353,75 @@ function buildRegimeAxis(inRecords, outRecords, priceIndex, holdingDays) {
     }
   }
   return axis
+}
+
+/**
+ * 전략×sample×진입상태×보유기간 성과표 (v10 US-10, v9.1 no_recent_breakout 코호트 발견의
+ * 정밀 재검증). allSignals 기준만 사용한다(top5를 상태별로 다시 쪼개면 표본이 급격히
+ * 작아짐 — regimeAxis/freshnessCohorts와 동일 원칙). aggregatePerformance() 재사용.
+ */
+function buildStateAxis(inRecords, outRecords, priceIndex, holdingDays) {
+  const axis = []
+  for (const [sample, records] of [
+    ['in', inRecords],
+    ['out', outRecords],
+  ]) {
+    const allSignalsRecords = records.filter((r) => r.basis === 'allSignals')
+    for (const state of STATE_VALUES) {
+      const stateRecords = allSignalsRecords.filter((r) => r.entryState === state)
+      const groups = aggregatePerformance(stateRecords, priceIndex, holdingDays, { strategyKeys: STRATEGY_KEYS, bases: ['allSignals'] })
+      for (const key of STRATEGY_KEYS) {
+        const byHolding = groups
+          .filter((g) => g.strategyKey === key)
+          .map((g) => ({ days: g.days, signals: g.signals, winRate: g.winRate, avgExcess: g.avgExcess, medianExcess: g.medianExcess, avgReturn: g.avgReturn, mdd: g.mdd }))
+        axis.push({ strategyKey: key, sample, state, byHolding })
+      }
+    }
+  }
+  return axis
+}
+
+/**
+ * 소프트 정책 변형 3종 (측정만, PRD §3 Should/§7). 이미 계산된 outRecords에 정책 필터만
+ * 적용한다(재시뮬레이션 없음 — evaluatePolicyVariant 참고).
+ * - relax_off_in_downturn/twostar_only_in_downturn: 국면 조건부(하락 국면에서만 규칙 적용,
+ *   다른 국면은 predicate가 항상 true라 원래 top5와 동일 — US-10 AC3).
+ * - actionable_only_top5: 국면 무관, trend 신호를 상태 1·2(실행 가능)로만 재구성.
+ */
+function buildPolicyVariants(outRecords, priceIndex) {
+  const trendAllSignals = outRecords.filter((r) => r.strategyKey === 'trend' && r.basis === 'allSignals')
+  const trendTop5 = outRecords.filter((r) => r.strategyKey === 'trend' && r.basis === 'top5')
+  const consensusAllSignals = outRecords.filter((r) => (r.strategyKey === 'consensus_2star' || r.strategyKey === 'consensus_1star') && r.basis === 'allSignals')
+  const consensusTop5 = outRecords.filter((r) => (r.strategyKey === 'consensus_2star' || r.strategyKey === 'consensus_1star') && r.basis === 'top5')
+
+  const relaxOffInDownturn = evaluatePolicyVariant('relax_off_in_downturn', {
+    poolRecords: trendAllSignals,
+    baselineRecords: trendTop5,
+    predicate: (r) => !(r.regime === 'down' && r.relaxationApplied),
+    priceIndex,
+    sampleThreshold: 50,
+    extraNote: '하락 국면(regime=down)에서만 완화 신호 제외 — 다른 국면은 현행과 동일',
+  })
+
+  const twostarOnlyInDownturn = evaluatePolicyVariant('twostar_only_in_downturn', {
+    poolRecords: consensusAllSignals,
+    baselineRecords: consensusTop5,
+    predicate: (r) => !(r.regime === 'down' && r.strategyKey === 'consensus_1star'),
+    priceIndex,
+    sampleThreshold: 50,
+    extraNote: '하락 국면에서만 ★(consensus_1star) 제외, ★★만 구성 — 다른 국면은 현행과 동일',
+  })
+
+  const actionableOnlyTop5 = evaluatePolicyVariant('actionable_only_top5', {
+    poolRecords: trendAllSignals,
+    baselineRecords: trendTop5,
+    predicate: (r) => r.entryState === 1 || r.entryState === 2,
+    priceIndex,
+    sampleThreshold: 100,
+    extraNote: '국면 무관 — 상태 0(원거리)·3(확장)·산정불가 제외, 상태 1·2(실행 가능)로만 top5 구성',
+  })
+
+  return [relaxOffInDownturn, twostarOnlyInDownturn, actionableOnlyTop5]
 }
 
 // v9.1 US-2 가설 ②: trend/top5 Out 신호에 경로 의존 청산(변형 D) 2종을 적용해, 현행
