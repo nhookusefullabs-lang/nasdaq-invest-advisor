@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { loadDataset, runSmoke, toMinerviniInput, evaluateAsOf, buildSignalRecords, runSignalLoop, runBacktest, parseArgs, validateCliArgs, formatOverlapFactorNote, formatFreshnessCohortSummary } from './backtest.mjs'
+import { loadDataset, runSmoke, toMinerviniInput, evaluateAsOf, buildSignalRecords, runSignalLoop, runBacktest, parseArgs, validateCliArgs, formatOverlapFactorNote, formatFreshnessCohortSummary, formatRegimeReinterpretation } from './backtest.mjs'
 import { buildDataset } from '../src/lib/buildDataset.js'
 import { recommend } from '../src/lib/recommend.js'
 import { runMinerviniRecommend } from '../src/lib/minervini.js'
@@ -221,8 +221,10 @@ describe('runBacktest — v9.1 US-1 완화/정상 분리 집계 (schemaVersion v
   const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
   const backtest = runBacktest(raw)
 
-  it('schemaVersion 2로 발행되고 스키마를 통과한다', () => {
-    expect(backtest.schemaVersion).toBe(2)
+  it('schemaVersion 3(v10 US-7 regimeAxis 도입)으로 발행되고 스키마를 통과한다', () => {
+    // v9.1 시점엔 2였으나, v10 US-7이 regimeAxis[]를 추가하며 3으로 올렸다 — 이 describe가
+    // 검증하려는 v9.1 US-1 필드(signalQuality 분리 집계)는 스키마 버전과 무관하게 그대로 유지된다.
+    expect(backtest.schemaVersion).toBe(3)
     expect(validateBacktest(backtest).valid).toBe(true)
   })
 
@@ -444,5 +446,60 @@ describe('runBacktest — v9.1 US-4 신호 신선도 코호트 (승인 기준 1,
     expect(output.split('\n').length).toBe(2 * 5)
     expect(output).toContain('trend/0d')
     expect(output).toContain('minervini/no_recent_breakout')
+  })
+})
+
+describe('runBacktest — v10 US-7 국면 귀속 + 스키마 v3 (승인 기준 1/2/3)', () => {
+  const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
+  const backtest = runBacktest(raw)
+
+  it('스키마를 통과하고 regimeAxis가 발행된다', () => {
+    expect(validateBacktest(backtest).valid).toBe(true)
+    expect(Array.isArray(backtest.regimeAxis)).toBe(true)
+  })
+
+  it('전략×sample 조합마다 국면 3종(up/neutral/down)이 전부 존재한다(표본 유무 무관)', () => {
+    for (const key of ['trend', 'minervini', 'consensus_2star', 'consensus_1star']) {
+      for (const sample of ['in', 'out']) {
+        const regimes = backtest.regimeAxis.filter((r) => r.strategyKey === key && r.sample === sample).map((r) => r.regime)
+        expect(new Set(regimes)).toEqual(new Set(['up', 'neutral', 'down']))
+      }
+    }
+  })
+
+  it('AC2 합산 정합성: 국면별 신호 수 합 = 같은 (key,sample,day)의 allSignals·all 전략 신호 수', () => {
+    let checked = 0
+    for (const key of ['trend', 'minervini', 'consensus_2star', 'consensus_1star']) {
+      for (const sample of ['in', 'out']) {
+        for (const days of [5, 20, 60]) {
+          const regimeSum = backtest.regimeAxis
+            .filter((r) => r.strategyKey === key && r.sample === sample)
+            .reduce((sum, r) => sum + (r.byHolding.find((h) => h.days === days)?.signals ?? 0), 0)
+          const strategyTotal = backtest.strategies.find(
+            (s) => s.key === key && s.sample === sample && s.basis === 'allSignals' && s.signalQuality === 'all'
+          ).byHolding.find((h) => h.days === days).signals
+          expect(regimeSum).toBe(strategyTotal)
+          checked++
+        }
+      }
+    }
+    expect(checked).toBe(4 * 2 * 3)
+  })
+
+  it('AC1 시점 정합성: 국면 판정은 raw를 그 날짜로 미리 잘라 넣어도 동일하다(미래 데이터 미개입)', () => {
+    const evaluationDates = buildEvaluationDates(raw)
+    const midDate = evaluationDates[Math.floor(evaluationDates.length / 2)]
+    const directResult = evaluateAsOf(raw, midDate)
+    const preSliced = sliceUniverseAsOf(raw, midDate)
+    const preSlicedResult = evaluateAsOf(preSliced, midDate)
+    expect(directResult.regime).toEqual(preSlicedResult.regime)
+  })
+
+  it('formatRegimeReinterpretation이 in/out 각각 국면 3종 줄을 출력한다', () => {
+    const output = formatRegimeReinterpretation(backtest)
+    expect(output).toContain('[in]')
+    expect(output).toContain('[out]')
+    expect(output).toContain('up:')
+    expect(output).toContain('down:')
   })
 })

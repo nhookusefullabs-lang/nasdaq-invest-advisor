@@ -8,6 +8,7 @@ import { buildDataset } from '../src/lib/buildDataset.js'
 import { recommend } from '../src/lib/recommend.js'
 import { runMinerviniRecommend } from '../src/lib/minervini.js'
 import { buildConsensusRanking } from '../src/lib/consensus.js'
+import { currentRegime } from '../src/lib/regime.js'
 import { sliceUniverseAsOf, buildEvaluationDates, getCalendarDates } from './lib/asOf.mjs'
 import { buildPriceIndex, aggregatePerformance } from './lib/performance.mjs'
 import { buildFundamentalAxis } from './lib/fundamentalHistory.mjs'
@@ -51,14 +52,19 @@ function formatSummary(label, result) {
 
 // --- US-3: 신호 재현 루프 — 평가일마다 슬라이스 → 두 모드 → 컨센서스, 전부 기존 lib 호출 ---
 
-/** asOfDate까지로 절단한 시점에서 두 모드 + 컨센서스를 재현한다 (백테스트 판정의 단일 진입점). */
+/**
+ * asOfDate까지로 절단한 시점에서 두 모드 + 컨센서스 + 시장 국면을 재현한다
+ * (백테스트 판정의 단일 진입점). regime은 슬라이스된(미래 데이터 없는) dataset.tickers
+ * 기준으로 regime.js가 그대로 계산한다(재구현 없음, 시점 정합성은 슬라이싱이 이미 보장).
+ */
 export function evaluateAsOf(rawUniverse, asOfDate) {
   const sliced = sliceUniverseAsOf(rawUniverse, asOfDate)
   const dataset = buildDataset(sliced)
   const trend = recommend(dataset.tickers)
   const minervini = runMinerviniRecommend(toMinerviniInput(dataset.tickers))
   const consensus = buildConsensusRanking(trend, minervini)
-  return { dataset, trend, minervini, consensus }
+  const regime = currentRegime(dataset.tickers)
+  return { dataset, trend, minervini, consensus, regime }
 }
 
 /** 컨센서스 항목 하나가 어느 모드 신호에서 왔는지로 relaxationApplied를 판단한다. */
@@ -83,13 +89,16 @@ function findTickerData(datasetTickers, ticker) {
  * 반환한 list 전체를, 컨센서스는 두 모드 통합 리스트 전체를 사용 — 별도 재구현 없음).
  * datasetTickers(선택)를 넘기면 trend/minervini 레코드에 freshnessCohort(US-4)가 추가된다 —
  * 이벤트 정의가 모드별로만 존재하므로(PRD) 컨센서스 레코드에는 붙이지 않는다.
+ * regimeInfo(선택, v10 US-7 — regime.js의 currentRegime() 반환값)를 넘기면 모든 레코드에
+ * 그 평가일의 국면 코드(regime: 'up'|'neutral'|'down'|null)가 함께 실린다.
  */
-export function buildSignalRecords(date, { trend, minervini, consensus }, datasetTickers = null) {
+export function buildSignalRecords(date, { trend, minervini, consensus }, datasetTickers = null, regimeInfo = null) {
+  const regime = regimeInfo?.regime ?? null
   const records = []
 
   const addBasisPair = (items, mapFn) => {
-    items.forEach((item, i) => records.push({ ...mapFn(item, i), basis: 'allSignals' }))
-    items.slice(0, 5).forEach((item, i) => records.push({ ...mapFn(item, i), basis: 'top5' }))
+    items.forEach((item, i) => records.push({ ...mapFn(item, i), basis: 'allSignals', regime }))
+    items.slice(0, 5).forEach((item, i) => records.push({ ...mapFn(item, i), basis: 'top5', regime }))
   }
 
   const trendPassed = trend.list.filter((t) => t.signalPassed)
@@ -144,8 +153,8 @@ export function buildSignalRecords(date, { trend, minervini, consensus }, datase
 export function runSignalLoop(rawUniverse, evaluationDates, onProgress = () => {}) {
   const records = []
   evaluationDates.forEach((date, i) => {
-    const { dataset, trend, minervini, consensus } = evaluateAsOf(rawUniverse, date)
-    records.push(...buildSignalRecords(date, { trend, minervini, consensus }, dataset.tickers))
+    const { dataset, trend, minervini, consensus, regime } = evaluateAsOf(rawUniverse, date)
+    records.push(...buildSignalRecords(date, { trend, minervini, consensus }, dataset.tickers, regime))
     onProgress(i + 1, evaluationDates.length)
   })
   return records
@@ -157,6 +166,8 @@ const round4 = (x) => Math.round(x * 10000) / 10000
 const HOLDING_DAYS = [5, 20, 60]
 const STRATEGY_KEYS = ['trend', 'minervini', 'consensus_2star', 'consensus_1star']
 const BASES = ['top5', 'allSignals']
+// v10 US-7: 국면 3상태 — regime.js의 히스테리시스 코드와 동일.
+const REGIME_VALUES = ['up', 'neutral', 'down']
 
 function computeRelaxedShare(records) {
   if (!records.length) return null
@@ -257,8 +268,10 @@ export function runBacktest(
     ...aggregateFreshnessCohorts(outRecords, priceIndex, holdingDays).map((f) => ({ ...f, sample: 'out' })),
   ]
 
+  const regimeAxis = buildRegimeAxis(inRecords, outRecords, priceIndex, holdingDays)
+
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     generatedAt: rawUniverse.generatedAt,
     config: {
       dataFrom: calendarDates[0] ?? null,
@@ -275,7 +288,34 @@ export function runBacktest(
     fundamentalAxis,
     variants: [...variants, ...exitVariants],
     freshnessCohorts,
+    regimeAxis,
   }
+}
+
+/**
+ * 전략×sample×국면×보유기간 성과표 (v10 US-7, PRD §4.2 1단). allSignals 기준만 사용한다
+ * (top5를 국면별로 다시 쪼개면 표본이 급격히 작아짐 — freshnessCohorts와 동일 원칙).
+ * aggregatePerformance()를 그대로 재사용(재구현 없음).
+ */
+function buildRegimeAxis(inRecords, outRecords, priceIndex, holdingDays) {
+  const axis = []
+  for (const [sample, records] of [
+    ['in', inRecords],
+    ['out', outRecords],
+  ]) {
+    const allSignalsRecords = records.filter((r) => r.basis === 'allSignals')
+    for (const regime of REGIME_VALUES) {
+      const regimeRecords = allSignalsRecords.filter((r) => r.regime === regime)
+      const groups = aggregatePerformance(regimeRecords, priceIndex, holdingDays, { strategyKeys: STRATEGY_KEYS, bases: ['allSignals'] })
+      for (const key of STRATEGY_KEYS) {
+        const byHolding = groups
+          .filter((g) => g.strategyKey === key)
+          .map((g) => ({ days: g.days, signals: g.signals, winRate: g.winRate, avgExcess: g.avgExcess, medianExcess: g.medianExcess, avgReturn: g.avgReturn, mdd: g.mdd }))
+        axis.push({ strategyKey: key, sample, regime, byHolding })
+      }
+    }
+  }
+  return axis
 }
 
 // v9.1 US-2 가설 ②: trend/top5 Out 신호에 경로 의존 청산(변형 D) 2종을 적용해, 현행
@@ -356,6 +396,28 @@ export function formatFreshnessCohortSummary(backtest) {
         return `${days}일 초과수익 ${(h.avgExcess * 100).toFixed(2)}%p (표본 ${h.signals})`
       })
       lines.push(`  ${key}/${cohort}: ${parts.join(' · ')}`)
+    }
+  }
+  return lines.join('\n')
+}
+
+// v10 US-7: In/Out 각각의 국면 구성비 + 국면별 성과 — In/Out 역전을 "기간"이 아니라
+// "국면"의 지식으로 재해석하기 위한 표(PRD §4.2 1단 목표). trend/allSignals/20거래일 기준.
+export function formatRegimeReinterpretation(backtest) {
+  const findEntry = (sample, regime) => backtest.regimeAxis?.find((r) => r.strategyKey === 'trend' && r.sample === sample && r.regime === regime)
+
+  const lines = []
+  for (const sample of ['in', 'out']) {
+    const totalSignals = REGIME_VALUES.reduce((sum, regime) => sum + (findEntry(sample, regime)?.byHolding?.find((h) => h.days === 20)?.signals ?? 0), 0)
+    lines.push(`  [${sample}] 국면 구성 (trend·allSignals·20거래일 신호 수 기준, 총 ${totalSignals}건)`)
+    for (const regime of REGIME_VALUES) {
+      const d20 = findEntry(sample, regime)?.byHolding?.find((h) => h.days === 20)
+      if (!d20 || d20.signals === 0) {
+        lines.push(`    ${regime}: 표본 부족`)
+        continue
+      }
+      const share = totalSignals ? ((d20.signals / totalSignals) * 100).toFixed(1) : '0.0'
+      lines.push(`    ${regime}: 구성비 ${share}% (표본 ${d20.signals}) · 초과수익 ${(d20.avgExcess * 100).toFixed(2)}%p`)
     }
   }
   return lines.join('\n')
@@ -443,6 +505,8 @@ function main() {
   console.log(formatOverlapFactorNote(backtest))
   console.log('신호 신선도 코호트 (가설 ③ 판정 재료, Out·allSignals·20/60거래일):')
   console.log(formatFreshnessCohortSummary(backtest))
+  console.log('국면별 재해석 (In/Out 역전을 국면 지식으로 재해석, v10 US-7):')
+  console.log(formatRegimeReinterpretation(backtest))
   console.log(backtest.fundamentalAxis ? `펀더멘털 축: coveredFrom=${backtest.fundamentalAxis.coveredFrom}` : '펀더멘털 축: fundamentals.json 없음(생략)')
 
   const result = atomicWriteBacktest(outputPath, backtest)

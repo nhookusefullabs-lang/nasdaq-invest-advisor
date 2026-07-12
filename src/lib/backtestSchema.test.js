@@ -152,3 +152,69 @@ describe('validateBacktest — freshnessCohorts (v9.1 US-4 승인 기준 4)', ()
     expect(errors.some((e) => e.includes('freshnessCohorts[0].cohort'))).toBe(true)
   })
 })
+
+describe('validateBacktest — regimeAxis (v10 US-7 승인 기준 3: v3 무효 픽스처 거부)', () => {
+  it('schemaVersion 3을 지원 버전으로 허용한다', () => {
+    const data = { ...loadFixture('backtest.valid.json'), schemaVersion: 3 }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('regimeAxis 필드 자체가 없어도(v1/v2 산출물) 통과한다 (하위 호환)', () => {
+    const { valid, errors } = validateBacktest(loadFixture('backtest.valid.json'))
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('유효한 regimeAxis 항목은 통과한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      schemaVersion: 3,
+      regimeAxis: [
+        {
+          strategyKey: 'trend',
+          sample: 'out',
+          regime: 'up',
+          byHolding: [{ days: 20, signals: 5, winRate: 0.6, avgExcess: 0.02, medianExcess: 0.015, avgReturn: 0.03, mdd: 0.01 }],
+        },
+      ],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('regime enum 오류(정의되지 않은 국면 값)를 거부한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      schemaVersion: 3,
+      regimeAxis: [{ strategyKey: 'trend', sample: 'out', regime: 'sideways', byHolding: [] }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('regimeAxis[0].regime'))).toBe(true)
+  })
+
+  it('strategyKey enum 오류를 거부한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      schemaVersion: 3,
+      regimeAxis: [{ strategyKey: 'bogus', sample: 'out', regime: 'up', byHolding: [] }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('regimeAxis[0].strategyKey'))).toBe(true)
+  })
+
+  it('byHolding 항목의 수치 타입 오류를 거부한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      schemaVersion: 3,
+      regimeAxis: [{ strategyKey: 'trend', sample: 'out', regime: 'up', byHolding: [{ days: 20, signals: '5', winRate: null, avgExcess: null, medianExcess: null, avgReturn: null, mdd: null }] }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('regimeAxis[0].byHolding[0].signals'))).toBe(true)
+  })
+})

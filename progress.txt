@@ -1139,3 +1139,33 @@
 - 다음 스토리 메모: US-7 백테스트 국면 귀속 + 스키마 v3 골격 — backtest.mjs가 신호일마다
   regime.js를 슬라이스 기준으로 호출(미래참조 불가 유지), backtestSchema.js schemaVersion 3
   + regimeAxis[], v1/v2 로더 하위호환 유지.
+
+## Iteration 7 — US-7. 백테스트 — 국면 귀속 + 스키마 v3 골격
+- 완료 스토리: US-7
+- 변경 파일:
+  - src/lib/backtestSchema.js: SCHEMA_VERSION 2→3, SUPPORTED_SCHEMA_VERSIONS=[1,2,3],
+    REGIME_VALUES=['up','neutral','down'], `regimeAxis[]` 검증(선택 필드 — freshnessCohorts와
+    동일한 하위 호환 패턴: 없으면 v1/v2로 간주해 검증 생략).
+  - src/lib/backtestSchema.test.js: 6개 추가 — schemaVersion3 허용·regimeAxis 없어도 통과·
+    유효 항목 통과·regime enum 오류·strategyKey enum 오류·byHolding 수치 타입 오류.
+  - scripts/backtest.mjs: `evaluateAsOf()`가 regime.js의 `currentRegime(dataset.tickers)`를
+    슬라이스된(미래 데이터 없는) dataset 기준으로 호출해 반환에 `regime` 추가(재구현 없음 —
+    시점 정합성은 기존 sliceUniverseAsOf가 이미 보장). `buildSignalRecords()`가
+    regimeInfo(선택 4번째 인자)를 받아 모든 레코드에 `regime` 코드를 병기. 신규
+    `buildRegimeAxis()`가 aggregatePerformance()를 재사용해 전략×sample×국면×보유기간
+    표를 조립(allSignals 기준만 — top5는 국면별로 쪼개면 표본이 급격히 작아짐,
+    freshnessCohorts와 동일 원칙). `formatRegimeReinterpretation()` 콘솔 출력 추가(main()에
+    배선) — In/Out 각각의 국면 구성비 + 국면별 초과수익을 regimeAxis에서 직접 읽어 표시.
+  - scripts/backtest.test.js: 기존 "schemaVersion 2로 발행" 단언을 3으로 갱신(의도된 스키마
+    버전 상승에 따른 기대값 변경 — 회귀 아님, v9.1 US-1이 검증하려는 signalQuality 필드
+    자체는 무영향). 신규 5개 — regimeAxis 발행·전략×sample당 국면 3종 전부 존재·AC2 합산
+    정합성(국면별 신호수 합=allSignals·all 전략 신호수, 4키×2샘플×3보유일=24케이스)·AC1
+    시점 정합성(raw를 미리 슬라이스해 넣어도 동일한 국면 — 미래 데이터 미개입 증명)·
+    formatRegimeReinterpretation 출력 형식.
+- 승인 기준 확인: AC1(시점 정합성) 통과, AC2(합산 정합성, 24케이스 전수 확인) 통과,
+  AC3(v1·v2 로더 하위호환 — 기존 회귀 테스트 그대로 통과 + v3 무효 픽스처 3케이스 거부) 통과.
+- 테스트 수 변화: 575 → 586 (+11: backtestSchema 6개, backtest.mjs 5개). npm run test/build
+  둘 다 통과.
+- 다음 스토리 메모: US-8 백테스트 진입 변형 4종(scripts/lib/entries.mjs) — entryPoint.js의
+  computePivot()/derivedPrices() import(재구현 금지), 체결가=max(T,당일시가), 확인일
+  변형(entry_pivot_confirm2)은 신선도 역전 가설의 직접 검증이므로 특히 정확히 구현.

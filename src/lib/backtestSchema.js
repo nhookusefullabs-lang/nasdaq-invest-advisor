@@ -8,8 +8,8 @@
 // v1 문서는 이 필드가 없으며, 하위 호환을 위해 v1에서는 검증하지 않는다(research.json
 // v1→v2 riskFlags 패턴과 동일: 정규화는 로더에서, 검증은 버전별로 분기).
 
-const SCHEMA_VERSION = 2
-const SUPPORTED_SCHEMA_VERSIONS = [1, 2]
+const SCHEMA_VERSION = 3
+const SUPPORTED_SCHEMA_VERSIONS = [1, 2, 3]
 const STRATEGY_KEYS = ['trend', 'minervini', 'consensus_2star', 'consensus_1star']
 const SAMPLE_VALUES = ['in', 'out']
 const BASIS_VALUES = ['top5', 'allSignals']
@@ -18,6 +18,8 @@ const FUNDAMENTAL_VERDICTS = ['pass', 'partial', 'fail']
 // freshnessCohorts(v9.1 US-4): 이벤트 정의가 모드별로만 있어(PRD) trend/minervini만 대상.
 const FRESHNESS_STRATEGY_KEYS = ['trend', 'minervini']
 const FRESHNESS_COHORT_VALUES = ['0d', '1-2d', '3-4d', '5d+', 'no_recent_breakout']
+// regimeAxis(v10 US-7): 시장 국면 3상태 — regime.js의 히스테리시스 코드와 동일.
+const REGIME_VALUES = ['up', 'neutral', 'down']
 
 const isNonEmptyString = (v) => typeof v === 'string' && v.length > 0
 const isNullableString = (v) => v === null || typeof v === 'string'
@@ -167,7 +169,25 @@ function validateFreshnessCohort(item, path, errors) {
   }
 }
 
-/** backtest.json(버전 1 또는 2) 구조를 검증한다. 반환: { valid, errors } */
+// regimeAxis(v10 US-7): { strategyKey, sample, regime, byHolding[] } — byHolding 항목 구조는
+// strategy와 동일(validateByHoldingItem 재사용). 선택 필드 — 없으면(v1/v2 산출물) 검증 생략,
+// 로더가 undefined 그대로 통과시켜 화면이 국면 배지를 렌더링하지 않는다(graceful degradation).
+function validateRegimeAxisItem(item, path, errors) {
+  if (typeof item !== 'object' || item === null) {
+    errors.push(`${path}: 객체여야 합니다`)
+    return
+  }
+  if (!STRATEGY_KEYS.includes(item.strategyKey)) errors.push(`${path}.strategyKey: ${STRATEGY_KEYS.join('/')} 중 하나여야 합니다`)
+  if (!SAMPLE_VALUES.includes(item.sample)) errors.push(`${path}.sample: ${SAMPLE_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!REGIME_VALUES.includes(item.regime)) errors.push(`${path}.regime: ${REGIME_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!Array.isArray(item.byHolding)) {
+    errors.push(`${path}.byHolding: 배열이어야 합니다`)
+  } else {
+    item.byHolding.forEach((h, i) => validateByHoldingItem(h, `${path}.byHolding[${i}]`, errors))
+  }
+}
+
+/** backtest.json(버전 1, 2 또는 3) 구조를 검증한다. 반환: { valid, errors } */
 export function validateBacktest(data) {
   const errors = []
 
@@ -205,7 +225,20 @@ export function validateBacktest(data) {
     }
   }
 
+  if (data.regimeAxis !== undefined) {
+    if (!Array.isArray(data.regimeAxis)) {
+      errors.push('regimeAxis: 배열이어야 합니다')
+    } else {
+      data.regimeAxis.forEach((r, i) => validateRegimeAxisItem(r, `regimeAxis[${i}]`, errors))
+    }
+  }
+
   return { valid: errors.length === 0, errors }
 }
 
-export { SCHEMA_VERSION as BACKTEST_SCHEMA_VERSION, STRATEGY_KEYS as BACKTEST_STRATEGY_KEYS, SIGNAL_QUALITY_VALUES as BACKTEST_SIGNAL_QUALITY_VALUES }
+export {
+  SCHEMA_VERSION as BACKTEST_SCHEMA_VERSION,
+  STRATEGY_KEYS as BACKTEST_STRATEGY_KEYS,
+  SIGNAL_QUALITY_VALUES as BACKTEST_SIGNAL_QUALITY_VALUES,
+  REGIME_VALUES as BACKTEST_REGIME_VALUES,
+}
