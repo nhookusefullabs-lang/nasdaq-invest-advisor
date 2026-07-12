@@ -1567,3 +1567,45 @@
   세분화하는 판정 함수가 될 가능성이 높음 — US-6(진입 변형 3종 + pullbackAxis)이 이
   lib을 바로 소비하도록 순수 함수·부작용 없음으로 설계할 것.
   필수(entryVariants 스키마 변경이 US-8 산출물 깨지 않는지 특히 주의).
+
+## Iteration 5 — US-5. 눌림목 판정 lib
+- 완료 스토리: US-5
+- 변경 파일:
+  - src/lib/constants/pullback.js: 신규 — PULLBACK_DEPTH_MIN_PCT(10)/MAX_PCT(25),
+    PULLBACK_P3_SMA_PERIOD(200, SMA50 엄격형은 예비 상수만 보관·미적용),
+    PULLBACK_TRIGGER_WINDOW_DAYS(10), PULLBACK_OBSERVATION_VALID_DAYS(30),
+    PULLBACK_STOP_MULT(0.98), PULLBACK_RESUME_VOL_MULT(1.5, US-6 예비).
+  - src/lib/pullback.js: 신규 `judgePullback(series, {rsPercentileValue})`. P1은
+    `evaluateTrendTemplate()`(minervini.js) 직접 호출, P2 거리 계산은 `computePivot()`
+    (entryPoint.js)의 pivot 값을 그대로 재사용(재구현 없음 — pivot 재계산 코드 없음).
+    P3은 SMA200(indicators.sma 재사용) 비교. P4는 피벗 형성일(peakIndex — PH 산정과
+    동일한 PIVOT_LOOKBACK 창에서 실제 최고 종가가 찍힌 날을 역산)을 기준으로 "피벗 이후
+    눌림 구간"과 "피벗 이전 동일 길이 직전 상승 구간"의 평균 거래량을 비교(고갈 판정).
+    파생값 3종: 눌림 저점(피벗 이후 최저 종가) · 재개 트리거가(직전 10거래일 최고 종가,
+    오늘 포함) · 구조 손절 참고가(눌림 저점×0.98). 데이터 부족(63거래일 미만) 또는 피벗
+    무효 시 insufficientData:true로 조기 반환.
+  - src/lib/pullback.test.js: 신규 20개 테스트. 데이터 부족 1개, P2 경계 4개(−10%/−9.99%/
+    −25%/−25.01%), P3 경계 2개(SMA200 위/아래 — "다른 199일 평균과 같아지는 지점"으로
+    경계값을 손계산해 도출), P4 4개(고갈 충족/미충족/거래량 동일 시 미충족/직전 구간
+    데이터 부족 시 미충족), AC2 재사용 확인 1개(checks.P1 === evaluateTrendTemplate().
+    allPassed, pivot === computePivot().pivot 정확히 일치), 파생 가격 손계산 4개(눌림
+    저점이 마지막날 종가가 아닌 구간 전체 최저임을 확인하는 픽스처 포함), 통합
+    observed:true 시나리오 2개("낮은 베이스 150일 + 급상승 110일 + −15% 눌림 5일"로
+    P1~P4를 모두 동시에 충족시키는 픽스처 — 스크래치 스크립트로 여러 decline
+    기간·depth 조합을 사전 스윕해 실제로 전 조건이 동시 충족되는 지점을 확인한 뒤
+    채택), missingConditions 1개, 상수 노출 1개.
+- 승인 기준 확인: AC1(P1~P4 경계 테스트 8개 이상 → 10개: P2 4 + P3 2 + P4 4) 통과,
+  AC2(피벗·템플릿이 기존 lib 실호출임을 값 일치로 증명) 통과, AC3(손계산 4개 이상 →
+  4개: 눌림저점/트리거가/손절가/peakDate) 통과.
+- 테스트 수 변화: 702 → 722 (+20, pullback.test.js 신규 20개 — 전체 스위트 카운트 변화가
+  정확히 일치). npm run test(전체 54개 파일, 722개) + npm run build 둘 다 통과.
+- 다음 스토리 메모: US-6 눌림목 진입 변형 3종(pullback_immediate/resume/resume_vol) +
+  pullbackAxis — scripts/lib/entries.mjs 확장, pullback.js의 judgePullback()을 import해
+  재구현 없이 그대로 소비할 것. resume/resume_vol은 관찰 성립일로부터
+  PULLBACK_OBSERVATION_VALID_DAYS(30거래일) 내 트리거가 돌파 여부를 봐야 하므로, 신호
+  레코드 생성 시점에 그날의 judgePullback() 결과(트리거가·관찰 성립 여부)를 어떻게
+  entries.mjs 쪽 신호 루프에 연결할지가 US-6의 핵심 설계 지점(US-8 진입변형처럼
+  ENTRY_VARIANTS 객체의 simulate(series, entryIdx) 시그니처와 호환되게 만들 것 — series
+  기반으로 매 신호일마다 judgePullback을 그 시점 슬라이스에서 재호출하는 형태가 유력).
+  pullbackAxis는 국면 분해가 필수(PRD §4.2) — buildRegimeAxis/buildStateRegimeAxis와
+  동일 패턴(aggregatePerformance 재사용)으로 구현.
