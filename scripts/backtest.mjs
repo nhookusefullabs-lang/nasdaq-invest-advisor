@@ -185,7 +185,10 @@ export function runSignalLoop(rawUniverse, evaluationDates, onProgress = () => {
 // --- US-5: In/Out 분할 + backtest.json 발행 ---
 
 const round4 = (x) => Math.round(x * 10000) / 10000
-const HOLDING_DAYS = [5, 20, 60]
+// v11 US-2(청산 F): 90/120일 지평 추가 — "청산을 늦추는 것 자체가 최고의 청산인가"를
+// 60일 고정 보유와 나란히 판정하기 위한 기준선. 말단 여유(holdingBufferDays)도 120으로
+// 늘려 120일 지평 신호가 데이터 끝자락에서 체계적으로 결측되지 않게 한다.
+const HOLDING_DAYS = [5, 20, 60, 90, 120]
 const STRATEGY_KEYS = ['trend', 'minervini', 'consensus_2star', 'consensus_1star']
 const BASES = ['top5', 'allSignals']
 // v10 US-7: 국면 3상태 — regime.js의 히스테리시스 코드와 동일.
@@ -242,7 +245,7 @@ export function runBacktest(
   rawUniverse,
   {
     warmupDays = 252,
-    holdingBufferDays = 60,
+    holdingBufferDays = 120,
     stepDays = 5,
     holdingDays = HOLDING_DAYS,
     topN = 5,
