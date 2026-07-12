@@ -72,6 +72,14 @@ export default function App() {
     )
   }, [dataset])
 
+  // 화면2 국면 배지(v10 US-13) — regime.js가 dataset.tickers만으로 계산(백엔드 호출 없음).
+  // v11 US-11(승인된 채택 1)부터는 recommend()/runMinerviniRecommend()의 신호일 국면 게이트
+  // 입력으로도 재사용한다 — 그래서 아래 recommend/minervini 호출보다 먼저 선언해야 한다.
+  const regimeInfo = useMemo(() => {
+    if (!dataset) return null
+    return currentRegime(dataset.tickers)
+  }, [dataset])
+
   // preset='custom'이면 고급 설정(US-10)의 customParams를 recommend() 설정으로 변환한다.
   // 완화 창은 "동일 로직 유지 (창 2배)" 규칙을 그대로 임의값에 적용 — recommend.js가
   // macdLineSeries/signalLineSeries로 임의 창을 즉석 계산하도록 이미 일반화돼 있다(US-10).
@@ -84,11 +92,19 @@ export default function App() {
           highScoreThreshold: uiState.customParams.highScoreThreshold,
         }
       : (PRESETS[uiState.preset] ?? PRESETS[DEFAULT_PRESET_KEY])
-  const recommendation = useMemo(() => recommend(filteredTickers, activeConfig), [filteredTickers, activeConfig])
+  // v11 US-11: 신호일 국면이 하락이면 완화 폴백 신호를 top5·추천 풀에서 제외(승인된 채택 1) —
+  // recommend.js/minervini.js가 regime.js의 gateRelaxedFallbackInDownturn을 그대로 호출한다.
+  const recommendation = useMemo(
+    () => recommend(filteredTickers, activeConfig, regimeInfo?.regime),
+    [filteredTickers, activeConfig, regimeInfo]
+  )
 
   // 미너비니 모드(PRD_Nasdaq8 US-4/US-5)는 원전 기준 고정 — 추세추종처럼 프리셋/고급설정의
   // 대상이 아니므로 activeConfig 없이 filteredTickers만으로 계산한다.
-  const minerviniResult = useMemo(() => runMinerviniRecommend(filteredTickers), [filteredTickers])
+  const minerviniResult = useMemo(
+    () => runMinerviniRecommend(filteredTickers, regimeInfo?.regime),
+    [filteredTickers, regimeInfo]
+  )
   const consensusResult = useMemo(
     () => buildConsensusRanking(recommendation, minerviniResult),
     [recommendation, minerviniResult]
@@ -121,12 +137,6 @@ export default function App() {
 
   // 화면2 진입가/청산신호 카드(v10 US-13)가 티커별 원본 series를 조회하는 데 쓴다.
   const tickerDataMap = useMemo(() => new Map(availableTickerData.map((t) => [t.ticker, t])), [availableTickerData])
-
-  // 화면2 국면 배지(v10 US-13) — regime.js가 dataset.tickers만으로 계산(백엔드 호출 없음).
-  const regimeInfo = useMemo(() => {
-    if (!dataset) return null
-    return currentRegime(dataset.tickers)
-  }, [dataset])
 
   const selectedTickerData = useMemo(() => {
     if (!dataset) return []

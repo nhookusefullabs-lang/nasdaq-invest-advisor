@@ -47,10 +47,12 @@ export function toMinerviniInput(tickers) {
 /**
  * 최신 시점(dataset 그 자체) 기준 두 모드 추천을 각 1회 실행한다 (스모크).
  * recommend()/runMinerviniRecommend() 호출 결과 그대로 반환 — 백테스트 전용 재구현 없음.
+ * v11 US-11: regime을 넘겨 앱과 동일한 gateRelaxedFallbackInDownturn 규칙을 그대로 적용한다.
  */
 export function runSmoke(dataset) {
-  const trend = recommend(dataset.tickers)
-  const minervini = runMinerviniRecommend(toMinerviniInput(dataset.tickers))
+  const regime = currentRegime(dataset.tickers).regime
+  const trend = recommend(dataset.tickers, undefined, regime)
+  const minervini = runMinerviniRecommend(toMinerviniInput(dataset.tickers), regime)
   return { trend, minervini }
 }
 
@@ -64,14 +66,21 @@ function formatSummary(label, result) {
  * asOfDate까지로 절단한 시점에서 두 모드 + 컨센서스 + 시장 국면을 재현한다
  * (백테스트 판정의 단일 진입점). regime은 슬라이스된(미래 데이터 없는) dataset.tickers
  * 기준으로 regime.js가 그대로 계산한다(재구현 없음, 시점 정합성은 슬라이싱이 이미 보장).
+ * v11 US-11(승인된 채택 1): 국면을 recommend()/runMinerviniRecommend()에 그대로 넘겨 앱과
+ * 완전히 동일한 gateRelaxedFallbackInDownturn 규칙이 신호 재현 루프에도 자동 적용되게 한다
+ * (재구현 없음, "앱 분기가 src/lib에 있으므로 백테스트가 자동으로 동일 규칙 실행"). 이 때문에
+ * buildPolicyVariants()의 relax_off_in_downturn 정책 변형은 이제 이미 게이트가 걸린
+ * 기준선(baselineRecords) 위에서 같은 조건을 다시 걸게 되어 사실상 무변화(델타≈0)로
+ * 수렴한다 — 이중 적용이 아니라 "채택 후 그 변형 실험 자체가 무의미해짐"이 기대되는
+ * 결과다(buildPolicyVariants의 extraNote에 이 사실을 명시).
  */
 export function evaluateAsOf(rawUniverse, asOfDate) {
   const sliced = sliceUniverseAsOf(rawUniverse, asOfDate)
   const dataset = buildDataset(sliced)
-  const trend = recommend(dataset.tickers)
-  const minervini = runMinerviniRecommend(toMinerviniInput(dataset.tickers))
-  const consensus = buildConsensusRanking(trend, minervini)
   const regime = currentRegime(dataset.tickers)
+  const trend = recommend(dataset.tickers, undefined, regime.regime)
+  const minervini = runMinerviniRecommend(toMinerviniInput(dataset.tickers), regime.regime)
+  const consensus = buildConsensusRanking(trend, minervini)
   return { dataset, trend, minervini, consensus, regime }
 }
 
@@ -626,13 +635,21 @@ function buildPolicyVariants(outRecords, priceIndex) {
   const consensusAllSignals = outRecords.filter((r) => (r.strategyKey === 'consensus_2star' || r.strategyKey === 'consensus_1star') && r.basis === 'allSignals')
   const consensusTop5 = outRecords.filter((r) => (r.strategyKey === 'consensus_2star' || r.strategyKey === 'consensus_1star') && r.basis === 'top5')
 
+  // v11 US-11(승인된 채택 1)부터 recommend()/runMinerviniRecommend() 자체가 이미 하락
+  // 국면에서 완화 신호를 제외하므로(evaluateAsOf 참고), 아래 baselineRecords(trendTop5)는
+  // 이 정책이 이미 적용된 상태로 들어온다 — predicate가 걸러낼 대상이 남아있지 않아 이
+  // 변형의 델타는 이제 항상 0에 수렴한다(이중 적용이 아니라 "채택 후 실험 자체가
+  // 무의미해짐"이 기대되는 결과 — 콘솔·note에 명시해 혼동 방지).
   const relaxOffInDownturn = evaluatePolicyVariant('relax_off_in_downturn', {
     poolRecords: trendAllSignals,
     baselineRecords: trendTop5,
     predicate: (r) => !(r.regime === 'down' && r.relaxationApplied),
     priceIndex,
     sampleThreshold: 50,
-    extraNote: '하락 국면(regime=down)에서만 완화 신호 제외 — 다른 국면은 현행과 동일',
+    extraNote:
+      '하락 국면(regime=down)에서만 완화 신호 제외 — 다른 국면은 현행과 동일. ' +
+      'v11 US-11부터 이 규칙이 recommend()/runMinerviniRecommend() 자체에 채택되어 ' +
+      '기준선이 이미 이 규칙을 포함한 상태다 — 델타는 이제 항상 0에 가까워야 정상(이중 적용 아님)',
   })
 
   const twostarOnlyInDownturn = evaluatePolicyVariant('twostar_only_in_downturn', {

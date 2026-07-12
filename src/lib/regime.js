@@ -134,3 +134,20 @@ export function currentRegime(tickers) {
     transitionDate: null,
   }
 }
+
+/**
+ * 승인된 채택 1 (v11 US-11, PRD_Nasdaq11 §4.6): 하락 국면(regime==='down')에서는 완화 폴백
+ * 신호(relaxationApplied)를 추천 풀에서 제외한다 — v10 backtest의 relax_off_in_downturn
+ * 변형 Out 실측(완화 신호 제외 시 +14.7%p)이 근거. recommend()/runMinerviniRecommend()가
+ * 공유하는 결과 형태({list, relaxationApplied, ...})에 그대로 적용하는 순수 후처리 —
+ * 두 함수의 마지막 단계에서 호출한다(재구현 없음).
+ * regime이 'down'이 아니면(null·'up'·'neutral') 완전히 무변경 반환한다 — 승인 기준 1의
+ * "상승·중립 국면은 v10과 완전 동일" 요구를 이 한 줄이 보장한다.
+ * regimeGated: 실제로 하나 이상의 완화 신호가 걸러졌는지(배너 렌더링 조건, US-11 승인 기준 3).
+ */
+export function gateRelaxedFallbackInDownturn(result, regime) {
+  if (regime !== 'down') return { ...result, regimeGated: false }
+  const hasRelaxed = result.list.some((item) => item.relaxationApplied)
+  if (!hasRelaxed) return { ...result, regimeGated: false }
+  return { ...result, list: result.list.filter((item) => !item.relaxationApplied), regimeGated: true }
+}

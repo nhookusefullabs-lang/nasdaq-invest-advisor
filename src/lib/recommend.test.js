@@ -90,6 +90,36 @@ describe('recommend - relaxation fallback', () => {
   })
 })
 
+// v11 US-11: 승인된 채택 1 — 하락 국면에서는 완화 폴백 신호를 top5·추천 풀에서 제외한다.
+describe('recommend - regime gate (v11 US-11 승인 기준 1: 승인된 채택 1)', () => {
+  const relaxedTickers = Array.from({ length: 5 }, (_, i) =>
+    makeTicker({ ticker: `T${i}`, indicators: { ...makeTicker().indicators, goldenCross5: false, goldenCross10: true } })
+  )
+
+  it('하락 국면(regime="down")에서는 완화 신호(relaxationApplied)가 결과에서 완전히 빠진다', () => {
+    const result = recommend(relaxedTickers, undefined, 'down')
+    expect(result.relaxationApplied).toBe(true) // 완화가 실제로 걸렸다는 사실 자체는 그대로 보존
+    expect(result.regimeGated).toBe(true)
+    expect(result.list).toEqual([])
+  })
+
+  it('상승/중립/국면 미지정에서는 완화 신호가 그대로 유지된다(v10과 완전 동일 — 승인 기준 1)', () => {
+    for (const regime of ['up', 'neutral', null, undefined]) {
+      const result = regime === undefined ? recommend(relaxedTickers) : recommend(relaxedTickers, undefined, regime)
+      expect(result.list.length).toBe(5)
+      expect(result.regimeGated).toBe(false)
+    }
+  })
+
+  it('완화가 걸리지 않은(strict pass) 신호는 하락 국면에서도 제외되지 않는다', () => {
+    const strictTickers = Array.from({ length: 6 }, (_, i) => makeTicker({ ticker: `S${i}` }))
+    const result = recommend(strictTickers, undefined, 'down')
+    expect(result.relaxationApplied).toBe(false)
+    expect(result.regimeGated).toBe(false)
+    expect(result.list.length).toBe(6)
+  })
+})
+
 describe('recommend - scoring clamps', () => {
   it('clamps disparity/volume contributions and adds sector bonus', () => {
     const t = makeTicker({

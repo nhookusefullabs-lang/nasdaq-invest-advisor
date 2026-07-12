@@ -667,3 +667,47 @@ describe('Recommend - consensus mode (US-10)', () => {
     expect(screen.getByText(/배점·기준값은 v9 백테스트로 조정 예정인 설계값입니다/)).toBeInTheDocument()
   })
 })
+
+describe('Recommend - regime gate banner (v11 US-11 승인 기준 3: 안내 1줄은 하락 국면에서만 노출)', () => {
+  const BANNER_TEXT = '하락 국면에서는 완화 신호가 제외됩니다 (v11 · 백테스트 근거)'
+
+  it('recommendation.regimeGated가 true면 배너가 렌더링된다', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={{ ...makeRecommendation(), regimeGated: true }}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    expect(screen.getByText(BANNER_TEXT)).toBeInTheDocument()
+  })
+
+  it('regimeGated가 false/미지정이면 배너가 렌더링되지 않는다', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeRecommendation()}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    expect(screen.queryByText(BANNER_TEXT)).not.toBeInTheDocument()
+  })
+
+  it('minerviniResult.regimeGated만 true여도 배너가 렌더링된다(추세추종·미너비니 공통 적용)', () => {
+    render(
+      <Recommend
+        generatedAt="2026-07-08"
+        recommendation={makeRecommendation()}
+        minerviniResult={{ list: [], relaxationApplied: true, insufficientSignal: false, regimeGated: true }}
+        selectedTickers={[]}
+        onToggleSelect={noop}
+        onGoToSimulation={noop}
+      />
+    )
+    expect(screen.getByText(BANNER_TEXT)).toBeInTheDocument()
+  })
+})

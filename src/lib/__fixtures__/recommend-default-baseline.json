@@ -93,5 +93,6 @@
   ],
   "relaxationApplied": true,
   "insufficientSignal": false,
-  "level": "relaxed10d"
+  "level": "relaxed10d",
+  "regimeGated": false
 }

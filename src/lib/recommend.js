@@ -5,6 +5,7 @@
 
 import { PRESETS, DEFAULT_PRESET_KEY } from './presets.js'
 import { goldenCrossWithin } from './indicators.js'
+import { gateRelaxedFallbackInDownturn } from './regime.js'
 
 // v9 US-7: 백테스트 후보 변형 비교 프레임(scripts/lib/variants.mjs)이 "변경 대상이 아닌
 // 부분"을 재구현 없이 그대로 재사용할 수 있도록 export 구문만 보강한다 — 동작 불변, 아래
@@ -81,9 +82,11 @@ function buildHighScoreReasons(td) {
  * tickers: deriveTickerData() + applyLeadingSectorFlags() 를 거친 배열
  * config: 프리셋 설정 객체 (RSI 하한/골든크로스 창(기준·완화)/고득점 편입 임계) — 생략 시 기본형.
  *   기본형으로 호출하면 v5(리팩터링 전) recommend(tickers)와 완전히 동일한 결과를 낸다 (US-8 회귀 기준).
- * 반환: { list, relaxationApplied, insufficientSignal, level }
+ * regime(선택, v11 US-11 — 승인된 채택 1): 신호일 시장 국면('up'|'neutral'|'down'|null).
+ *   생략하거나 'down'이 아니면 기존과 완전히 동일(회귀 없음) — gateRelaxedFallbackInDownturn 참고.
+ * 반환: { list, relaxationApplied, insufficientSignal, level, regimeGated }
  */
-export function recommend(tickers, config = PRESETS[DEFAULT_PRESET_KEY]) {
+export function recommend(tickers, config = PRESETS[DEFAULT_PRESET_KEY], regime = null) {
   const eligible = tickers.filter((t) => t.dataSufficient)
   const { passed, level, relaxationApplied } = runStage1(eligible, config)
   const passedTickerSet = new Set(passed.map((t) => t.ticker))
@@ -117,12 +120,15 @@ export function recommend(tickers, config = PRESETS[DEFAULT_PRESET_KEY]) {
     .sort((a, b) => b.score - a.score)
     .slice(0, MAX_RESULTS)
 
-  return {
-    list,
-    relaxationApplied,
-    insufficientSignal: scoredPassed.length < MIN_RESULTS,
-    level,
-  }
+  return gateRelaxedFallbackInDownturn(
+    {
+      list,
+      relaxationApplied,
+      insufficientSignal: scoredPassed.length < MIN_RESULTS,
+      level,
+    },
+    regime
+  )
 }
 
 export { SCORE_DISPARITY_MAX, SCORE_VOLUME_MAX, SCORE_SECTOR_BONUS }

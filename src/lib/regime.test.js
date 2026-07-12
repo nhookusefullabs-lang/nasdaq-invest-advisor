@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { breadth, regimeSeries, currentRegime, applyHysteresis } from './regime.js'
+import { breadth, regimeSeries, currentRegime, applyHysteresis, gateRelaxedFallbackInDownturn } from './regime.js'
 import { buildDataset } from './buildDataset.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -131,5 +131,39 @@ describe('regime.js — 5.5년 픽스처 (PRD_Nasdaq11 US-1 AC2: 상승·하락 
     const series = regimeSeries(dataset.tickers)
     const downDays = series.filter((s) => s.regime === 'down').length
     expect(downDays).toBeGreaterThan(50)
+  })
+})
+
+describe('regime.js — gateRelaxedFallbackInDownturn (v11 US-11 승인 기준 1: 승인된 채택 1)', () => {
+  const relaxedList = [
+    { ticker: 'A', relaxationApplied: true },
+    { ticker: 'B', relaxationApplied: true },
+  ]
+  const strictList = [
+    { ticker: 'C', relaxationApplied: false },
+    { ticker: 'D', relaxationApplied: false },
+  ]
+  const mixedList = [...relaxedList, ...strictList]
+
+  it('하락 국면 + 완화 신호 존재: 완화 신호만 제외되고 regimeGated:true다', () => {
+    const result = gateRelaxedFallbackInDownturn({ list: mixedList, relaxationApplied: true, level: 'relaxed10d' }, 'down')
+    expect(result.list.map((i) => i.ticker)).toEqual(['C', 'D'])
+    expect(result.regimeGated).toBe(true)
+    expect(result.relaxationApplied).toBe(true) // 다른 필드는 그대로 보존
+    expect(result.level).toBe('relaxed10d')
+  })
+
+  it('하락 국면 + 완화 신호가 전혀 없으면(strict만) 무변경, regimeGated:false', () => {
+    const result = gateRelaxedFallbackInDownturn({ list: strictList, relaxationApplied: false }, 'down')
+    expect(result.list).toEqual(strictList)
+    expect(result.regimeGated).toBe(false)
+  })
+
+  it('상승·중립·null 국면은 완화 신호가 섞여 있어도 완전히 무변경이다(승인 기준 1: v10과 동일)', () => {
+    for (const regime of ['up', 'neutral', null, undefined]) {
+      const result = gateRelaxedFallbackInDownturn({ list: mixedList, relaxationApplied: true }, regime)
+      expect(result.list).toEqual(mixedList)
+      expect(result.regimeGated).toBe(false)
+    }
   })
 })

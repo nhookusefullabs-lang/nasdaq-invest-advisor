@@ -12,6 +12,7 @@ import {
   pivotProximity,
 } from './indicators.js'
 import { TREND_TEMPLATE, TREND_TEMPLATE_RELAXED_MIN_CONDITIONS, TREND_TEMPLATE_MIN_RESULTS, VCP_SCORE } from './constants/v8.js'
+import { gateRelaxedFallbackInDownturn } from './regime.js'
 
 const clamp01 = (x) => Math.max(0, Math.min(1, x))
 const round1 = (x) => Math.round(x * 10) / 10
@@ -159,9 +160,11 @@ export function evaluateVcpScore(series, rsPercentileValue) {
  * 미너비니 모드 전체 추천 파이프라인(1단계+2단계). 출력 필드를 추세추종 recommend()
  * 결과와 동형으로 맞춰(ticker,name,sector,score,reasons,signalPassed,relaxationApplied +
  * 신규 templateChecks[]) 이후 컨센서스 랭킹(US-6)이 두 모드를 동일하게 다룰 수 있게 한다.
- * 반환: { list, relaxationApplied, insufficientSignal, level, excludedForInsufficientData }
+ * regime(선택, v11 US-11 — 승인된 채택 1): recommend()와 동일한 gateRelaxedFallbackInDownturn
+ * 후처리를 공유한다 — 생략하거나 'down'이 아니면 기존과 완전히 동일(회귀 없음).
+ * 반환: { list, relaxationApplied, insufficientSignal, level, excludedForInsufficientData, regimeGated }
  */
-export function runMinerviniRecommend(tickers) {
+export function runMinerviniRecommend(tickers, regime = null) {
   const stage1 = runMinerviniStage1(tickers)
 
   const list = stage1.passed
@@ -180,11 +183,14 @@ export function runMinerviniRecommend(tickers) {
     })
     .sort((a, b) => b.score - a.score)
 
-  return {
-    list,
-    relaxationApplied: stage1.relaxationApplied,
-    insufficientSignal: stage1.insufficientSignal,
-    level: stage1.level,
-    excludedForInsufficientData: stage1.excludedForInsufficientData,
-  }
+  return gateRelaxedFallbackInDownturn(
+    {
+      list,
+      relaxationApplied: stage1.relaxationApplied,
+      insufficientSignal: stage1.insufficientSignal,
+      level: stage1.level,
+      excludedForInsufficientData: stage1.excludedForInsufficientData,
+    },
+    regime
+  )
 }

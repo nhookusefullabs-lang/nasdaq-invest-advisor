@@ -362,3 +362,27 @@ describe('runMinerviniRecommend - 출력 형태가 recommend.js와 동형 (US-5)
     }
   })
 })
+
+// v11 US-11: 승인된 채택 1 — recommend.js와 동일한 regime 게이트를 공유한다(regime.js 재사용).
+describe('runMinerviniRecommend - regime gate (v11 US-11 승인 기준 1: 승인된 채택 1)', () => {
+  const relaxedTickers = Array.from({ length: 5 }, (_, i) => {
+    const base = makeMonotonicSeries(260, { start: 100, step: 0.5 })
+    const series = withHighSpike(base, 20, 2000) // T7만 실패 → 7/8 완화로 통과
+    return { ticker: `T${i}`, name: `Ticker ${i}`, sector: 'Technology', series }
+  })
+
+  it('하락 국면(regime="down")에서는 완화(relaxed7of8) 신호가 결과에서 완전히 빠진다', () => {
+    const result = runMinerviniRecommend(relaxedTickers, 'down')
+    expect(result.relaxationApplied).toBe(true)
+    expect(result.regimeGated).toBe(true)
+    expect(result.list).toEqual([])
+  })
+
+  it('상승/중립/국면 미지정에서는 완화 신호가 그대로 유지된다(v10과 완전 동일 — 승인 기준 1)', () => {
+    for (const regime of ['up', 'neutral', null, undefined]) {
+      const result = regime === undefined ? runMinerviniRecommend(relaxedTickers) : runMinerviniRecommend(relaxedTickers, regime)
+      expect(result.list.length).toBe(5)
+      expect(result.regimeGated).toBe(false)
+    }
+  })
+})

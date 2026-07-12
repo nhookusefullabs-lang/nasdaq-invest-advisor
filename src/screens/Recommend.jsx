@@ -520,6 +520,12 @@ export default function Recommend({
 
       <RegimeBadge regimeInfo={regimeInfo} backtest={backtest} />
 
+      {(recommendation?.regimeGated || minerviniResult?.regimeGated) && (
+        <p className="mb-4 text-sm text-blue-700 bg-blue-50 rounded px-3 py-2">
+          하락 국면에서는 완화 신호가 제외됩니다 (v11 · 백테스트 근거)
+        </p>
+      )}
+
       <ModeSegment recommendMode={recommendMode} onModeChange={onModeChange} />
 
       <label className="flex items-center gap-2 mb-4 text-sm text-gray-600">
