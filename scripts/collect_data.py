@@ -27,8 +27,11 @@
 
 from __future__ import annotations
 
+import argparse
+import csv
 import json
 import math
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -78,6 +81,22 @@ OUT_PATH = ROOT / "public" / "data" / "nasdaq100.json"
 LOG_PATH = ROOT / "scripts" / "collect_data.log"
 FUNDAMENTALS_OUT_PATH = ROOT / "public" / "data" / "fundamentals.json"
 FUNDAMENTALS_SCHEMA_VERSION = 1
+
+# --- NGX(Nasdaq Next Gen 100) 파일럿 (PRD_Nasdaq10 §4.1, US-1) ---
+# 측정 전용 별도 유니버스: QQQJ(Invesco NASDAQ Next Gen 100 ETF) 보유 종목 기반.
+NGX_OUT_PATH = ROOT / "public" / "data" / "ngx100.json"
+NGX_FUNDAMENTALS_OUT_PATH = ROOT / "public" / "data" / "fundamentals_ngx.json"
+# 기본 소스는 로컬 CSV 경로 (운영자가 QQQJ 보유종목 공시 CSV를 내려받아 배치) — CLI로 교체 가능.
+NGX_DEFAULT_SOURCE = ROOT / "scripts" / "ngx_holdings.csv"
+# 유동성 가드레일 (미너비니 스크리닝 관례): 주가 최소치, 20일 평균 거래대금 최소치.
+NGX_MIN_PRICE = 10.0
+NGX_MIN_DOLLAR_VOL = 20_000_000.0
+NGX_DOLLAR_VOL_WINDOW = 20
+# hasFullYearData(client)의 252거래일 문턱 — NGX는 이 미만이어도 수집 자체는 제외하지 않고
+# (기존 MIN_TRADING_DAYS=200 floor만 적용), 신규상장이 많을 것으로 예상되는 만큼 집계만 남긴다.
+NGX_FULL_YEAR_THRESHOLD = 252
+# 나스닥 라인으로 인정하는 거래소 표기 (이중상장 종목의 비-나스닥 라인은 이 목록 밖)
+NGX_NASDAQ_EXCHANGE_TOKENS = {"", "NASDAQ", "NASDAQ GS", "NASDAQ GM", "NASDAQ CM", "NAS", "NASDAQGS", "NASDAQGM", "NASDAQCM"}
 # 펀더멘털 허들 판정에 최소 필요한 분기 수 (전년 동기 비교에 4분기 전 데이터가 필요하므로
 # 5개 미만이면 F1/F3 성장률은 계산 불가하지만, 종목 자체를 제외하는 하한은 2개로 낮게 둔다
 # — PRD_Nasdaq8 §4.4 "missing[]" 결측 처리 원칙: 계산 불가 항목은 판정불가로만 표시하고
@@ -409,10 +428,10 @@ def fetch_fundamentals(ticker: str) -> tuple[dict | None, str | None]:
     }, None
 
 
-def collect_fundamentals(tickers: list[str]) -> None:
+def collect_fundamentals(tickers: list[str], out_path: Path = FUNDAMENTALS_OUT_PATH) -> None:
     """가격 수집과 동일 실행에서 펀더멘털 스냅샷을 수집해 원자적으로 저장한다."""
     log("-" * 60)
-    log(f"펀더멘털 수집 시작: 후보 {len(tickers)}종목")
+    log(f"펀더멘털 수집 시작: 후보 {len(tickers)}종목 → {out_path.relative_to(ROOT)}")
 
     included: list[dict] = []
     excluded: list[dict] = []
@@ -434,16 +453,181 @@ def collect_fundamentals(tickers: list[str]) -> None:
 
     # 원자적 쓰기: 임시 파일에 먼저 쓰고 rename — 도중 실패해도 기존 fundamentals.json은
     # 훼손되지 않는다 (v6 research.json atomicWriteResearch 패턴 재사용, PRD_Nasdaq8 US-2).
-    FUNDAMENTALS_OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    tmp_path = FUNDAMENTALS_OUT_PATH.with_suffix(".json.tmp")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = out_path.with_suffix(".json.tmp")
     tmp_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    tmp_path.replace(FUNDAMENTALS_OUT_PATH)
+    tmp_path.replace(out_path)
 
     log(f"펀더멘털 수집 완료: 포함 {len(included)}종목 / 제외 {len(excluded)}종목")
-    log(f"저장: {FUNDAMENTALS_OUT_PATH.relative_to(ROOT)}")
+    log(f"저장: {out_path.relative_to(ROOT)}")
 
 
-def main() -> int:
+# ---------------------------------------------------------------------------
+# NGX(Nasdaq Next Gen 100) 파일럿 — 순수 함수 (PRD_Nasdaq10 §4.1, US-1)
+# ---------------------------------------------------------------------------
+
+def normalize_ticker(raw: str) -> str:
+    """CSV 원본 티커 표기 → yfinance 조회 가능한 정규 티커.
+    공백 제거·대문자화, 괄호 각주(예: '(W/I)')와 말미 '*' 각주 표기를 제거한다.
+    """
+    t = raw.strip().upper()
+    t = re.sub(r"\s*\([^)]*\)\s*$", "", t).strip()
+    t = t.rstrip("*").strip()
+    return t
+
+
+def is_non_nasdaq_line(row: dict) -> bool:
+    """이중상장 종목의 비-나스닥 라인(해외 1차 상장 등) 여부."""
+    exch = str(row.get("Exchange") or row.get("exchange") or "").strip().upper()
+    return exch not in NGX_NASDAQ_EXCHANGE_TOKENS
+
+
+def load_ngx_ticker_source(path: Path) -> tuple[list[tuple[str, str, str]], list[dict]]:
+    """QQQJ 보유종목 공시 CSV → (포함 (ticker,name,sector) 목록, 제외 사유 목록).
+    CSV 컬럼: Ticker,Name,Sector,Exchange (Exchange는 선택 — 없으면 나스닥 라인으로 간주).
+    """
+    included: list[tuple[str, str, str]] = []
+    excluded: list[dict] = []
+    seen: set[str] = set()
+
+    with path.open(newline="", encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            raw_ticker = str(row.get("Ticker") or row.get("ticker") or "")
+            if not raw_ticker.strip():
+                continue
+            if is_non_nasdaq_line(row):
+                excluded.append({
+                    "ticker": raw_ticker.strip(),
+                    "reason": f"이중상장 비-나스닥 라인 제외 (거래소: {row.get('Exchange', '')})",
+                })
+                continue
+            ticker = normalize_ticker(raw_ticker)
+            if not ticker or ticker in seen:
+                continue
+            seen.add(ticker)
+            name = str(row.get("Name") or row.get("name") or ticker).strip()
+            sector = str(row.get("Sector") or row.get("sector") or "Unknown").strip()
+            included.append((ticker, name, sector))
+
+    return included, excluded
+
+
+def passes_liquidity_guardrail(series: list[dict]) -> tuple[bool, str | None]:
+    """NGX 유동성 가드레일: 최근 종가 ≥ $10, 최근 20일 평균 거래대금 ≥ $20M.
+    미달 시 (False, 사유) — 종가/거래대금 중 먼저 걸리는 조건의 사유를 반환한다.
+    """
+    if not series:
+        return False, "데이터 없음"
+
+    last_close = series[-1]["close"]
+    if last_close < NGX_MIN_PRICE:
+        return False, f"주가 미달 (${last_close:.2f} < ${NGX_MIN_PRICE:.2f})"
+
+    window = series[-NGX_DOLLAR_VOL_WINDOW:]
+    avg_dollar_vol = sum(b["close"] * b["volume"] for b in window) / len(window)
+    if avg_dollar_vol < NGX_MIN_DOLLAR_VOL:
+        return False, (
+            f"{NGX_DOLLAR_VOL_WINDOW}일 평균 거래대금 미달 "
+            f"(${avg_dollar_vol:,.0f} < ${NGX_MIN_DOLLAR_VOL:,.0f})"
+        )
+
+    return True, None
+
+
+def collect_ngx(source_path: Path) -> int:
+    """NGX 유니버스를 나스닥100과 동일 품질로 수집한다 (측정 전용, UI 미노출)."""
+    if not source_path.exists():
+        log(f"[ERROR] NGX 티커 소스 CSV를 찾을 수 없습니다: {source_path}")
+        log("        QQQJ 보유종목 공시 CSV를 준비해 --ngx-source로 경로를 지정하세요.")
+        return 1
+
+    candidates, source_excluded = load_ngx_ticker_source(source_path)
+    log(f"NGX 수집 시작: 소스={source_path.relative_to(ROOT) if source_path.is_relative_to(ROOT) else source_path}, "
+        f"후보 {len(candidates)}종목 (소스 단계 제외 {len(source_excluded)}종목)")
+
+    meta = {t: (name, sector) for (t, name, sector) in candidates}
+    all_tickers = [t for (t, _, _) in candidates]
+
+    raw: dict[str, pd.DataFrame] = {}
+    for batch in chunked(all_tickers, BATCH_SIZE):
+        log(f"[NGX] 다운로드 배치: {', '.join(batch)}")
+        try:
+            raw.update(download_batch(batch))
+        except Exception as e:
+            log(f"[WARN][NGX] 배치 다운로드 실패({batch}): {e} — 개별 재시도")
+            for t in batch:
+                try:
+                    raw.update(download_batch([t]))
+                except Exception as e2:
+                    log(f"[WARN][NGX] 개별 다운로드 실패({t}): {e2}")
+        time.sleep(BATCH_SLEEP_SEC)
+
+    included: list[dict] = []
+    excluded: list[dict] = list(source_excluded)
+    full_year_short_count = 0
+
+    for t in all_tickers:
+        name, sector = meta[t]
+        series, reason = build_series(raw.get(t))
+        if series is None:
+            excluded.append({"ticker": t, "reason": reason})
+            log(f"[제외][NGX] {t} ({name}): {reason}")
+            continue
+
+        ok, guard_reason = passes_liquidity_guardrail(series)
+        if not ok:
+            excluded.append({"ticker": t, "reason": guard_reason})
+            log(f"[제외][NGX] {t} ({name}): {guard_reason}")
+            continue
+
+        if len(series) < NGX_FULL_YEAR_THRESHOLD:
+            full_year_short_count += 1
+
+        included.append({"ticker": t, "name": name, "sector": sector, "series": series})
+
+    latest_date = None
+    for tk in included:
+        d = tk["series"][-1]["date"]
+        if latest_date is None or d > latest_date:
+            latest_date = d
+    generated_at = latest_date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    payload = {
+        "generatedAt": generated_at,
+        "tickers": included,
+        "excluded": excluded,
+    }
+
+    NGX_OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    NGX_OUT_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    log("-" * 60)
+    log(f"[NGX] 수집 완료: 포함 {len(included)}종목 / 제외 {len(excluded)}종목 "
+        f"(252거래일 미만 {full_year_short_count}종목 — hasFullYearData가 판정)")
+    log(f"[NGX] 데이터 기준일(generatedAt): {generated_at}")
+    log(f"[NGX] 저장: {NGX_OUT_PATH.relative_to(ROOT)}")
+
+    collect_fundamentals(all_tickers, out_path=NGX_FUNDAMENTALS_OUT_PATH)
+
+    flush_log()
+    return 0
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--universe", choices=["ndx", "ngx"], default="ndx",
+        help="수집할 유니버스 (기본 ndx — 나스닥100, 기존 동작 불변). ngx=Nasdaq Next Gen 100 파일럿",
+    )
+    parser.add_argument(
+        "--ngx-source", default=str(NGX_DEFAULT_SOURCE),
+        help="NGX(QQQJ 보유종목) 티커 소스 CSV 경로",
+    )
+    return parser.parse_args(argv)
+
+
+def collect_ndx() -> int:
     log(f"수집 시작: 나스닥100 후보 {len(NASDAQ100)}종목, 기간={PERIOD}, 간격={INTERVAL}")
 
     meta = {t: (name, sector) for (t, name, sector) in NASDAQ100}
@@ -544,6 +728,13 @@ def main() -> int:
 
     flush_log()
     return 0
+
+
+def main() -> int:
+    args = parse_args()
+    if args.universe == "ngx":
+        return collect_ngx(Path(args.ngx_source))
+    return collect_ndx()
 
 
 if __name__ == "__main__":
