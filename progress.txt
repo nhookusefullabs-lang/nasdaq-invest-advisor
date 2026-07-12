@@ -1292,3 +1292,29 @@
   경로화) — --data=/--out= 인자로 ngx100.json→backtest_ngx.json, RS 백분위·벤치마크가
   입력 유니버스 내부 기준으로 자동 계산됨을 하드코딩 검출 테스트로 확인, UI 로더는
   backtest_ngx.json을 참조하지 않아야 함(US-1에서 만든 ngx100.sample.json 픽스처 재사용).
+
+## Iteration 11 — US-11. 백테스트 — NGX 전체 프로토콜
+- 완료 스토리: US-11
+- 변경 파일:
+  - scripts/backtest.mjs: `runBacktest()`에 `universe='ndx'` 옵션 추가, config에
+    `universe`+`universeStats`(tickerCount/hasFullYearDataExcludedCount/
+    hasFullYearDataExcludedRatio, indicators.hasFullYearData() 재사용) 기록.
+    `--universe=ndx|ngx` CLI 플래그(validateCliArgs가 검증), `--data=`(named, 기존
+    위치인자와 공존 — flags.data 우선) 지원. universe별 기본 경로(ngx100.json→
+    backtest_ngx.json, fundamentals_ngx.json) 분기. `formatNgxVsNdxComparison()` —
+    기존 production backtest.json이 있으면 ★★(out·top5·20일) 나란히 비교 출력,
+    없으면 생략(PRD §7 판정 기준표 재료, 실제 3항목 판정은 운영자 몫).
+  - src/lib/backtestSchema.js: config.universe/universeStats 선택 필드 검증 추가.
+  - scripts/backtest.test.js: 기존 validateCliArgs 정확 일치 단언 2건에 universe:'ndx'
+    반영(의도된 확장). 신규 4개 — AC1(US-1의 ngx100.sample.json 3티커×756일 픽스처로
+    완주+스키마 통과+universe 메타/제외율 기록), universe 기본값 ndx 확인, AC2(동일
+    코드로 ndx/ngx 양쪽 실행 시 신호 티커가 절대 교차 오염되지 않음을 runSignalLoop
+    직접 호출로 확인 — "하드코딩 없음"의 실증), AC3(backtestLoader.js 소스에
+    'backtest_ngx' 문자열이 없고 'data/backtest.json' 리터럴만 있음을 직접 확인).
+- 승인 기준 확인: AC1(NGX 픽스처 완주+메타 기록) 통과, AC2(하드코딩 없음 — 교차
+  오염 부재 실증) 통과, AC3(UI 로더 미참조) 통과.
+- 테스트 수 변화: 631 → 635 (+4). npm run test/build 둘 다 통과. 전체 스위트 44→52초
+  (NGX 픽스처 실행 3건 추가).
+- v10 US-1~11 완료 — 코드 스토리는 여기까지가 전부(US-12/13/14는 UI+localStorage 스토리).
+- 다음 스토리 메모: US-12 localStorage 스키마 v4 — positions 필드, v3→v4 마이그레이션
+  기존 필드 전부 보존, 사라진 티커 position 자동 제거, entryPrice 유효성(양수) 검증.

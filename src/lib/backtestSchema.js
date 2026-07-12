@@ -53,6 +53,21 @@ function validateConfig(config, errors) {
       errors.push('config.overlapFactor: 값이 전부 숫자여야 합니다')
     }
   }
+
+  // universe/universeStats(v10 US-11): 선택 필드 — 없으면(v1~US-10 산출물) ndx로 간주.
+  if (config.universe !== undefined && config.universe !== 'ndx' && config.universe !== 'ngx') {
+    errors.push('config.universe: ndx 또는 ngx여야 합니다')
+  }
+  if (config.universeStats !== undefined) {
+    const u = config.universeStats
+    if (typeof u !== 'object' || u === null) {
+      errors.push('config.universeStats: 객체여야 합니다')
+    } else {
+      if (!isNumber(u.tickerCount)) errors.push('config.universeStats.tickerCount: 숫자여야 합니다')
+      if (!isNumber(u.hasFullYearDataExcludedCount)) errors.push('config.universeStats.hasFullYearDataExcludedCount: 숫자여야 합니다')
+      if (!isNullableNumber(u.hasFullYearDataExcludedRatio)) errors.push('config.universeStats.hasFullYearDataExcludedRatio: 숫자 또는 null이어야 합니다')
+    }
+  }
 }
 
 function validateByHoldingItem(item, path, errors) {

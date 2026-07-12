@@ -10,6 +10,7 @@ import { runMinerviniRecommend } from '../src/lib/minervini.js'
 import { buildConsensusRanking } from '../src/lib/consensus.js'
 import { currentRegime } from '../src/lib/regime.js'
 import { judgeEntryState } from '../src/lib/entryPoint.js'
+import { hasFullYearData } from '../src/lib/indicators.js'
 import { sliceUniverseAsOf, buildEvaluationDates, getCalendarDates } from './lib/asOf.mjs'
 import { buildPriceIndex, aggregatePerformance } from './lib/performance.mjs'
 import { buildFundamentalAxis } from './lib/fundamentalHistory.mjs'
@@ -22,6 +23,11 @@ import { atomicWriteBacktest } from './validate-backtest.mjs'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const DEFAULT_DATA_PATH = path.resolve(__dirname, '../public/data/nasdaq100.json')
 const DEFAULT_OUTPUT_PATH = path.resolve(__dirname, '../public/data/backtest.json')
+// v10 US-11: NGX(Nasdaq Next Gen 100) 파일럿 — 측정 전용 별도 유니버스 기본 경로.
+const DEFAULT_NGX_DATA_PATH = path.resolve(__dirname, '../public/data/ngx100.json')
+const DEFAULT_NGX_OUTPUT_PATH = path.resolve(__dirname, '../public/data/backtest_ngx.json')
+const NGX_FUNDAMENTALS_FILENAME = 'fundamentals_ngx.json'
+const NDX_FUNDAMENTALS_FILENAME = 'fundamentals.json'
 
 /** raw nasdaq100.json({generatedAt, tickers}) 그대로 읽는다 (asOf 슬라이싱은 raw 형태에 대해 동작). */
 export function loadRawUniverse(dataPath = DEFAULT_DATA_PATH) {
@@ -187,6 +193,20 @@ const REGIME_VALUES = ['up', 'neutral', 'down']
 // v10 US-10: 진입 상태 4종 + 산정불가 — entryPoint.js의 judgeEntryState() 반환값과 동일.
 const STATE_VALUES = [0, 1, 2, 3, '산정불가']
 
+/**
+ * 유니버스 메타 통계(v10 US-11) — hasFullYearData(252거래일) 미만 종목 수/비율.
+ * NGX는 신규상장이 많아 이 비율이 높을 것으로 예상(파일럿 판정 재료, PRD §4.1).
+ */
+function computeUniverseStats(dataset) {
+  const sufficientTickers = dataset.tickers.filter((t) => t.dataSufficient)
+  const shortCount = sufficientTickers.filter((t) => !hasFullYearData(t.series)).length
+  return {
+    tickerCount: sufficientTickers.length,
+    hasFullYearDataExcludedCount: shortCount,
+    hasFullYearDataExcludedRatio: sufficientTickers.length ? round4(shortCount / sufficientTickers.length) : null,
+  }
+}
+
 function computeRelaxedShare(records) {
   if (!records.length) return null
   const count = records.filter((r) => r.relaxationApplied).length
@@ -228,6 +248,7 @@ export function runBacktest(
     topN = 5,
     fundamentalsData = null,
     onProgress = () => {},
+    universe = 'ndx',
   } = {}
 ) {
   const evaluationDates = buildEvaluationDates(rawUniverse, { warmupDays, holdingBufferDays, stepDays })
@@ -240,6 +261,7 @@ export function runBacktest(
 
   const dataset = buildDataset(rawUniverse)
   const priceIndex = buildPriceIndex(dataset.tickers)
+  const universeStats = computeUniverseStats(dataset)
 
   const aggregateAllQualities = (sampleRecords) =>
     Object.fromEntries(
@@ -317,6 +339,8 @@ export function runBacktest(
       benchmark: 'universe_equal_weight',
       topN,
       overlapFactor: computeOverlapFactor(holdingDays, stepDays),
+      universe,
+      universeStats,
     },
     strategies,
     fundamentalAxis,
@@ -529,16 +553,42 @@ export function formatRegimeReinterpretation(backtest) {
   return lines.join('\n')
 }
 
-function loadFundamentalsIfPresent(dataPath) {
-  // nasdaq100.json과 같은 디렉터리의 fundamentals.json을 선택적으로 사용한다(US-6) —
+function loadFundamentalsIfPresent(dataPath, fundamentalsFileName = NDX_FUNDAMENTALS_FILENAME) {
+  // nasdaq100.json과 같은 디렉터리의 fundamentals(_ngx).json을 선택적으로 사용한다(US-6/US-11) —
   // 없으면 조용히 null(엔진은 fundamentalAxis:null로 정상 완주, graceful degradation).
-  const candidate = path.join(path.dirname(dataPath), 'fundamentals.json')
+  const candidate = path.join(path.dirname(dataPath), fundamentalsFileName)
   if (!existsSync(candidate)) return null
   try {
     return JSON.parse(readFileSync(candidate, 'utf-8'))
   } catch {
     return null
   }
+}
+
+// v10 US-11: NGX vs 나스닥100 ★★ 컨센서스 비교 (§7 판정 기준 3항목 재료). 기존 production
+// backtest.json이 있으면 함께 읽어 비교하고, 없으면(신선 실행 등) 조용히 생략한다.
+function formatNgxVsNdxComparison(ngxBacktest, ndxOutputPath) {
+  if (!existsSync(ndxOutputPath)) {
+    return `나스닥100 백테스트(${ndxOutputPath})가 없어 비교를 생략합니다.`
+  }
+  let ndxBacktest
+  try {
+    ndxBacktest = JSON.parse(readFileSync(ndxOutputPath, 'utf-8'))
+  } catch {
+    return `나스닥100 백테스트(${ndxOutputPath}) 읽기 실패로 비교를 생략합니다.`
+  }
+
+  const find2starOut20 = (bt) => bt.strategies?.find((s) => s.key === 'consensus_2star' && s.sample === 'out' && s.basis === 'top5' && (s.signalQuality ?? 'all') === 'all')?.byHolding?.find((h) => h.days === 20)
+
+  const ndx = find2starOut20(ndxBacktest)
+  const ngx = find2starOut20(ngxBacktest)
+  const fmt = (h) => (h && h.signals > 0 ? `승률 ${(h.winRate * 100).toFixed(1)}% · 초과수익 ${(h.avgExcess * 100).toFixed(2)}%p (표본 ${h.signals})` : '표본 부족')
+
+  return [
+    `나스닥100 ★★(out·top5·20거래일): ${fmt(ndx)}`,
+    `NGX      ★★(out·top5·20거래일): ${fmt(ngx)}`,
+    `NGX 펀더멘털 Pass 표본·Out 표본 ≥50/≥100 등 §7 판정 기준표는 운영자가 별도 확인.`,
+  ].join('\n')
 }
 
 // v9.1 US-3: --step=N(기본 5, 허용 1~10) / --out=경로 형태의 named 플래그를 파싱한다.
@@ -568,7 +618,12 @@ export function validateCliArgs(flags) {
   if (stepDays !== 5 && !flags.out) {
     return { ok: false, error: '--step이 5가 아니면 --out=경로를 반드시 지정해야 합니다 (공식 backtest.json 보호)' }
   }
-  return { ok: true, stepDays }
+  // v10 US-11: --universe는 ndx(기본)|ngx만 허용.
+  const universe = flags.universe ?? 'ndx'
+  if (universe !== 'ndx' && universe !== 'ngx') {
+    return { ok: false, error: `--universe는 ndx 또는 ngx여야 합니다 (받은 값: ${flags.universe})` }
+  }
+  return { ok: true, stepDays, universe }
 }
 
 function main() {
@@ -580,10 +635,14 @@ function main() {
     process.exitCode = 1
     return
   }
-  const { stepDays } = validated
+  const { stepDays, universe } = validated
 
-  const dataPath = positional[0] ? path.resolve(positional[0]) : DEFAULT_DATA_PATH
-  const outputPath = flags.out ? path.resolve(flags.out) : DEFAULT_OUTPUT_PATH
+  const defaultDataPath = universe === 'ngx' ? DEFAULT_NGX_DATA_PATH : DEFAULT_DATA_PATH
+  const defaultOutputPath = universe === 'ngx' ? DEFAULT_NGX_OUTPUT_PATH : DEFAULT_OUTPUT_PATH
+  const fundamentalsFileName = universe === 'ngx' ? NGX_FUNDAMENTALS_FILENAME : NDX_FUNDAMENTALS_FILENAME
+
+  const dataPath = flags.data ? path.resolve(flags.data) : positional[0] ? path.resolve(positional[0]) : defaultDataPath
+  const outputPath = flags.out ? path.resolve(flags.out) : defaultOutputPath
 
   const rawUniverse = loadRawUniverse(dataPath)
   const dataset = buildDataset(rawUniverse)
@@ -602,8 +661,9 @@ function main() {
     if (done % logEvery === 0 || done === total) console.log(`  진행률: ${done}/${total} 평가일`)
   }
 
-  const fundamentalsData = loadFundamentalsIfPresent(dataPath)
-  const backtest = runBacktest(rawUniverse, { fundamentalsData, stepDays, onProgress })
+  const fundamentalsData = loadFundamentalsIfPresent(dataPath, fundamentalsFileName)
+  const backtest = runBacktest(rawUniverse, { fundamentalsData, stepDays, onProgress, universe })
+  console.log(`유니버스: ${universe} (제외율: hasFullYearData 미달 ${backtest.config.universeStats.hasFullYearDataExcludedCount}/${backtest.config.universeStats.tickerCount})`)
   console.log(`In/Out 분할: splitDate=${backtest.config.splitDate}`)
   console.log(formatInOutSummary(backtest))
   console.log('추세추종 신호 품질 비교 (가설 ① 판정 재료, allSignals·20거래일):')
@@ -614,6 +674,10 @@ function main() {
   console.log('국면별 재해석 (In/Out 역전을 국면 지식으로 재해석, v10 US-7):')
   console.log(formatRegimeReinterpretation(backtest))
   console.log(backtest.fundamentalAxis ? `펀더멘털 축: coveredFrom=${backtest.fundamentalAxis.coveredFrom}` : '펀더멘털 축: fundamentals.json 없음(생략)')
+  if (universe === 'ngx') {
+    console.log('NGX vs 나스닥100 ★★ 컨센서스 비교 (v10 US-11, PRD §7 판정 기준 재료):')
+    console.log(formatNgxVsNdxComparison(backtest, DEFAULT_OUTPUT_PATH))
+  }
 
   const result = atomicWriteBacktest(outputPath, backtest)
   if (!result.ok) {
