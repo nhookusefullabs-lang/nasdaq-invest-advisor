@@ -3,7 +3,7 @@
 // "진입은 동일, 청산만 상이"한 두 후보(손절만 / 손절+트레일링)를 추가로 측정한다.
 // 벤치마크·MDD 계산은 performance.mjs의 기존 함수를 그대로 재사용(재구현 금지) — 실제
 // 도달한 보유일수(holdingDaysActual)를 그 함수들의 holdingDays 인자로 넘길 뿐이다.
-import { entryPoint, universeBenchmarkReturn, maxDrawdown, average, median, round4 } from './performance.mjs'
+import { entryPoint, universeBenchmarkReturn, maxDrawdown, average, median, round4, computePartialPositionPerformance } from './performance.mjs'
 import { atr } from '../../src/lib/indicators.js'
 import { ATR_STOP_MULT, PIVOT_STRUCTURAL_STOP_MULT } from '../../src/lib/constants/entry.js'
 import { evaluateExitSignals } from '../../src/lib/exitSignals.js'
@@ -290,5 +290,70 @@ export function aggregateComboPerformance(records, priceIndex, entryVariant, exi
     avgReturn: round4(average(rets)),
     mdd: round4(average(mdds)),
     avgHoldingDays: round4(average(holdingDays)),
+  }
+}
+
+// --- v11 US-9: 청산 변형 E(클라이맥스 부분 청산) ---
+// EXIT_RULES/walkExit 체계는 "그날 전량 청산 여부"만 표현할 수 있어(checkStop이 boolean) 50%
+// 부분 청산은 이 체계에 넣을 수 없다 — COMBOS와 마찬가지로 별도 경로로 둔다. performance.mjs의
+// computePartialPositionPerformance()(US-3 인프라)를 그대로 재사용(재구현 금지) — 이 파일이
+// 새로 담당하는 것은 X4(클라이맥스 런) 첫 발생일 탐색과 exitEvents 구성뿐이다.
+
+/** entryIdx 다음 거래일부터 MAX_HOLDING_DAYS까지 X4(exitSignals.js, 재구현 금지) 첫 발생일의 인덱스. 없으면 null. */
+function findFirstClimaxIdx(series, entryIdx) {
+  for (let offset = 1; offset <= MAX_HOLDING_DAYS; offset++) {
+    const idx = entryIdx + offset
+    if (idx >= series.length) return null
+    if (hasExitSignalCode(series, idx, 'X4')) return idx
+  }
+  return null
+}
+
+/**
+ * 신호 레코드 하나를 클라이맥스 부분 청산으로 확장한다: X4 첫 발생일에 50% 청산, 잔여 50%는
+ * MAX_HOLDING_DAYS(60거래일) 만기 청산. X4가 전혀 발생하지 않으면 exitEvents가 빈 배열이 되어
+ * computePartialPositionPerformance()가 잔여분(100%) 전체를 60일 만기로 처리한다 — 이 경우
+ * 결과가 "무청산"(고정 60일 보유) 경로와 정확히 같아진다(별도 분기 불필요).
+ * 반환: { ...record, returnPct, benchmarkReturn, excessReturn, mdd, legs, climaxTriggered } | null
+ */
+export function computeClimaxPartialPerformance(record, priceIndex) {
+  const point = entryPoint(priceIndex, record.ticker, record.date)
+  if (!point) return null
+
+  const climaxIdx = findFirstClimaxIdx(point.series, point.idx)
+  const exitEvents = climaxIdx != null ? [{ date: point.series[climaxIdx].date, ratio: 0.5 }] : []
+  const perf = computePartialPositionPerformance(record, priceIndex, exitEvents, MAX_HOLDING_DAYS)
+  if (!perf) return null
+
+  return { ...perf, climaxTriggered: climaxIdx != null }
+}
+
+/**
+ * records 전체를 클라이맥스 부분 청산으로 집계한다. climaxTriggerRate(발동률)를 1급 재료로
+ * 포함한다(v10 "83.7% 교훈" — 판정 이전에 항상 실측할 것).
+ * 반환: { signals, winRate, avgExcess, medianExcess, avgReturn, mdd, climaxTriggerRate }
+ * (표본 0이면 전부 null — NaN 금지).
+ */
+export function aggregateClimaxPartialPerformance(records, priceIndex) {
+  const items = records.map((r) => computeClimaxPartialPerformance(r, priceIndex)).filter(Boolean)
+
+  if (!items.length) {
+    return { signals: 0, winRate: null, avgExcess: null, medianExcess: null, avgReturn: null, mdd: null, climaxTriggerRate: null }
+  }
+
+  const excess = items.map((i) => i.excessReturn)
+  const rets = items.map((i) => i.returnPct)
+  const mdds = items.map((i) => i.mdd)
+  const wins = excess.filter((e) => e > 0).length
+  const triggered = items.filter((i) => i.climaxTriggered).length
+
+  return {
+    signals: items.length,
+    winRate: round4(wins / items.length),
+    avgExcess: round4(average(excess)),
+    medianExcess: round4(median(excess)),
+    avgReturn: round4(average(rets)),
+    mdd: round4(average(mdds)),
+    climaxTriggerRate: round4(triggered / items.length),
   }
 }

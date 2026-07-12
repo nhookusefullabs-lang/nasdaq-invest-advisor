@@ -15,7 +15,7 @@ import { sliceUniverseAsOf, buildEvaluationDates, getCalendarDates } from './lib
 import { buildPriceIndex, aggregatePerformance } from './lib/performance.mjs'
 import { buildFundamentalAxis } from './lib/fundamentalHistory.mjs'
 import { VARIANTS, evaluateVariant, evaluatePolicyVariant } from './lib/variants.mjs'
-import { EXIT_RULES, aggregateExitPerformance, EXIT_LIMITATION_NOTE, COMBOS, aggregateComboPerformance } from './lib/exits.mjs'
+import { EXIT_RULES, aggregateExitPerformance, EXIT_LIMITATION_NOTE, COMBOS, aggregateComboPerformance, aggregateClimaxPartialPerformance } from './lib/exits.mjs'
 import { ENTRY_VARIANTS, PULLBACK_ENTRY_VARIANTS, aggregateEntryVariant } from './lib/entries.mjs'
 import { goldenCrossFreshnessDays, pivotBreakoutFreshnessDays, freshnessCohort, aggregateFreshnessCohorts } from './lib/freshness.mjs'
 import { atomicWriteBacktest } from './validate-backtest.mjs'
@@ -387,6 +387,9 @@ export function runBacktest(
   // v11 US-6: 눌림목 진입 변형 3종 × sample × basis × 국면
   const pullbackAxis = buildPullbackAxis(inRecords, outRecords, priceIndex, holdingDays)
 
+  // v11 US-9: 청산 변형 E(클라이맥스 부분 청산) — 3자 비교(무청산/전량/부분)
+  const climaxPartial = buildClimaxPartial(outTrendTop5, priceIndex, strategies, exitVariants)
+
   return {
     schemaVersion: 4,
     generatedAt: rawUniverse.generatedAt,
@@ -413,6 +416,7 @@ export function runBacktest(
     stateAxis,
     stateRegimeAxis,
     pullbackAxis,
+    climaxPartial,
   }
 }
 
@@ -522,6 +526,31 @@ function buildPullbackAxis(inRecords, outRecords, priceIndex, holdingDays) {
     }
   }
   return axis
+}
+
+/**
+ * 청산 변형 E(클라이맥스 부분 청산, v11 US-9) — 3자 비교(무청산/전량 클라이맥스 청산/부분 청산)를
+ * 구성한다. 무청산=strategies[]의 trend·top5·Out·all·60거래일 고정 보유(evaluateExitVariants가
+ * 쓰는 baseline60과 동일 정의 — 재사용, 재계산 없음), 전량 클라이맥스 청산=exitVariants에서
+ * 이미 계산된 'exit_climax'(v10 US-9) 항목을 그대로 참조(재계산 없음 — "v10 결과 참조").
+ * outTrendTop5(entryVariants/combos와 동일 스코프)에 대해서만 부분 청산을 새로 계산한다.
+ */
+function buildClimaxPartial(outTrendTop5, priceIndex, strategies, exitVariants) {
+  const baseline = strategies.find((s) => s.key === 'trend' && s.basis === 'top5' && s.sample === 'out' && s.signalQuality === 'all')
+  const baseline60 = baseline?.byHolding?.find((h) => h.days === 60) ?? null
+  const fullClimax = exitVariants.find((v) => v.name === 'exit_climax')
+  const outDetail = aggregateClimaxPartialPerformance(outTrendTop5, priceIndex)
+
+  return {
+    name: 'exit_climax_partial',
+    adopted: false,
+    outDetail,
+    comparison: {
+      noExit: baseline60 ? { signals: baseline60.signals, avgExcess: baseline60.avgExcess, medianExcess: baseline60.medianExcess } : null,
+      fullClimaxExit: fullClimax ? { signals: fullClimax.outDetail.signals, avgExcess: fullClimax.outDetail.avgExcess, medianExcess: fullClimax.outDetail.medianExcess } : null,
+      partialClimaxExit: { signals: outDetail.signals, avgExcess: outDetail.avgExcess, medianExcess: outDetail.medianExcess },
+    },
+  }
 }
 
 /**

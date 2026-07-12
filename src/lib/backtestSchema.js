@@ -334,6 +334,51 @@ function validateStateRegimeAxisItem(item, path, errors) {
   }
 }
 
+// climaxPartial(v11 US-9): { name, adopted, outDetail:{signals,winRate,avgExcess,medianExcess,
+// avgReturn,mdd,climaxTriggerRate}, comparison:{noExit,fullClimaxExit,partialClimaxExit} } —
+// top-level 단일 객체(배열 아님). 선택 필드(하위 호환 패턴 동일).
+function validateClimaxComparisonEntry(item, path, errors) {
+  if (item === null) return
+  if (typeof item !== 'object') {
+    errors.push(`${path}: 객체 또는 null이어야 합니다`)
+    return
+  }
+  if (!isNumber(item.signals)) errors.push(`${path}.signals: 숫자여야 합니다`)
+  if (!isNullableNumber(item.avgExcess)) errors.push(`${path}.avgExcess: 숫자 또는 null이어야 합니다`)
+  if (!isNullableNumber(item.medianExcess)) errors.push(`${path}.medianExcess: 숫자 또는 null이어야 합니다`)
+}
+
+function validateClimaxPartial(item, path, errors) {
+  if (typeof item !== 'object' || item === null) {
+    errors.push(`${path}: 객체여야 합니다`)
+    return
+  }
+  if (!isNonEmptyString(item.name)) errors.push(`${path}.name: 필수 문자열입니다`)
+  if (!isBoolean(item.adopted)) errors.push(`${path}.adopted: boolean이어야 합니다`)
+
+  const d = item.outDetail
+  if (typeof d !== 'object' || d === null) {
+    errors.push(`${path}.outDetail: 객체여야 합니다`)
+  } else {
+    if (!isNumber(d.signals)) errors.push(`${path}.outDetail.signals: 숫자여야 합니다`)
+    if (!isNullableNumber(d.winRate)) errors.push(`${path}.outDetail.winRate: 숫자 또는 null이어야 합니다`)
+    if (!isNullableNumber(d.avgExcess)) errors.push(`${path}.outDetail.avgExcess: 숫자 또는 null이어야 합니다`)
+    if (!isNullableNumber(d.medianExcess)) errors.push(`${path}.outDetail.medianExcess: 숫자 또는 null이어야 합니다`)
+    if (!isNullableNumber(d.avgReturn)) errors.push(`${path}.outDetail.avgReturn: 숫자 또는 null이어야 합니다`)
+    if (!isNullableNumber(d.mdd)) errors.push(`${path}.outDetail.mdd: 숫자 또는 null이어야 합니다`)
+    if (!isNullableNumber(d.climaxTriggerRate)) errors.push(`${path}.outDetail.climaxTriggerRate: 숫자 또는 null이어야 합니다`)
+  }
+
+  const c = item.comparison
+  if (typeof c !== 'object' || c === null) {
+    errors.push(`${path}.comparison: 객체여야 합니다`)
+  } else {
+    validateClimaxComparisonEntry(c.noExit, `${path}.comparison.noExit`, errors)
+    validateClimaxComparisonEntry(c.fullClimaxExit, `${path}.comparison.fullClimaxExit`, errors)
+    validateClimaxComparisonEntry(c.partialClimaxExit, `${path}.comparison.partialClimaxExit`, errors)
+  }
+}
+
 /** backtest.json(버전 1, 2, 3 또는 4) 구조를 검증한다. 반환: { valid, errors } */
 export function validateBacktest(data) {
   const errors = []
@@ -418,6 +463,10 @@ export function validateBacktest(data) {
     } else {
       data.pullbackAxis.forEach((p, i) => validatePullbackAxisItem(p, `pullbackAxis[${i}]`, errors))
     }
+  }
+
+  if (data.climaxPartial !== undefined) {
+    validateClimaxPartial(data.climaxPartial, 'climaxPartial', errors)
   }
 
   return { valid: errors.length === 0, errors }

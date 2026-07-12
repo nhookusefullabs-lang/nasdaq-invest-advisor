@@ -1779,3 +1779,49 @@
   재사용해야 함(재구현 금지). 비교 3자 구도(무청산 vs 전량 청산(v10 결과 참조) vs 부분
   청산) 기록 필요 — 산술 새니티(부분 청산 성과가 무청산과 전량 청산 "사이"에 위치, 가중
   평균 보증)가 승인 기준 3에 명시되어 있으니 픽스처로 직접 확인할 것.
+
+## Iteration 9 — US-9. 청산 변형 E(클라이맥스 부분 청산)
+- 완료 스토리: US-9
+- 예상 밖 발견/설계 결정: EXIT_RULES/walkExit 체계는 checkStop이 boolean(그날 전량 청산
+  여부)만 표현할 수 있어 50% 부분 청산을 이 체계에 넣을 수 없었다 — US-8의 COMBOS와 같은
+  이유로 별도 경로(exits.mjs의 독립 함수 2개)로 분리했다. X4 미발생 신호를 별도 분기 없이
+  자연스럽게 처리한 점이 깔끔했다: exitEvents=[]이면 computePartialPositionPerformance(US-3)가
+  잔여 100%를 그대로 60일 만기로 처리해, 결과가 "무청산"(고정 60일 보유) 경로와 정확히
+  같아진다 — if/else 분기 없이 입력(exitEvents 배열 길이)만으로 두 경로가 수렴.
+- 변경 파일:
+  - scripts/lib/exits.mjs: `findFirstClimaxIdx(series, entryIdx)`(entryIdx+1~+60 내 X4
+    첫 발생일 탐색, exitSignals.js의 evaluateExitSignals 재사용 — hasExitSignalCode를 그대로
+    호출) + `computeClimaxPartialPerformance(record, priceIndex)`(X4 발생 시
+    exitEvents=[{date,ratio:0.5}]+finalHoldingDays=60으로 performance.mjs의
+    computePartialPositionPerformance를 그대로 호출 — 재구현 없음) +
+    `aggregateClimaxPartialPerformance(records, priceIndex)`(climaxTriggerRate 포함, 표본 0이면
+    전부 null). performance.mjs에서 `computePartialPositionPerformance` import 추가.
+  - scripts/backtest.mjs: `buildClimaxPartial(outTrendTop5, priceIndex, strategies, exitVariants)`
+    신규 — 무청산은 strategies[]의 trend·top5·Out·all·60일 고정 보유(evaluateExitVariants가
+    쓰는 baseline60과 동일 정의, 재사용), 전량 클라이맥스 청산은 exitVariants에서 이미 계산된
+    'exit_climax'(v10 US-9) 항목을 그대로 참조(재계산 없음 — "v10 결과 참조"), 부분 청산만
+    aggregateClimaxPartialPerformance로 새로 계산. `climaxPartial` 필드를 backtest.json 최상위에
+    추가(outTrendTop5와 동일 스코프 — entryVariants/combos와 기준선 공유).
+  - src/lib/backtestSchema.js: `validateClimaxPartial`/`validateClimaxComparisonEntry` 신규
+    (top-level 단일 객체, 배열 아님 — combos/pullbackAxis와 다른 형태). 선택 필드 패턴 동일
+    (data.climaxPartial !== undefined일 때만 검증, schemaVersion 4 그대로 유지 — 순수 추가).
+  - scripts/lib/exits.test.js: 클라이맥스 스파이크(10일, 100→130) 후 추가 상승(50일,
+    130→160) 픽스처로 세 시나리오가 뚜렷이 갈리게 설계(무청산 +60% vs 전량 청산 +30% vs
+    부분 청산 +45%). 신규 describe 4개, 총 6개 테스트 — AC1(X4 발생 시 레그 2개(50%+50%)
+    손계산 일치, X4 미발생 시 레그 1개·고정 60일과 동일 결과, 2개), AC2(부분 청산 첫 레그
+    날짜가 evaluateExitSignals() 직접 판정과 정확히 일치, 1개), climaxTriggerRate 집계(발동률
+    50% 확인 + 표본 0 null 처리, 2개), AC3(전량<부분<무청산 순서 확인, 1개).
+  - scripts/backtest.test.js: `runBacktest — v11 US-9` describe 신규, 2개 테스트 —
+    climaxPartial 스키마 통과 + name/adopted/outDetail/comparison 3키 확인, comparison.
+    fullClimaxExit이 variants[]의 exit_climax 항목과 값이 같음(재계산 아님) 확인.
+- 승인 기준 확인: 1(부분 청산 수익률이 US-3 손계산 문법과 일치 — X4 발생/미발생 픽스처)
+  통과, 2(exitSignals.js 호출 확인 — 재구현 없음) 통과, 3(산술 새니티: 부분 청산 성과가
+  무청산과 전량 청산 사이에 위치 — 가중 평균 보증) 통과.
+- 테스트 수 변화: 759 → 767 (+8: exits.test.js +6, backtest.test.js +2). npm run test(전체
+  54개 파일, 767개) + npm run build 둘 다 통과.
+- 다음 스토리 메모: US-10 허들 교집합 축(양 유니버스) — `hurdleIntersection[]`: ★★ ∩
+  (Pass / Partial 이상 / Fail) × sample × byHolding × 국면. 판정은 fundamentals.js의 기존
+  함수 재사용(재구현 금지), coveredFrom 제약·참고치 라벨 유지. "동일 코드가 NDX·NGX 양쪽
+  실행에서 각자 산출"이 승인 기준이므로 v10 US-11이 이미 만들어 둔 "유니버스 하드코딩
+  검출 테스트" 패턴을 그대로 재사용해 검증할 것. 콘솔 출력에 NDX vs NGX 교집합 비교표
+  (중앙값 1차)도 필요 — PRD §5의 두 판정 행 재료임을 확인.

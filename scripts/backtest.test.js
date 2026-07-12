@@ -667,6 +667,27 @@ describe('runBacktest — v10 US-9 청산 변형 3종 + 조합 3종 (통합)', (
   })
 })
 
+describe('runBacktest — v11 US-9 청산 변형 E(클라이맥스 부분 청산)', () => {
+  const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
+  const backtest = runBacktest(raw)
+
+  it('climaxPartial이 스키마를 통과하고 name/adopted/outDetail/comparison 3자 구도를 포함한다', () => {
+    expect(validateBacktest(backtest).valid).toBe(true)
+    expect(backtest.climaxPartial.name).toBe('exit_climax_partial')
+    expect(backtest.climaxPartial.adopted).toBe(false)
+    expect(backtest.climaxPartial.outDetail).toHaveProperty('climaxTriggerRate')
+    expect(backtest.climaxPartial.comparison).toHaveProperty('noExit')
+    expect(backtest.climaxPartial.comparison).toHaveProperty('fullClimaxExit')
+    expect(backtest.climaxPartial.comparison).toHaveProperty('partialClimaxExit')
+  })
+
+  it('comparison.fullClimaxExit은 variants[]의 exit_climax 항목과 동일한 값을 참조한다(재계산 없음)', () => {
+    const fullClimaxVariant = backtest.variants.find((v) => v.name === 'exit_climax')
+    expect(backtest.climaxPartial.comparison.fullClimaxExit.signals).toBe(fullClimaxVariant.outDetail.signals)
+    expect(backtest.climaxPartial.comparison.fullClimaxExit.avgExcess).toBe(fullClimaxVariant.outDetail.avgExcess)
+  })
+})
+
 describe('runBacktest — v10 US-10 진입 상태별 분해 + 소프트 정책 변형 3종 (통합)', () => {
   const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
   const backtest = runBacktest(raw)
