@@ -14,6 +14,7 @@ import { buildPriceIndex, aggregatePerformance } from './lib/performance.mjs'
 import { buildFundamentalAxis } from './lib/fundamentalHistory.mjs'
 import { VARIANTS, evaluateVariant } from './lib/variants.mjs'
 import { EXIT_RULES, aggregateExitPerformance, EXIT_LIMITATION_NOTE } from './lib/exits.mjs'
+import { ENTRY_VARIANTS, aggregateEntryVariant } from './lib/entries.mjs'
 import { goldenCrossFreshnessDays, pivotBreakoutFreshnessDays, freshnessCohort, aggregateFreshnessCohorts } from './lib/freshness.mjs'
 import { atomicWriteBacktest } from './validate-backtest.mjs'
 
@@ -270,6 +271,11 @@ export function runBacktest(
 
   const regimeAxis = buildRegimeAxis(inRecords, outRecords, priceIndex, holdingDays)
 
+  // v10 US-8: 진입 변형 4종 — 기존 변형 D(exitVariants)와 동일 스코프(trend·top5·Out)에서
+  // 비교해야 §7의 최종 조합 실험(진입×청산)이 같은 기준선을 공유한다.
+  const outTrendTop5 = outRecords.filter((r) => r.strategyKey === 'trend' && r.basis === 'top5')
+  const entryVariants = Object.values(ENTRY_VARIANTS).map((variant) => aggregateEntryVariant(outTrendTop5, priceIndex, variant, holdingDays))
+
   return {
     schemaVersion: 3,
     generatedAt: rawUniverse.generatedAt,
@@ -289,6 +295,7 @@ export function runBacktest(
     variants: [...variants, ...exitVariants],
     freshnessCohorts,
     regimeAxis,
+    entryVariants,
   }
 }
 

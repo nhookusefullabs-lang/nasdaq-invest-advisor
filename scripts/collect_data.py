@@ -17,7 +17,7 @@
   "generatedAt": "YYYY-MM-DD",
   "tickers": [
     { "ticker": "AAPL", "name": "Apple Inc.", "sector": "Technology",
-      "series": [ {"date": "YYYY-MM-DD", "high": 0, "low": 0, "close": 0, "volume": 0} ] }
+      "series": [ {"date": "YYYY-MM-DD", "open": 0, "high": 0, "low": 0, "close": 0, "volume": 0} ] }
   ]
 }
 
@@ -297,7 +297,10 @@ def build_series(df: pd.DataFrame) -> tuple[list[dict] | None, str | None]:
         return None, "빈 데이터 (조회 결과 없음)"
 
     # 필요한 컬럼만, 전부 결측인 행 제거
-    cols = ["High", "Low", "Close", "Volume"]
+    # "open"(시가)은 PRD_Nasdaq10 §4.5 US-8의 진입 변형 체결가(= max(트리거가, 당일 시가))
+    # 계산에 필요해 v10에서 추가됐다 — 기존 지표는 전부 close/high/low/volume만 쓰므로
+    # 이 필드 추가가 기존 로직에 영향을 주지 않는다(순수 추가).
+    cols = ["Open", "High", "Low", "Close", "Volume"]
     for c in cols:
         if c not in df.columns:
             return None, f"컬럼 누락: {c}"
@@ -307,13 +310,14 @@ def build_series(df: pd.DataFrame) -> tuple[list[dict] | None, str | None]:
     series: list[dict] = []
     missing_rows = 0
     for idx, row in sub.iterrows():
-        high, low, close, vol = row["High"], row["Low"], row["Close"], row["Volume"]
-        if any(v is None or (isinstance(v, float) and math.isnan(v)) for v in (high, low, close, vol)):
+        open_, high, low, close, vol = row["Open"], row["High"], row["Low"], row["Close"], row["Volume"]
+        if any(v is None or (isinstance(v, float) and math.isnan(v)) for v in (open_, high, low, close, vol)):
             missing_rows += 1
             continue
         date_str = idx.strftime("%Y-%m-%d") if hasattr(idx, "strftime") else str(idx)[:10]
         series.append({
             "date": date_str,
+            "open": round(float(open_), 4),
             "high": round(float(high), 4),
             "low": round(float(low), 4),
             "close": round(float(close), 4),

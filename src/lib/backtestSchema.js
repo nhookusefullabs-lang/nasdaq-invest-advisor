@@ -187,6 +187,45 @@ function validateRegimeAxisItem(item, path, errors) {
   }
 }
 
+function validateEntryPerformanceSummary(summary, path, errors) {
+  if (typeof summary !== 'object' || summary === null) {
+    errors.push(`${path}: 객체여야 합니다`)
+    return
+  }
+  if (!isNumber(summary.signals)) errors.push(`${path}.signals: 숫자여야 합니다`)
+  if (!isNullableNumber(summary.winRate)) errors.push(`${path}.winRate: 숫자 또는 null이어야 합니다`)
+  if (!isNullableNumber(summary.avgExcess)) errors.push(`${path}.avgExcess: 숫자 또는 null이어야 합니다`)
+  if (!isNullableNumber(summary.medianExcess)) errors.push(`${path}.medianExcess: 숫자 또는 null이어야 합니다`)
+  if (!isNullableNumber(summary.avgReturn)) errors.push(`${path}.avgReturn: 숫자 또는 null이어야 합니다`)
+  if (!isNullableNumber(summary.mdd)) errors.push(`${path}.mdd: 숫자 또는 null이어야 합니다`)
+}
+
+// entryVariants(v10 US-8): { name, signals, fillRate, byHolding:[{days,conditional,opportunity}] } —
+// 선택 필드(freshnessCohorts/regimeAxis와 동일한 하위 호환 패턴).
+function validateEntryVariant(item, path, errors) {
+  if (typeof item !== 'object' || item === null) {
+    errors.push(`${path}: 객체여야 합니다`)
+    return
+  }
+  if (!isNonEmptyString(item.name)) errors.push(`${path}.name: 필수 문자열입니다`)
+  if (!isNumber(item.signals)) errors.push(`${path}.signals: 숫자여야 합니다`)
+  if (!isNullableNumber(item.fillRate)) errors.push(`${path}.fillRate: 숫자 또는 null이어야 합니다`)
+  if (!Array.isArray(item.byHolding)) {
+    errors.push(`${path}.byHolding: 배열이어야 합니다`)
+  } else {
+    item.byHolding.forEach((h, i) => {
+      const p = `${path}.byHolding[${i}]`
+      if (typeof h !== 'object' || h === null) {
+        errors.push(`${p}: 객체여야 합니다`)
+        return
+      }
+      if (!isNumber(h.days)) errors.push(`${p}.days: 숫자여야 합니다`)
+      validateEntryPerformanceSummary(h.conditional, `${p}.conditional`, errors)
+      validateEntryPerformanceSummary(h.opportunity, `${p}.opportunity`, errors)
+    })
+  }
+}
+
 /** backtest.json(버전 1, 2 또는 3) 구조를 검증한다. 반환: { valid, errors } */
 export function validateBacktest(data) {
   const errors = []
@@ -230,6 +269,14 @@ export function validateBacktest(data) {
       errors.push('regimeAxis: 배열이어야 합니다')
     } else {
       data.regimeAxis.forEach((r, i) => validateRegimeAxisItem(r, `regimeAxis[${i}]`, errors))
+    }
+  }
+
+  if (data.entryVariants !== undefined) {
+    if (!Array.isArray(data.entryVariants)) {
+      errors.push('entryVariants: 배열이어야 합니다')
+    } else {
+      data.entryVariants.forEach((v, i) => validateEntryVariant(v, `entryVariants[${i}]`, errors))
     }
   }
 

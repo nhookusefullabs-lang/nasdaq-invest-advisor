@@ -1169,3 +1169,45 @@
 - 다음 스토리 메모: US-8 백테스트 진입 변형 4종(scripts/lib/entries.mjs) — entryPoint.js의
   computePivot()/derivedPrices() import(재구현 금지), 체결가=max(T,당일시가), 확인일
   변형(entry_pivot_confirm2)은 신선도 역전 가설의 직접 검증이므로 특히 정확히 구현.
+
+## Iteration 8 — US-8. 백테스트 — 진입 변형 4종
+- 완료 스토리: US-8
+- **스키마 변경(선행 작업)**: `scripts/collect_data.py`의 build_series()에 `open`(시가) 필드
+  신규 추가 — entry_pivot_trigger의 "체결가=max(T,당일 시가)" 계산에 필요한데, 기존
+  수집 스키마엔 시가가 아예 없었다(H/L/C/V만). yfinance는 원래 Open 컬럼을 제공하므로
+  `cols` 목록에 추가만 하면 됐다. 기존 지표(SMA/RSI/MACD 등)는 전부 close/high/low/volume만
+  쓰므로 이 순수 추가가 기존 로직에 전혀 영향을 주지 않는다. entries.mjs는 `bar.open ?? bar.close`
+  로 open 필드가 없는 구버전 픽스처(2y/3y 샘플 등, 재생성하지 않음)와 하위 호환한다.
+- 변경 파일:
+  - scripts/collect_data.py: build_series() cols에 "Open" 추가, 스키마 docstring 갱신.
+  - scripts/lib/entries.mjs(신규): `ENTRY_VARIANTS`(entry_close/entry_pivot_trigger/
+    entry_pivot_trigger_vol/entry_pivot_confirm2) + `aggregateEntryVariant()` — 전부
+    entryPoint.js의 computePivot()/derivedPrices() 재사용(재구현 없음). 체결 판정(fillRate)은
+    보유기간과 무관하게 1회만 계산, 보유기간별로 체결조건부(conditional)/기회비용포함
+    (opportunity, 미체결=초과수익0) 두 벌 성과 산출. confirm2는 연속 카운트가 피벗 이하
+    하루라도 나오면 리셋되는 상태기계로 구현.
+  - scripts/lib/entries.test.js(신규): 11개 — entry_close 항상체결, 트리거 갭업체결가/
+    트리거체결가/21일미체결(AC1 3개), 거래량조건 미충족·충족(AC1 2개), confirm2
+    연속확인체결·리셋확인(체결일 인덱스로 직접 검증)·21일내 미확인(AC1 3개),
+    entryPoint.js 재사용 확인(AC2 1개), 스키마 형태(fillRate+conditional/opportunity
+    필드 완전성, AC3 1개).
+  - src/lib/backtestSchema.js: `entryVariants[]` 검증(선택 필드, 하위 호환 패턴 동일).
+  - src/lib/backtestSchema.test.js: 5개 추가 — 하위호환·유효항목·name누락·fillRate타입
+    오류·byHolding 필드 누락.
+  - scripts/backtest.mjs: outRecords의 trend·top5(변형 D와 동일 스코프)를
+    Object.values(ENTRY_VARIANTS)로 순회해 `entryVariants[]` 생성, 반환에 추가.
+  - scripts/backtest.test.js: 3개 추가 — 4종 전부 발행·entry_close fillRate=1(또는 표본0)·
+    변형 대상 신호수 교차 검증.
+- 승인 기준 확인: AC1(손계산 픽스처 6개 이상 → 8개) 통과, AC2(entryPoint.js 함수 재사용 —
+  트리거 값이 computePivot+derivedPrices 계산값과 정확히 일치함을 직접 확인) 통과,
+  AC3(fillRate·두 벌 성과 스키마 통과) 통과.
+- 테스트 픽스처 관련 함정(리셋 로직 검증): confirm2의 "연속 2일" 요구가 진짜 연속인지(단순
+  "21일 내 2번 이상 피벗 위"가 아닌지) 확인하려면 fillRate만 봐서는 구분이 안 된다(둘 다
+  결국 체결은 되므로) — 체결 인덱스(fillIdx)를 직접 비교해 리셋이 없었다면 더 이른 날짜에
+  체결됐을 것임을 증명하는 방식으로 테스트했다.
+- 테스트 수 변화: 586 → 605 (+19: entries 11 + schema 5 + backtest 3). npm run test/build
+  둘 다 통과. python 가드레일 유닛테스트(test_collect_data.py) 14개도 open 필드 추가 후
+  재확인 통과.
+- 다음 스토리 메모: US-9 백테스트 청산 변형 3종 + 조합 3종(scripts/lib/exits.mjs 확장) —
+  exit_stop_atr/exit_sma50_break/exit_climax, X1·X4는 exitSignals.js import(재구현 금지),
+  조합은 entries.mjs의 결과와 결합.

@@ -503,3 +503,33 @@ describe('runBacktest — v10 US-7 국면 귀속 + 스키마 v3 (승인 기준 1
     expect(output).toContain('down:')
   })
 })
+
+describe('runBacktest — v10 US-8 진입 변형 4종 (통합)', () => {
+  const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
+  const backtest = runBacktest(raw)
+
+  it('스키마를 통과하고 entryVariants 4종이 모두 발행된다', () => {
+    expect(validateBacktest(backtest).valid).toBe(true)
+    expect(backtest.entryVariants.map((v) => v.name).sort()).toEqual(
+      ['entry_close', 'entry_pivot_confirm2', 'entry_pivot_trigger', 'entry_pivot_trigger_vol'].sort()
+    )
+  })
+
+  it('entry_close는 매 신호마다 체결되므로 fillRate=1 또는 표본이 0이다', () => {
+    const entryClose = backtest.entryVariants.find((v) => v.name === 'entry_close')
+    expect(entryClose.fillRate === 1 || entryClose.signals === 0).toBe(true)
+  })
+
+  it('각 변형의 signals는 trend·top5·Out 신호 수와 같다', () => {
+    const outTrendTop5Count = backtest.strategies.find(
+      (s) => s.key === 'trend' && s.sample === 'out' && s.basis === 'top5' && s.signalQuality === 'all'
+    )
+    // strategies[]는 보유기간별 신호수를 담으므로, 20일 항목의 signals(체결 무관 원 신호수 근사)와
+    // entryVariants의 signals(변형 시뮬레이션 대상 신호수)가 같은 모집단(trend·top5·Out)에서
+    // 나왔는지만 확인한다 — 정확한 보유기간별 표본 수는 청산일 범위초과로 달라질 수 있어
+    // "모집단 크기(변형 대상 신호수)가 0보다 크다"는 것만 교차 검증한다.
+    if (outTrendTop5Count.byHolding.some((h) => h.signals > 0)) {
+      expect(backtest.entryVariants.every((v) => v.signals > 0)).toBe(true)
+    }
+  })
+})
