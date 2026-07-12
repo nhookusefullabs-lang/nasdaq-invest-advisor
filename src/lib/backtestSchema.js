@@ -22,6 +22,8 @@ const FRESHNESS_COHORT_VALUES = ['0d', '1-2d', '3-4d', '5d+', 'no_recent_breakou
 const REGIME_VALUES = ['up', 'neutral', 'down']
 // stateAxis(v10 US-10): 진입 상태 4종 + 산정불가 — entryPoint.js의 judgeEntryState() 반환값과 동일.
 const STATE_VALUES = [0, 1, 2, 3, '산정불가']
+// pullbackAxis(v11 US-6): 눌림목 진입 변형 3종 — entries.mjs의 PULLBACK_ENTRY_VARIANTS 키와 동일.
+const PULLBACK_VARIANT_NAMES = ['pullback_immediate', 'pullback_resume', 'pullback_resume_vol']
 
 const isNonEmptyString = (v) => typeof v === 'string' && v.length > 0
 const isNullableString = (v) => v === null || typeof v === 'string'
@@ -283,6 +285,37 @@ function validateStateAxisItem(item, path, errors) {
   }
 }
 
+// pullbackAxis(v11 US-6): { name, sample, basis, regime, adopted, signals, fillRate,
+// byHolding:[{days,conditional,opportunity}] } — entryVariants와 동일한 byHolding 구조에
+// sample/basis/regime/adopted를 더한 형태. 선택 필드(하위 호환 패턴 동일).
+function validatePullbackAxisItem(item, path, errors) {
+  if (typeof item !== 'object' || item === null) {
+    errors.push(`${path}: 객체여야 합니다`)
+    return
+  }
+  if (!PULLBACK_VARIANT_NAMES.includes(item.name)) errors.push(`${path}.name: ${PULLBACK_VARIANT_NAMES.join('/')} 중 하나여야 합니다`)
+  if (!SAMPLE_VALUES.includes(item.sample)) errors.push(`${path}.sample: ${SAMPLE_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!BASIS_VALUES.includes(item.basis)) errors.push(`${path}.basis: ${BASIS_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!REGIME_VALUES.includes(item.regime)) errors.push(`${path}.regime: ${REGIME_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!isBoolean(item.adopted)) errors.push(`${path}.adopted: boolean이어야 합니다`)
+  if (!isNumber(item.signals)) errors.push(`${path}.signals: 숫자여야 합니다`)
+  if (!isNullableNumber(item.fillRate)) errors.push(`${path}.fillRate: 숫자 또는 null이어야 합니다`)
+  if (!Array.isArray(item.byHolding)) {
+    errors.push(`${path}.byHolding: 배열이어야 합니다`)
+  } else {
+    item.byHolding.forEach((h, i) => {
+      const p = `${path}.byHolding[${i}]`
+      if (typeof h !== 'object' || h === null) {
+        errors.push(`${p}: 객체여야 합니다`)
+        return
+      }
+      if (!isNumber(h.days)) errors.push(`${p}.days: 숫자여야 합니다`)
+      validateEntryPerformanceSummary(h.conditional, `${p}.conditional`, errors)
+      validateEntryPerformanceSummary(h.opportunity, `${p}.opportunity`, errors)
+    })
+  }
+}
+
 // stateRegimeAxis(v11 US-4): { strategyKey, sample, state, regime, byHolding[] } — stateAxis와
 // regimeAxis의 2D 교집합. 선택 필드(하위 호환 패턴 동일) — 없으면(v1~v3 산출물) 검증 생략.
 function validateStateRegimeAxisItem(item, path, errors) {
@@ -376,6 +409,14 @@ export function validateBacktest(data) {
       errors.push('stateRegimeAxis: 배열이어야 합니다')
     } else {
       data.stateRegimeAxis.forEach((s, i) => validateStateRegimeAxisItem(s, `stateRegimeAxis[${i}]`, errors))
+    }
+  }
+
+  if (data.pullbackAxis !== undefined) {
+    if (!Array.isArray(data.pullbackAxis)) {
+      errors.push('pullbackAxis: 배열이어야 합니다')
+    } else {
+      data.pullbackAxis.forEach((p, i) => validatePullbackAxisItem(p, `pullbackAxis[${i}]`, errors))
     }
   }
 

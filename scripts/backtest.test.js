@@ -11,6 +11,7 @@ import { sliceUniverseAsOf, buildEvaluationDates } from './lib/asOf.mjs'
 import { validateBacktest } from '../src/lib/backtestSchema.js'
 import { rebuildTop5WithPolicy } from './lib/variants.mjs'
 import { aggregatePerformance, buildPriceIndex, computeSignalPerformance } from './lib/performance.mjs'
+import { aggregateEntryVariant, PULLBACK_ENTRY_VARIANTS } from './lib/entries.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const FIXTURE_PATH = path.resolve(__dirname, '../src/lib/__fixtures__/nasdaq100.2y.sample.json')
@@ -742,6 +743,59 @@ describe('runBacktest — v11 US-4 schemaVersion 4 골격 + 집계 축 2종 (통
         expect(poolVariants.every((v) => v.signals === 0)).toBe(true)
       }
     }
+  })
+})
+
+describe('runBacktest — v11 US-6 눌림목 진입 변형 3종 + pullbackAxis (통합)', () => {
+  const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
+  const backtest = runBacktest(raw)
+
+  it('pullbackAxis가 스키마를 통과하고 3종×sample×basis×국면 전체 셀이 존재한다', () => {
+    expect(Array.isArray(backtest.pullbackAxis)).toBe(true)
+    expect(validateBacktest(backtest).valid).toBe(true)
+    let checked = 0
+    for (const name of ['pullback_immediate', 'pullback_resume', 'pullback_resume_vol']) {
+      for (const sample of ['in', 'out']) {
+        for (const basis of ['top5', 'allSignals']) {
+          for (const regime of ['up', 'neutral', 'down']) {
+            const entry = backtest.pullbackAxis.find((p) => p.name === name && p.sample === sample && p.basis === basis && p.regime === regime)
+            expect(entry).toBeDefined()
+            checked++
+          }
+        }
+      }
+    }
+    expect(checked).toBe(3 * 2 * 2 * 3)
+  })
+
+  it('AC3 국면 분해 합산 정합성: (variant,sample,basis) 국면 3종 signals 합 = 국면 필터 없이 직접 재집계한 signals', () => {
+    // runBacktest()의 holdingBufferDays 기본값(120)과 맞춰야 evaluationDates 집합이 동일해진다
+    // (buildEvaluationDates() 자신의 기본값은 60이라 그대로 부르면 표본 모집단이 달라진다).
+    const evaluationDates = buildEvaluationDates(raw, { holdingBufferDays: 120 })
+    const allRecords = runSignalLoop(raw, evaluationDates)
+    const splitDate = backtest.config.splitDate
+    const outTrendTop5 = allRecords.filter((r) => r.date >= splitDate && r.strategyKey === 'trend' && r.basis === 'top5')
+    const priceIndex = buildPriceIndex(loadDataset(FIXTURE_PATH).tickers)
+
+    for (const [key, variant] of Object.entries(PULLBACK_ENTRY_VARIANTS)) {
+      const cellSum = ['up', 'neutral', 'down'].reduce((sum, regime) => {
+        const entry = backtest.pullbackAxis.find((p) => p.name === key && p.sample === 'out' && p.basis === 'top5' && p.regime === regime)
+        return sum + (entry?.signals ?? 0)
+      }, 0)
+      // 국면 무필터(regime이 null인 잔여 표본 포함) 직접 재집계 — pullbackAxis는 REGIME_VALUES
+      // 3종만 순회하므로, regime이 null인 레코드는 어느 셀에도 속하지 않아 cellSum에서 빠진다.
+      const directRegimeOnly = aggregateEntryVariant(
+        outTrendTop5.filter((r) => ['up', 'neutral', 'down'].includes(r.regime)),
+        priceIndex,
+        variant,
+        backtest.config.holdingDays
+      )
+      expect(cellSum).toBe(directRegimeOnly.signals)
+    }
+  })
+
+  it('pullbackAxis 전 항목이 adopted:false다 (측정 전용 — 채택 결정은 운영자 몫)', () => {
+    expect(backtest.pullbackAxis.every((p) => p.adopted === false)).toBe(true)
   })
 })
 

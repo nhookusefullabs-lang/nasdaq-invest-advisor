@@ -1609,3 +1609,67 @@
   기반으로 매 신호일마다 judgePullback을 그 시점 슬라이스에서 재호출하는 형태가 유력).
   pullbackAxis는 국면 분해가 필수(PRD §4.2) — buildRegimeAxis/buildStateRegimeAxis와
   동일 패턴(aggregatePerformance 재사용)으로 구현.
+
+## Iteration 6 — US-6. 눌림목 진입 변형 3종 + pullbackAxis
+- 완료 스토리: US-6
+- 예상 밖 발견 및 아키텍처 보강(구현 중 필수로 드러남): P1(트렌드 템플릿)의 T8(RS 백분위)은
+  유니버스 전체를 봐야 계산되는 값이라, 개별 티커 series만 받는 entries.mjs의 simulate()
+  컨텍스트에서는 원래 얻을 수 없었다(exits.mjs의 X3도 동일한 한계로 rsPercentileValue=null
+  고정 — 기존에 이미 있던, 조용히 넘어가던 제약). 그대로 두면 P1이 항상 false가 되어
+  pullback_immediate/resume/resume_vol이 실제 데이터에서 영원히 0건이 되는 구조적 결함이라,
+  단순 accept 대신 근본 수정: `scripts/backtest.mjs`의 `buildSignalRecords()`가 매 평가일
+  한 번 `buildRsPercentileMap(datasetTickers)`(rsRawScore/rsPercentile/hasFullYearData —
+  전부 minervini.js가 이미 쓰는 기존 함수 재호출, 재구현 없음)로 그 날짜의 RS 백분위 맵을
+  만들어 trend/minervini/consensus 레코드 전부에 `rsPercentileValue`를 공통 부여하도록
+  확장(entryState/freshnessCohort와 동일한 "평가일당 1회 계산, 전 레코드 공유" 패턴). 이어
+  `aggregateEntryVariant()`가 `variant.simulate(series, idx, r.rsPercentileValue)`로 3번째
+  인자를 넘기도록 확장(기존 ENTRY_VARIANTS 4종은 인자를 그냥 무시하므로 회귀 없음).
+- 변경 파일:
+  - scripts/lib/entries.mjs: `PULLBACK_ENTRY_VARIANTS`(pullback_immediate/resume/resume_vol)
+    신규 export — 별도 맵으로 두어 기존 ENTRY_VARIANTS(entryVariants[] 모드별 4종, US-4/US-8)
+    구성은 전혀 건드리지 않음. `simulatePullbackImmediate`/`simulatePullbackResume`은 신호일
+    까지 슬라이스(asOfSeries)로 `judgePullback()`(pullback.js, 재구현 없음)을 호출해 관찰
+    조건을 판정하고, resume 계열은 그 결과의 `triggerPrice`를 그대로 재사용해 30거래일 내
+    재개(종가>트리거, 체결가=max(트리거,시가) — 기존 entry_pivot_trigger와 동일한
+    fillPriceForBar 재사용)를 탐색. `aggregateEntryVariant()`에 rsPercentileValue 전달 배선.
+  - scripts/backtest.mjs: `buildRsPercentileMap()` 신규 + `buildSignalRecords()`가 매
+    레코드에 `rsPercentileValue` 부여. `PULLBACK_ENTRY_VARIANTS` import, 신규
+    `buildPullbackAxis()`(trend·basis·국면 필터 조합마다 aggregateEntryVariant 재사용,
+    adopted 항상 false), `runBacktest()` 반환에 `pullbackAxis` 추가(schemaVersion은 4 유지 —
+    US-4 이후 신규 선택 필드 추가가 항상 버전을 올리진 않는 기존 관례 그대로). 콘솔에
+    `formatPullbackComparison()`(3종×국면, v10 상태0 실측 대조 주석 포함) 추가.
+  - src/lib/backtestSchema.js: `PULLBACK_VARIANT_NAMES` 상수 + `validatePullbackAxisItem`
+    신규, `validateBacktest()`에 선택 필드로 배선(하위 호환 — 없으면 검증 생략).
+  - scripts/lib/entries.test.js: 신규 8개 테스트 — pullback_immediate 관찰충족/미충족 각 1,
+    AC1 손계산 6개(재개 미발생, 관찰 자체 미충족, 갭업 체결가=시가, 정상개장 체결가=트리거,
+    거래량 미달로 resume만 체결, 거래량 충족 시 resume_vol도 체결), AC2 신호집합 포함관계
+    (4개 티커 시나리오로 resume_vol(1)⊆resume(2)⊆immediate(3) 직접 확인). **발견한 테스트
+    픽스처 버그**: entries.test.js의 `makeBar()`는 high를 close로 자동 대체하지 않는데
+    (다른 기존 진입변형 픽스처는 항상 high를 명시해 와서 드러나지 않았던 잠재 결함),
+    새 픽스처가 high 없이 close만 넘기면서 week52HighLow() 기반 T6/T7이 깨져 P1이 항상
+    false로 나오는 문제를 겪음 — `observedPullbackBaseBars()`에서 high/low를 close로
+    명시하도록 수정해 해결(재현 가능한 스크래치 스크립트로 원인 격리 후 수정, 실제
+    pullback.js/entries.mjs 로직 버그가 아니었음을 확인).
+  - scripts/backtest.test.js: `aggregateEntryVariant, PULLBACK_ENTRY_VARIANTS` import 추가.
+    신규 describe "v11 US-6" 3개 테스트: pullbackAxis 3×2×2×3=36셀 전수 존재 확인, AC3
+    국면분해 합산 정합성(runSignalLoop로 직접 재구성한 out·trend·top5 레코드를 국면 무필터로
+    재집계한 값과 pullbackAxis 3국면 합이 정확히 일치 — **buildEvaluationDates()의 자체
+    기본값(holdingBufferDays=60)이 runBacktest()의 기본값(120)과 달라 처음엔 불일치가
+    났고, 옵션을 명시적으로 맞춰 해결**), adopted 전부 false 확인.
+  - src/lib/backtestSchema.test.js: 신규 describe "pullbackAxis" 6개 테스트 — 하위 호환,
+    유효 항목 통과, name/regime enum 거부, adopted 타입 거부, byHolding 필드 누락 거부.
+- 승인 기준 확인: AC1(손계산 픽스처 6개 이상 → 6개) 통과, AC2(3종 신호 집합 관계
+  resume_vol⊆resume⊆immediate) 통과, AC3(국면 분해 합산 정합성 + adopted 전부 false) 통과.
+- 테스트 수 변화: 722 → 740 (+18: entries.test.js +8, backtest.test.js +3,
+  backtestSchema.test.js +6, 그리고 기존 US-8 entryVariants 단언 2건을 trend 풀 한정으로
+  좁힌 것은 US-4에서 이미 반영되어 있었음/신규 아님 — 순수 신규 테스트 카운트는 8+3+6=17에
+  근접, 스위트 전체 카운트 변화(+18)로 최종 확인). npm run test(전체 54개 파일, 740개) +
+  npm run build 둘 다 통과.
+- 다음 스토리 메모: US-7 청산 변형 A(국면 조건부 + regime-flip) — scripts/lib/exits.mjs 확장.
+  `exit_regime_conditional`: 신호일 국면 상승→60일 보유 / 중립·하락→ATR손절(2.5×ATR14).
+  US-6에서 확립한 "rsPercentileValue를 레코드에 미리 부여" 패턴처럼, 국면도 이미 레코드에
+  `regime` 필드로 붙어 있으므로(v10 US-7) 추가 배선 없이 바로 재사용 가능 — exits.mjs가
+  이미 하듯 EXIT_RULES 객체에 새 규칙만 추가하면 됨. regime-flip(Should)은 "보유 중" 국면
+  전환을 매일 재판정해야 해 미래참조 금지 원칙상 그 날짜까지의 슬라이스로 판정해야 함을
+  주의(entries.mjs의 asOfSeries 패턴 재사용). 5.5년 픽스처(US-1)에 하락 구간이 있으므로
+  AC3(하락 국면 방어 청산 실제 발동 케이스)는 그 픽스처로 검증 가능.

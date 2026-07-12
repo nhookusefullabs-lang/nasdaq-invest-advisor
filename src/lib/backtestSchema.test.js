@@ -424,3 +424,74 @@ describe('validateBacktest — stateRegimeAxis + entryVariants.strategyKey (v11 
     expect(errors.some((e) => e.includes('entryVariants[0].strategyKey'))).toBe(true)
   })
 })
+
+describe('validateBacktest — pullbackAxis (v11 US-6)', () => {
+  const summary = { signals: 3, winRate: 0.6, avgExcess: 0.02, medianExcess: 0.015, avgReturn: 0.03, mdd: 0.01 }
+
+  it('pullbackAxis 필드 자체가 없어도(v1~US-4 산출물) 통과한다 (하위 호환)', () => {
+    const { valid, errors } = validateBacktest(loadFixture('backtest.valid.json'))
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('유효한 pullbackAxis 항목은 통과한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      pullbackAxis: [
+        {
+          name: 'pullback_resume',
+          sample: 'out',
+          basis: 'top5',
+          regime: 'up',
+          adopted: false,
+          signals: 3,
+          fillRate: 0.67,
+          byHolding: [{ days: 20, conditional: summary, opportunity: summary }],
+        },
+      ],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('name enum 오류(정의되지 않은 눌림목 변형명)를 거부한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      pullbackAxis: [{ name: 'pullback_bogus', sample: 'out', basis: 'top5', regime: 'up', adopted: false, signals: 3, fillRate: 1, byHolding: [] }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('pullbackAxis[0].name'))).toBe(true)
+  })
+
+  it('regime enum 오류를 거부한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      pullbackAxis: [{ name: 'pullback_immediate', sample: 'out', basis: 'top5', regime: 'sideways', adopted: false, signals: 3, fillRate: 1, byHolding: [] }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('pullbackAxis[0].regime'))).toBe(true)
+  })
+
+  it('adopted가 boolean이 아니면 거부한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      pullbackAxis: [{ name: 'pullback_immediate', sample: 'out', basis: 'top5', regime: 'up', adopted: 'false', signals: 3, fillRate: 1, byHolding: [] }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('pullbackAxis[0].adopted'))).toBe(true)
+  })
+
+  it('byHolding[].conditional/opportunity 누락을 거부한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      pullbackAxis: [{ name: 'pullback_immediate', sample: 'out', basis: 'top5', regime: 'up', adopted: false, signals: 3, fillRate: 1, byHolding: [{ days: 20 }] }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('pullbackAxis[0].byHolding[0].conditional'))).toBe(true)
+  })
+})

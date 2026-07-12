@@ -4,8 +4,10 @@
 // 실제 가격 경로를 보는 진입 시뮬레이션이므로 정상이다(exits.mjs의 청산 시뮬레이션과 동일 원칙).
 import { entryPoint as priceEntryPoint, universeBenchmarkReturn, maxDrawdown, average, median, round4 } from './performance.mjs'
 import { computePivot, derivedPrices } from '../../src/lib/entryPoint.js'
+import { judgePullback } from '../../src/lib/pullback.js'
 import { sma } from '../../src/lib/indicators.js'
 import { VOL_MULT } from '../../src/lib/constants/entry.js'
+import { PULLBACK_OBSERVATION_VALID_DAYS, PULLBACK_RESUME_VOL_MULT } from '../../src/lib/constants/pullback.js'
 
 const TRIGGER_WINDOW_DAYS = 21
 
@@ -80,6 +82,77 @@ function simulateConfirm2Entry(series, entryIdx) {
     }
   }
   return { filled: false, reason: '유효기간(21거래일) 내 확인 실패', pivot }
+}
+
+/**
+ * pullback_immediate: 신호일까지의 데이터(asOfSeries)로 관찰 조건(P1~P4)을 판정한다
+ * (judgePullback() 재사용, 재구현 없음 — 미래 참조 없음). rsPercentileValue(P1의 T8 판정에
+ * 필요 — 유니버스 단위 RS 백분위)는 호출부(backtest.mjs의 buildSignalRecords)가 신호
+ * 레코드에 미리 계산해 둔 값을 그대로 전달한다(exitSignals.js의 X3와 동일한 위임 패턴).
+ * 미충족이면 미체결. 충족이면 신호일 종가로 즉시 체결(재개 확인 없는 기준선).
+ */
+function simulatePullbackImmediate(series, entryIdx, rsPercentileValue) {
+  const asOfSeries = series.slice(0, entryIdx + 1)
+  const judgement = judgePullback(asOfSeries, { rsPercentileValue })
+  if (judgement.insufficientData || !judgement.observed) {
+    return { filled: false, reason: '관찰 조건(P1~P4) 미충족', judgement }
+  }
+  return { filled: true, fillIdx: entryIdx, fillPrice: series[entryIdx].close, judgement }
+}
+
+/**
+ * pullback_resume[_vol]: 관찰 조건 충족을 전제(미충족이면 pullback_immediate와 동일하게
+ * 미체결)로, judgePullback()이 산출한 재개 트리거가(직전 10거래일 최고 종가)를 그대로
+ * 재사용한다(재구현 없음). 신호일 다음날부터 PULLBACK_OBSERVATION_VALID_DAYS(30)거래일
+ * 내 종가가 트리거가를 상회하는 첫날에 체결(체결가=max(트리거,시가) — 갭업 개장 반영).
+ * requireVolume=true면 그날 거래량이 PULLBACK_RESUME_VOL_MULT×50일평균 이상도 함께 요구한다.
+ */
+function simulatePullbackResume(series, entryIdx, rsPercentileValue, { requireVolume }) {
+  const asOfSeries = series.slice(0, entryIdx + 1)
+  const judgement = judgePullback(asOfSeries, { rsPercentileValue })
+  if (judgement.insufficientData || !judgement.observed) {
+    return { filled: false, reason: '관찰 조건(P1~P4) 미충족', judgement }
+  }
+
+  const trigger = judgement.triggerPrice
+  const volSma50 = requireVolume ? sma(series.map((b) => b.volume), 50) : null
+
+  for (let offset = 1; offset <= PULLBACK_OBSERVATION_VALID_DAYS; offset++) {
+    const idx = entryIdx + offset
+    if (idx >= series.length) break
+    const bar = series[idx]
+    if (bar.close <= trigger) continue
+    if (requireVolume) {
+      const volOK = volSma50[idx] != null && bar.volume >= PULLBACK_RESUME_VOL_MULT * volSma50[idx]
+      if (!volOK) continue
+    }
+    return { filled: true, fillIdx: idx, fillPrice: fillPriceForBar(bar, trigger), trigger, judgement }
+  }
+  return { filled: false, reason: `관찰 유효기간(${PULLBACK_OBSERVATION_VALID_DAYS}거래일) 내 재개 미발생`, trigger, judgement }
+}
+
+/**
+ * 눌림목 진입 변형 3종 (PRD_Nasdaq11 §4.2, US-6). pullback.js의 judgePullback()을 그대로
+ * 호출한다(재구현 금지) — 이 파일이 새로 담당하는 것은 "재개 확인" 체결 시뮬레이션뿐이다.
+ * ENTRY_VARIANTS(돌파형 4종)와는 별도 맵으로 둔다 — entryVariants[](US-4/US-8)의 모드별
+ * 4종 구성을 그대로 유지하고, 눌림목 3종은 pullbackAxis[](국면 분해 포함)로만 집계한다.
+ */
+export const PULLBACK_ENTRY_VARIANTS = {
+  pullback_immediate: {
+    name: 'pullback_immediate',
+    description: '관찰 조건(P1~P4) 충족 신호일 종가 진입 (기준선 — 상태 0 실측의 재현)',
+    simulate: (series, entryIdx, rsPercentileValue) => simulatePullbackImmediate(series, entryIdx, rsPercentileValue),
+  },
+  pullback_resume: {
+    name: 'pullback_resume',
+    description: `관찰 후 ${PULLBACK_OBSERVATION_VALID_DAYS}거래일 내 종가가 재개 트리거가 상회 시 진입 (체결가=max(트리거,시가))`,
+    simulate: (series, entryIdx, rsPercentileValue) => simulatePullbackResume(series, entryIdx, rsPercentileValue, { requireVolume: false }),
+  },
+  pullback_resume_vol: {
+    name: 'pullback_resume_vol',
+    description: `재개 확인 + 당일 거래량 ${PULLBACK_RESUME_VOL_MULT}×50일평균 이상 동시 충족 시 진입`,
+    simulate: (series, entryIdx, rsPercentileValue) => simulatePullbackResume(series, entryIdx, rsPercentileValue, { requireVolume: true }),
+  },
 }
 
 export const ENTRY_VARIANTS = {
@@ -162,7 +235,7 @@ export function aggregateEntryVariant(records, priceIndex, variant, holdingDaysL
     .map((r) => {
       const point = priceEntryPoint(priceIndex, r.ticker, r.date)
       if (!point) return null
-      return { record: r, point, result: variant.simulate(point.series, point.idx) }
+      return { record: r, point, result: variant.simulate(point.series, point.idx, r.rsPercentileValue) }
     })
     .filter(Boolean)
 

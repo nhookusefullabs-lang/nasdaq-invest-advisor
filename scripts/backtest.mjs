@@ -10,13 +10,13 @@ import { runMinerviniRecommend } from '../src/lib/minervini.js'
 import { buildConsensusRanking } from '../src/lib/consensus.js'
 import { currentRegime } from '../src/lib/regime.js'
 import { judgeEntryState } from '../src/lib/entryPoint.js'
-import { hasFullYearData } from '../src/lib/indicators.js'
+import { hasFullYearData, rsRawScore, rsPercentile } from '../src/lib/indicators.js'
 import { sliceUniverseAsOf, buildEvaluationDates, getCalendarDates } from './lib/asOf.mjs'
 import { buildPriceIndex, aggregatePerformance } from './lib/performance.mjs'
 import { buildFundamentalAxis } from './lib/fundamentalHistory.mjs'
 import { VARIANTS, evaluateVariant, evaluatePolicyVariant } from './lib/variants.mjs'
 import { EXIT_RULES, aggregateExitPerformance, EXIT_LIMITATION_NOTE, COMBOS, aggregateComboPerformance } from './lib/exits.mjs'
-import { ENTRY_VARIANTS, aggregateEntryVariant } from './lib/entries.mjs'
+import { ENTRY_VARIANTS, PULLBACK_ENTRY_VARIANTS, aggregateEntryVariant } from './lib/entries.mjs'
 import { goldenCrossFreshnessDays, pivotBreakoutFreshnessDays, freshnessCohort, aggregateFreshnessCohorts } from './lib/freshness.mjs'
 import { atomicWriteBacktest } from './validate-backtest.mjs'
 
@@ -103,6 +103,22 @@ function computeEntryState(datasetTickers, ticker) {
 }
 
 /**
+ * datasetTickers(그 평가일 as-of 유니버스) 전체에서 RS 백분위 맵을 만든다 — minervini.js의
+ * runMinerviniStage1()이 내부적으로 쓰는 것과 동일한 rsRawScore()/rsPercentile()/
+ * hasFullYearData() 조합을 그대로 재호출한다(재구현 없음). trend 모드는 RS 백분위를 쓰지
+ * 않지만, pullback.js의 P1(트렌드 템플릿 T8)이 strategyKey 무관하게 "이 티커가 이 날짜에
+ * 유니버스 대비 RS 백분위가 얼마인지"를 필요로 하므로(v11 US-6), 모드와 독립적으로 매
+ * 평가일 한 번만 계산해 모든 레코드에 공유한다.
+ */
+function buildRsPercentileMap(datasetTickers) {
+  if (!datasetTickers) return new Map()
+  const eligible = datasetTickers.filter((t) => hasFullYearData(t.series))
+  const rawScores = eligible.map((t) => rsRawScore(t.series))
+  const percentiles = rsPercentile(rawScores)
+  return new Map(eligible.map((t, i) => [t.ticker, percentiles[i]]))
+}
+
+/**
  * 평가일 하나의 { trend, minervini, consensus } 결과를 평탄한 신호 레코드 배열로 변환한다.
  * basis: top5(상위 5) / allSignals(1단계 통과 전체, 추세추종·미너비니는 recommend()가 이미
  * 반환한 list 전체를, 컨센서스는 두 모드 통합 리스트 전체를 사용 — 별도 재구현 없음).
@@ -110,9 +126,12 @@ function computeEntryState(datasetTickers, ticker) {
  * 이벤트 정의가 모드별로만 존재하므로(PRD) 컨센서스 레코드에는 붙이지 않는다.
  * regimeInfo(선택, v10 US-7 — regime.js의 currentRegime() 반환값)를 넘기면 모든 레코드에
  * 그 평가일의 국면 코드(regime: 'up'|'neutral'|'down'|null)가 함께 실린다.
+ * rsPercentileValue(v11 US-6, 선택)는 datasetTickers 전체에서 한 번만 계산해(buildRsPercentileMap)
+ * 모든 레코드(전략 무관)에 공유한다 — pullback.js의 P1(트렌드 템플릿 T8) 재판정에 필요.
  */
 export function buildSignalRecords(date, { trend, minervini, consensus }, datasetTickers = null, regimeInfo = null) {
   const regime = regimeInfo?.regime ?? null
+  const rsPercentileMap = buildRsPercentileMap(datasetTickers)
   const records = []
 
   const addBasisPair = (items, mapFn) => {
@@ -133,6 +152,7 @@ export function buildSignalRecords(date, { trend, minervini, consensus }, datase
       grade: null,
       relaxationApplied: trend.relaxationApplied,
       entryState: computeEntryState(datasetTickers, t.ticker),
+      rsPercentileValue: rsPercentileMap.get(t.ticker) ?? null,
       ...(td ? { freshnessCohort: freshnessCohort(daysAgo) } : {}),
     }
   })
@@ -149,6 +169,7 @@ export function buildSignalRecords(date, { trend, minervini, consensus }, datase
       grade: null,
       relaxationApplied: minervini.relaxationApplied,
       entryState: computeEntryState(datasetTickers, m.ticker),
+      rsPercentileValue: rsPercentileMap.get(m.ticker) ?? null,
       ...(td ? { freshnessCohort: freshnessCohort(daysAgo) } : {}),
     }
   })
@@ -162,6 +183,7 @@ export function buildSignalRecords(date, { trend, minervini, consensus }, datase
     grade: c.grade,
     relaxationApplied: consensusRelaxationApplied(c, trend, minervini),
     entryState: computeEntryState(datasetTickers, c.ticker),
+    rsPercentileValue: rsPercentileMap.get(c.ticker) ?? null,
   }))
 
   return records
@@ -344,6 +366,9 @@ export function runBacktest(
   // v11 US-4: 상태×국면 2차원 분해 (schemaVersion 4)
   const stateRegimeAxis = buildStateRegimeAxis(inRecords, outRecords, priceIndex, holdingDays)
 
+  // v11 US-6: 눌림목 진입 변형 3종 × sample × basis × 국면
+  const pullbackAxis = buildPullbackAxis(inRecords, outRecords, priceIndex, holdingDays)
+
   return {
     schemaVersion: 4,
     generatedAt: rawUniverse.generatedAt,
@@ -369,6 +394,7 @@ export function runBacktest(
     combos,
     stateAxis,
     stateRegimeAxis,
+    pullbackAxis,
   }
 }
 
@@ -445,6 +471,34 @@ function buildStateRegimeAxis(inRecords, outRecords, priceIndex, holdingDays) {
             .filter((g) => g.strategyKey === key)
             .map((g) => ({ days: g.days, signals: g.signals, winRate: g.winRate, avgExcess: g.avgExcess, medianExcess: g.medianExcess, avgReturn: g.avgReturn, mdd: g.mdd }))
           axis.push({ strategyKey: key, sample, state, regime, byHolding })
+        }
+      }
+    }
+  }
+  return axis
+}
+
+/**
+ * 눌림목 진입 변형 3종 × sample × basis × 국면 성과표 (v11 US-6, PRD §4.2). trend·전략
+ * 신호만 대상(entryVariants[]의 US-4 이전 원래 스코프와 동일 — pullbackAxis는 PRD가 명시한
+ * "3종×sample×basis×국면×byHolding" 4차원만 다룬다). entries.mjs의 aggregateEntryVariant()를
+ * regime으로 사전 필터링한 레코드에 그대로 재사용한다(재구현 없음). adopted는 항상 false
+ * (측정 전용 — 채택 결정은 운영자 몫).
+ */
+function buildPullbackAxis(inRecords, outRecords, priceIndex, holdingDays) {
+  const axis = []
+  for (const [sample, records] of [
+    ['in', inRecords],
+    ['out', outRecords],
+  ]) {
+    const trendRecords = records.filter((r) => r.strategyKey === 'trend')
+    for (const basis of BASES) {
+      const basisRecords = trendRecords.filter((r) => r.basis === basis)
+      for (const regime of REGIME_VALUES) {
+        const regimeRecords = basisRecords.filter((r) => r.regime === regime)
+        for (const variant of Object.values(PULLBACK_ENTRY_VARIANTS)) {
+          const agg = aggregateEntryVariant(regimeRecords, priceIndex, variant, holdingDays)
+          axis.push({ sample, basis, regime, adopted: false, ...agg })
         }
       }
     }
@@ -616,6 +670,29 @@ export function formatState0RegimeTable(backtest) {
   return lines.join('\n')
 }
 
+// v11 US-6: 눌림목 진입 변형 3종 × 국면 비교표 (allSignals·Out·20거래일, conditional 기준) —
+// v10 상태 0 실측(+36~40%p·승률 84~91%, 표본 11~56건)과의 대조 주석을 함께 남긴다. 체결
+// 시뮬레이션(재개 확인)이 실측 재현치를 그대로 복제하진 않는다는 한계를 명시한다.
+export function formatPullbackComparison(backtest) {
+  const lines = []
+  for (const name of ['pullback_immediate', 'pullback_resume', 'pullback_resume_vol']) {
+    for (const regime of REGIME_VALUES) {
+      const entry = backtest.pullbackAxis?.find((p) => p.name === name && p.sample === 'out' && p.basis === 'allSignals' && p.regime === regime)
+      const d20 = entry?.byHolding?.find((h) => h.days === 20)?.conditional
+      if (!entry || !d20 || d20.signals === 0) {
+        lines.push(`  ${name} × ${regime}: 표본 부족`)
+        continue
+      }
+      const fillRatePct = entry.fillRate != null ? `${(entry.fillRate * 100).toFixed(1)}%` : 'N/A'
+      lines.push(`  ${name} × ${regime}: 체결률 ${fillRatePct} · 초과수익 ${(d20.avgExcess * 100).toFixed(2)}%p · 승률 ${(d20.winRate * 100).toFixed(1)}% (표본 ${d20.signals})`)
+    }
+  }
+  lines.push(
+    '  참고(v10 상태0 실측): 트렌드템플릿+피벗−10%↑눌림 교집합 초과수익 +36~40%p·승률 84~91%(표본 11~56건, In+1.1%p와 격차 커 국면 몫 분리 필요) — 위 체결 시뮬레이션 수치와는 조건·표본이 달라 직접 비교엔 한계가 있다.'
+  )
+  return lines.join('\n')
+}
+
 function loadFundamentalsIfPresent(dataPath, fundamentalsFileName = NDX_FUNDAMENTALS_FILENAME) {
   // nasdaq100.json과 같은 디렉터리의 fundamentals(_ngx).json을 선택적으로 사용한다(US-6/US-11) —
   // 없으면 조용히 null(엔진은 fundamentalAxis:null로 정상 완주, graceful degradation).
@@ -738,6 +815,8 @@ function main() {
   console.log(formatRegimeReinterpretation(backtest))
   console.log('상태0 × 국면 (v10 발견 #6의 구조 몫 vs 국면 몫 분리, v11 US-4, trend·Out·20거래일):')
   console.log(formatState0RegimeTable(backtest))
+  console.log('눌림목 진입 변형 3종 × 국면 비교 (v11 US-6, allSignals·Out·20거래일):')
+  console.log(formatPullbackComparison(backtest))
   console.log(backtest.fundamentalAxis ? `펀더멘털 축: coveredFrom=${backtest.fundamentalAxis.coveredFrom}` : '펀더멘털 축: fundamentals.json 없음(생략)')
   if (universe === 'ngx') {
     console.log('NGX vs 나스닥100 ★★ 컨센서스 비교 (v10 US-11, PRD §7 판정 기준 재료):')
