@@ -121,7 +121,7 @@ function computeEntryState(datasetTickers, ticker) {
  */
 function buildRsPercentileMap(datasetTickers) {
   if (!datasetTickers) return new Map()
-  const eligible = datasetTickers.filter((t) => hasFullYearData(t.series))
+  const eligible = datasetTickers.filter((t) => t.series && hasFullYearData(t.series))
   const rawScores = eligible.map((t) => rsRawScore(t.series))
   const percentiles = rsPercentile(rawScores)
   return new Map(eligible.map((t, i) => [t.ticker, percentiles[i]]))
