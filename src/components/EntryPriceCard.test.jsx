@@ -44,7 +44,7 @@ describe('EntryPriceCard — 진입 상태 4종 카드 렌더링 (US-13 AC2)', (
     closes.push(80) // P*0.90=90 미만 -> 상태0
     const tickerData = { series: seriesFromCloses(closes) }
     render(<EntryPriceCard tickerData={tickerData} generatedAt="2026-01-01" />)
-    expect(screen.getByText('추세 내 눌림목 후보 (검증 진행 중)')).toBeInTheDocument()
+    expect(screen.getByText('눌림목 가설 재검증 중 — 최근 검증에서 성과가 재현되지 않았습니다')).toBeInTheDocument()
     expect(screen.getByText(/트리거 100\.30/)).toBeInTheDocument()
   })
 

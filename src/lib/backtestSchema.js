@@ -136,6 +136,44 @@ function validateFundamentalAxis(axis, errors) {
   }
 }
 
+// regimeDetail(v11.1 US-4): 청산 변형·조합(variants[]/combos[])이 공유하는 국면별 분해 —
+// {regime, signals, winRate, avgExcess, medianExcess, mdd, stopHitRate, avgHoldingDays,
+// baseline:{signals,winRate,avgExcess,medianExcess,mdd}}. 선택 필드(하위 호환 패턴 동일) —
+// 없으면(v11.1 이전 산출물) 검증 생략.
+function validateRegimeDetailItem(item, path, errors) {
+  if (typeof item !== 'object' || item === null) {
+    errors.push(`${path}: 객체여야 합니다`)
+    return
+  }
+  if (!REGIME_VALUES.includes(item.regime)) errors.push(`${path}.regime: ${REGIME_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!isNumber(item.signals)) errors.push(`${path}.signals: 숫자여야 합니다`)
+  if (!isNullableNumber(item.winRate)) errors.push(`${path}.winRate: 숫자 또는 null이어야 합니다`)
+  if (!isNullableNumber(item.avgExcess)) errors.push(`${path}.avgExcess: 숫자 또는 null이어야 합니다`)
+  if (!isNullableNumber(item.medianExcess)) errors.push(`${path}.medianExcess: 숫자 또는 null이어야 합니다`)
+  if (!isNullableNumber(item.mdd)) errors.push(`${path}.mdd: 숫자 또는 null이어야 합니다`)
+  if (!isNullableNumber(item.stopHitRate)) errors.push(`${path}.stopHitRate: 숫자 또는 null이어야 합니다`)
+  if (!isNullableNumber(item.avgHoldingDays)) errors.push(`${path}.avgHoldingDays: 숫자 또는 null이어야 합니다`)
+  const b = item.baseline
+  if (typeof b !== 'object' || b === null) {
+    errors.push(`${path}.baseline: 객체여야 합니다`)
+  } else {
+    if (!isNumber(b.signals)) errors.push(`${path}.baseline.signals: 숫자여야 합니다`)
+    if (!isNullableNumber(b.winRate)) errors.push(`${path}.baseline.winRate: 숫자 또는 null이어야 합니다`)
+    if (!isNullableNumber(b.avgExcess)) errors.push(`${path}.baseline.avgExcess: 숫자 또는 null이어야 합니다`)
+    if (!isNullableNumber(b.medianExcess)) errors.push(`${path}.baseline.medianExcess: 숫자 또는 null이어야 합니다`)
+    if (!isNullableNumber(b.mdd)) errors.push(`${path}.baseline.mdd: 숫자 또는 null이어야 합니다`)
+  }
+}
+
+function validateRegimeDetailArray(arr, path, errors) {
+  if (arr === undefined) return
+  if (!Array.isArray(arr)) {
+    errors.push(`${path}: 배열이어야 합니다`)
+    return
+  }
+  arr.forEach((item, i) => validateRegimeDetailItem(item, `${path}[${i}]`, errors))
+}
+
 function validateVariant(variant, path, errors) {
   if (typeof variant !== 'object' || variant === null) {
     errors.push(`${path}: 객체여야 합니다`)
@@ -168,6 +206,9 @@ function validateVariant(variant, path, errors) {
       if (!isNullableNumber(d.stopHitRate)) errors.push(`${path}.outDetail.stopHitRate: 숫자 또는 null이어야 합니다`)
     }
   }
+
+  // regimeDetail(v11.1 US-4): 선택 필드 — 있으면만 검증.
+  validateRegimeDetailArray(variant.regimeDetail, `${path}.regimeDetail`, errors)
 }
 
 // freshnessCohorts(v9.1 US-4): { key, cohort, sample, byHolding[] } — byHolding 항목 구조는
@@ -266,6 +307,9 @@ function validateCombo(item, path, errors) {
   if (!isNullableNumber(item.avgReturn)) errors.push(`${path}.avgReturn: 숫자 또는 null이어야 합니다`)
   if (!isNullableNumber(item.mdd)) errors.push(`${path}.mdd: 숫자 또는 null이어야 합니다`)
   if (!isNullableNumber(item.avgHoldingDays)) errors.push(`${path}.avgHoldingDays: 숫자 또는 null이어야 합니다`)
+
+  // regimeDetail(v11.1 US-4): 선택 필드 — 있으면만 검증.
+  validateRegimeDetailArray(item.regimeDetail, `${path}.regimeDetail`, errors)
 }
 
 // stateAxis(v10 US-10): { strategyKey, sample, state, byHolding[] } — state는 숫자 0~3 또는
@@ -390,6 +434,8 @@ function validateClimaxPartial(item, path, errors) {
     if (!isNullableNumber(d.avgReturn)) errors.push(`${path}.outDetail.avgReturn: 숫자 또는 null이어야 합니다`)
     if (!isNullableNumber(d.mdd)) errors.push(`${path}.outDetail.mdd: 숫자 또는 null이어야 합니다`)
     if (!isNullableNumber(d.climaxTriggerRate)) errors.push(`${path}.outDetail.climaxTriggerRate: 숫자 또는 null이어야 합니다`)
+    // avgHoldingDays(v11.1 US-3): 선택 필드 — 없으면(v11 이전 산출물) 검증 생략.
+    if (d.avgHoldingDays !== undefined && !isNullableNumber(d.avgHoldingDays)) errors.push(`${path}.outDetail.avgHoldingDays: 숫자 또는 null이어야 합니다`)
   }
 
   const c = item.comparison

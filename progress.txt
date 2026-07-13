@@ -2112,3 +2112,113 @@
   손절선 계산 자체의 버그가 아니라 "돌파형 진입에서 구조 손절을 실측할 조합이 애초에
   안 만들어져 있었다"는 배선 공백일 가능성이 높음 — US-2에서 이탈 경로 픽스처로 손절선
   계산 자체를 먼저 검증하고, 필요하면 breakout×exit_structural 조합 추가를 검토한다.
+
+### Iteration 2 — US-2. exit_structural 발동 0% 수리
+- 완료 스토리: US-2
+- 조사 결과 실제 계산 로직(`structuralStopPrice`/checkStop)에는 버그가 없었다 — 기존
+  exits.test.js(US-8 AC1/AC2)가 이미 돌파형·눌림목형 이탈 경로 픽스처로 발동을 검증
+  중이었고, "유형 불명 시 안전 기본값(손절 미가동)"도 v11 US-8에서 이미 의도된 설계로
+  테스트돼 있었다. 진짜 원인은 **측정 채널 자체가 잘못 배선**돼 있던 것: `backtest.mjs`의
+  `evaluateExitVariants()`(variants[]의 청산 후보 8종을 만드는 단독 측정 경로)가
+  `aggregateExitPerformance(outTrendTop5, priceIndex, rule, {regimeByDate})`를 호출하면서
+  `entryType`을 한 번도 넘긴 적이 없었다 — exit_structural의 checkStop은 entryType이
+  없으면 항상 안전 기본값(손절 미가동)으로 빠지므로, 이 경로가 exit_structural의 유일한
+  일반 측정 채널인 이상 발동률이 구조적으로 항상 0%일 수밖에 없었다.
+- 변경 파일:
+  - scripts/backtest.mjs: `evaluateExitVariants()`가 `aggregateExitPerformance`에
+    `entryType: 'breakout'`을 명시(outTrendTop5는 신호일 종가 체결=entry_close와 동일
+    가정이므로 entry_close.type과 일치시킨 것 — 새 후보 추가 아님). export로 전환(테스트
+    가능하도록).
+  - scripts/lib/exits.mjs: exit_structural 옆 주석을 "단독 호출 경로는 항상 안전
+    기본값"에서 "조합은 entryVariant.type을, 단독 측정(evaluateExitVariants)은
+    entryType:'breakout'을 명시"로 갱신(문서가 실제 동작과 어긋나지 않도록).
+  - scripts/backtest.test.js: `evaluateExitVariants` 신규 테스트 3종 — 돌파형 이탈
+    시 실제 발동(stopHitRate=1)/미이탈 시 60일 만기(stopHitRate=0)/다른 7개 청산
+    규칙은 entryType 유무와 무관하게 바이트 단위로 결과 불변(직접 aggregateExitPerformance
+    두 번 호출해 deep-equal 비교).
+- **실데이터 재측정 결과(진단 전용 재생, 데이터 파일 미변경)**: 수정 전 NDX/NGX 모두
+  발동률 0%였던 것이 수정 후 **NDX 74.17%, NGX 69.60%**로 나타났다 — 이제 "실제로
+  발동하는 손절"이 됐다. 다만 README 판정 기준표의 "발동률 <40%(정상 호흡 오인 방지)"
+  기준으로 보면 이 수치는 오히려 채택 기준을 명백히 벗어난다(너무 자주 발동 — 사실상
+  타이트한 %손절과 다를 바 없어 보임). 이는 버그가 아니라 **실제 측정치**이며, "올바른
+  측정을 원한다"는 US-2의 요청 자체는 충족됐다 — 채택 여부 판정은 운영자 몫(다음 해석
+  세션에서 청산 A/E와 함께 재판정 필요, README 판정표 갱신은 Out of Scope라 이번 루프에서
+  하지 않음).
+- 승인 기준 확인: 1(이탈 경로 발동+미이탈 60일 만기, 돌파형·눌림목형 각각)은 기존
+  exits.test.js가 이미 충족, 신규 테스트로 단독 측정 채널에서도 재확인. 2(손절선 진입
+  시점 고정 테스트 유지) 기존 테스트 그대로 유지. 3(기존 청산 변형 결과 불변) 신규
+  회귀 테스트로 확인.
+
+### Iteration 3 — US-3. exit_climax_partial을 variants[]에 배선
+- 완료 스토리: US-3
+- 변경 파일:
+  - scripts/lib/exits.mjs: `computeClimaxPartialPerformance`/`aggregateClimaxPartialPerformance`에
+    `avgHoldingDays`(가중 평균 보유일 — 발동 시 0.5×클라이맥스일까지+0.5×60, 미발동 시
+    60) 추가.
+  - scripts/backtest.mjs: `buildClimaxPartial()`이 이제 `{climaxPartial, climaxPartialVariant}`
+    를 반환 — climaxPartial(기존 3자 비교 구조화 객체)은 그대로 유지, climaxPartialVariant는
+    variants[]에 새로 등록(outVsBaseline 계산 추가 — validateVariant()가 요구하는 필수
+    필드라 evaluateExitVariants와 동일한 델타 계산 재사용, outDetail.stopHitRate는
+    climaxTriggerRate를 그대로 별칭 — 재계산 없음, note는 3자 비교를 사람이 읽는 문장으로
+    변환하는 `formatClimaxComparisonNote()` 신규).
+  - src/lib/backtestSchema.js: climaxPartial.outDetail.avgHoldingDays 선택 필드 검증 추가.
+  - scripts/backtest.test.js: variants[] 총 개수 테스트를 14→15종으로 갱신(의도된 확장,
+    회귀 아님) + climaxPartialVariant가 climaxPartial과 signals·avgExcess가 일치하는지
+    확인하는 신규 테스트.
+- 승인 기준 확인: 1/2(X4 발생·미발생 손계산, 무청산<부분<전량 사이 위치)는 v11 US-9의
+  기존 exits.test.js가 이미 충족(이번 세션에서 재확인만, 로직 변경 없음). 3(variants에
+  레코드 존재 + adopted=false) 신규로 충족.
+- 실측 확인(진단 전용): NDX/NGX 수치가 v11 US-9 시점과 완전히 동일함을 확인(계산 로직
+  불변, 배선만 추가했다는 증거) — NDX 발동률 14.17%/평균보유 57.03일, NGX 발동률
+  27.09%/평균보유 53.31일.
+
+### Iteration 4 — US-4. 청산 변형·조합 국면별 분해(regimeDetail) 추가
+- 완료 스토리: US-4
+- 변경 파일:
+  - scripts/backtest.mjs: `buildRegimeDetail(outTrendTop5, priceIndex, computeOutDetail)`
+    신규 — computeOutDetail 자리에 `aggregateExitPerformance`/`aggregateComboPerformance`/
+    `aggregateClimaxPartialPerformance` 중 이미 존재하는 것을 그대로 넘겨받아 재사용
+    (재구현 없음), 국면별로 다시 호출 + 같은 국면 구간의 60거래일 고정 보유 기준선을
+    `aggregatePerformance`로 병기. `evaluateExitVariants()`의 각 rule, `combos[]`의 각
+    항목, `climaxPartialVariant`에 `regimeDetail` 필드로 배선.
+  - src/lib/backtestSchema.js: `validateRegimeDetailItem`/`validateRegimeDetailArray`
+    신규(variants[]/combos[] 양쪽이 공유하는 선택 필드 패턴) — `validateVariant`/
+    `validateCombo` 양쪽에 배선.
+  - scripts/backtest.test.js: 청산 변형 8종+climax_partial+조합 5종 전부 국면 3종
+    regimeDetail을 갖는지 확인 + AC1 합산 정합성(직접 재집계와 signals 일치, pullbackAxis
+    AC3와 동일한 검증 패턴 재사용).
+  - src/lib/backtestSchema.test.js: regimeDetail 유효/무효(regime enum)/baseline 누락/
+    하위 호환(필드 없어도 통과) 5개 테스트, variants[]·combos[] 양쪽 다.
+- 실측 확인(진단 전용): 이번 세션 초반에 스크래치 스크립트로 손으로 재현했던 청산 A
+  국면별 MDD 수치(중립 국면 18.7%→13.0%, -5.73%p 개선)와 새 regimeDetail 필드의 값이
+  정확히 일치함을 확인 — 이제 이 판정을 진단 스크립트 없이 backtest.json 자체에서 바로
+  읽을 수 있다.
+- 승인 기준 확인: 1(합산 정합성) 신규 테스트로 확인, 2(미래 참조 없음)는 이미 존재하는
+  regime 귀속 메커니즘(신호일 슬라이스 시점에 이미 붙어 있는 record.regime)을 그대로
+  필터링만 하므로 별도 테스트 불필요(재사용), 3(무효 픽스처 거부 + 하위 호환) 신규
+  스키마 테스트로 확인.
+
+### Iteration 5 — US-5. 상태0 배지 문구 하향 (승인된 표시 조정)
+- 완료 스토리: US-5
+- 변경 파일:
+  - src/components/EntryPriceCard.jsx: 상태0 배지 문구를 "추세 내 눌림목 후보 (검증
+    진행 중)" → "눌림목 가설 재검증 중 — 최근 검증에서 성과가 재현되지 않았습니다"로
+    변경 + changelog 주석 추가(근거: v11 stateRegimeAxis 실측이 v10에서 기대한
+    +36~40%p 엣지를 재현하지 못하고 국면별 −1.81%p~+0.59%p 수준의 약하고 혼재된
+    성과로 나타남). 재개 트리거가 표시(judgePullback 재사용)와 검증 상태
+    (pullbackCandidate: "측정중")는 그대로 유지 — 라벨 문구만 정직하게 조정.
+  - src/components/EntryPriceCard.test.jsx: 옛 문구를 검증하던 1개 텍스트 단언을 새
+    문구로 갱신(의도된 문구 변경, 회귀 아님). 재개 트리거가+"측정중" 테스트는 배지
+    텍스트를 검사하지 않아 무수정.
+- 승인 기준 확인: 1(문구 변경 렌더링 + 검증 상태 동반 유지) 갱신된 테스트로 확인,
+  2(changelog 존재) EntryPriceCard.jsx 파일 상단에 추가, 3(기타 카드 요소·순위 무변경)
+  나머지 13개 테스트가 전부 무수정 통과로 확인.
+- 테스트 수 변화(US-2~US-5 합산): 799(US-1 종료 시점) → 811(+12: backtest.test.js
+  evaluateExitVariants 3개 + regimeDetail 2개, backtestSchema.test.js regimeDetail 5개,
+  전부 신규 — EntryPriceCard.test.jsx는 텍스트 갱신만이라 개수 불변). npm run test(전체
+  54개 파일) + npm run build 매 스토리마다 통과 확인.
+- 다음 스토리 메모: US-6(통합 검증·마감) — README에 v11.1 재실행 순서 추가(수집
+  불요 — 데이터 동일, 백테스트 재실행×2 유니버스, 확인 체크리스트: 퍼널 표 출력/
+  structural 발동률>0/climax_partial 레코드 존재/regimeDetail 존재), 수리 4건
+  원인·조치 요약을 progress.txt에 최종 기록(이미 위 Iteration 2~5에 기록됨, US-6에서는
+  요약만 추가), 전체 테스트·빌드 재확인, prd-v11.1-repairs.md 전 스토리 체크 완료 확인.

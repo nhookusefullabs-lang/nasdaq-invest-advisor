@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { loadDataset, runSmoke, toMinerviniInput, evaluateAsOf, buildSignalRecords, runSignalLoop, runBacktest, parseArgs, validateCliArgs, formatOverlapFactorNote, formatFreshnessCohortSummary, formatRegimeReinterpretation, formatPullbackFunnel } from './backtest.mjs'
+import { loadDataset, runSmoke, toMinerviniInput, evaluateAsOf, buildSignalRecords, runSignalLoop, runBacktest, parseArgs, validateCliArgs, formatOverlapFactorNote, formatFreshnessCohortSummary, formatRegimeReinterpretation, formatPullbackFunnel, evaluateExitVariants } from './backtest.mjs'
 import { buildDataset } from '../src/lib/buildDataset.js'
 import { recommend } from '../src/lib/recommend.js'
 import { runMinerviniRecommend } from '../src/lib/minervini.js'
@@ -12,6 +12,7 @@ import { validateBacktest } from '../src/lib/backtestSchema.js'
 import { rebuildTop5WithPolicy } from './lib/variants.mjs'
 import { aggregatePerformance, buildPriceIndex, computeSignalPerformance } from './lib/performance.mjs'
 import { aggregateEntryVariant, PULLBACK_ENTRY_VARIANTS } from './lib/entries.mjs'
+import { EXIT_RULES, aggregateExitPerformance, COMBOS } from './lib/exits.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const FIXTURE_PATH = path.resolve(__dirname, '../src/lib/__fixtures__/nasdaq100.2y.sample.json')
@@ -361,10 +362,12 @@ describe('runBacktest — v9.1 US-2 변형 D 청산 규칙 (경로 의존 성과
   ]
   // v10 US-10이 소프트 정책 변형 3종을 추가로 variants[]에 병합한다.
   const policyVariantNames = ['relax_off_in_downturn', 'twostar_only_in_downturn', 'actionable_only_top5']
+  // v11.1 US-3이 exit_climax_partial(청산 변형 E)을 climaxPartial 단일 객체 외에 variants[]에도
+  // 등록한다 — 다른 청산 후보들과 동일한 채널로 비교할 수 있도록(의도된 확장, 회귀 아님).
 
-  it('기존 변형 A/B/C 3종 + 청산 변형 8종 + 정책 변형 3종, 총 14종이 variants[]에 있다', () => {
+  it('기존 변형 A/B/C 3종 + 청산 변형 8종 + 정책 변형 3종 + climax_partial 1종, 총 15종이 variants[]에 있다', () => {
     expect(backtest.variants.map((v) => v.name).sort()).toEqual(
-      ['adx_gate', 'consensus_weighted', 'disparity_inverted_u', ...exitVariantNames, ...policyVariantNames].sort()
+      ['adx_gate', 'consensus_weighted', 'disparity_inverted_u', ...exitVariantNames, ...policyVariantNames, 'exit_climax_partial'].sort()
     )
   })
 
@@ -378,6 +381,17 @@ describe('runBacktest — v9.1 US-2 변형 D 청산 규칙 (경로 의존 성과
     }
   })
 
+  it('v11.1 US-3: exit_climax_partial variants[] 항목이 climaxPartial 단일 객체와 signals·avgExcess가 일치하고 outVsBaseline/note를 갖는다', () => {
+    const v = backtest.variants.find((x) => x.name === 'exit_climax_partial')
+    expect(v.adopted).toBe(false)
+    expect(v.outVsBaseline).toHaveProperty('avgExcessDelta')
+    expect(v.outVsBaseline).toHaveProperty('winRateDelta')
+    expect(v.outDetail.signals).toBe(backtest.climaxPartial.outDetail.signals)
+    expect(v.outDetail.avgExcess).toBe(backtest.climaxPartial.outDetail.avgExcess)
+    expect(v.outDetail.avgHoldingDays).toBeDefined()
+    expect(v.note).toContain('3자 비교')
+  })
+
   it('src/(앱 추천 로직)는 청산 변형으로 인해 수정되지 않는다 — constants/v8.js 값 불변 확인', () => {
     const constants = readFileSync(path.resolve(__dirname, '../src/lib/constants/v8.js'), 'utf-8')
     expect(constants).toContain('RS_MAX: 40')
@@ -386,6 +400,103 @@ describe('runBacktest — v9.1 US-2 변형 D 청산 규칙 (경로 의존 성과
 
   it('전체 스키마 검증을 통과한다(outDetail 필드 포함)', () => {
     expect(validateBacktest(backtest).valid).toBe(true)
+  })
+})
+
+describe('runBacktest — v11.1 US-4 청산 변형·조합 국면별 분해(regimeDetail)', () => {
+  const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
+  const backtest = runBacktest(raw)
+
+  it('청산 변형(exitVariantNames) + climax_partial + 조합(COMBOS) 전부가 국면 3종 regimeDetail을 갖는다', () => {
+    const exitVariantNames = ['exit_stop8_time60', 'exit_stop8_trail15', 'exit_stop_atr', 'exit_sma50_break', 'exit_climax', 'exit_regime_conditional', 'exit_regime_flip', 'exit_structural', 'exit_climax_partial']
+    for (const name of exitVariantNames) {
+      const v = backtest.variants.find((x) => x.name === name)
+      expect(v.regimeDetail).toBeDefined()
+      expect(v.regimeDetail.map((r) => r.regime).sort()).toEqual(['down', 'neutral', 'up'])
+      for (const r of v.regimeDetail) {
+        expect(typeof r.signals).toBe('number')
+        expect(r.baseline).toHaveProperty('signals')
+        expect(r.baseline).toHaveProperty('avgExcess')
+      }
+    }
+    for (const combo of backtest.combos) {
+      expect(combo.regimeDetail).toBeDefined()
+      expect(combo.regimeDetail.map((r) => r.regime).sort()).toEqual(['down', 'neutral', 'up'])
+    }
+  })
+
+  it('AC1 합산 정합성: exit_structural·조합 1종의 국면별 signals 합 = 국면 필터 없이 직접 재집계한 signals(국면 없는 잔여 표본 제외)', () => {
+    const evaluationDates = buildEvaluationDates(raw, { holdingBufferDays: 120 })
+    const records = runSignalLoop(raw, evaluationDates)
+    const splitDate = backtest.config.splitDate
+    const outTrendTop5 = records.filter((r) => r.date >= splitDate && r.strategyKey === 'trend' && r.basis === 'top5')
+    const priceIndex = buildPriceIndex(loadDataset(FIXTURE_PATH).tickers)
+
+    const structural = backtest.variants.find((v) => v.name === 'exit_structural')
+    const cellSum = structural.regimeDetail.reduce((sum, r) => sum + r.signals, 0)
+    const directRegimeOnly = aggregateExitPerformance(
+      outTrendTop5.filter((r) => ['up', 'neutral', 'down'].includes(r.regime)),
+      priceIndex,
+      EXIT_RULES.exit_structural,
+      { entryType: 'breakout' }
+    )
+    expect(cellSum).toBe(directRegimeOnly.signals)
+
+    const combo = COMBOS[0]
+    const comboEntry = backtest.combos.find((c) => c.name === combo.name)
+    const comboCellSum = comboEntry.regimeDetail.reduce((sum, r) => sum + r.signals, 0)
+    expect(comboCellSum).toBe(outTrendTop5.filter((r) => ['up', 'neutral', 'down'].includes(r.regime)).length)
+  })
+
+  it('전체 스키마 검증을 통과한다(regimeDetail 포함)', () => {
+    expect(validateBacktest(backtest).valid).toBe(true)
+  })
+})
+
+describe('evaluateExitVariants — v11.1 US-2: exit_structural 발동 0% 수리(entryType=breakout 기본 배선)', () => {
+  it('신호일 종가 진입 가정(entry_close와 동일)에서 피벗×0.97 이탈 시 exit_structural이 실제로 발동한다', () => {
+    const bars = []
+    for (let i = 0; i < 90; i++) bars.push({ date: `d${i}`, close: 100, high: 100.2, low: 99.8, volume: 1_000_000 })
+    ;[100, 96, ...Array(58).fill(96)].forEach((close, k) => bars.push({ date: `d${90 + k}`, close, high: close, low: close, volume: 1_000_000 }))
+    const priceIndex = buildPriceIndex([{ ticker: 'STOPX', dataSufficient: true, series: bars }])
+    const record = { date: bars[89].date, ticker: 'STOPX', strategyKey: 'trend', basis: 'top5', regime: null }
+
+    const variants = evaluateExitVariants([record], [], priceIndex)
+    const structural = variants.find((v) => v.name === 'exit_structural')
+    expect(structural.outDetail.signals).toBe(1)
+    expect(structural.outDetail.stopHitRate).toBe(1)
+    expect(structural.outDetail.avgHoldingDays).toBe(2)
+  })
+
+  it('이탈이 없으면(피벗 근처 횡보) 60거래일 시간 청산이 그대로 적용된다(수리 이후에도 안전 기본값 성격 유지)', () => {
+    const bars = []
+    for (let i = 0; i < 90; i++) bars.push({ date: `d${i}`, close: 100, high: 100.2, low: 99.8, volume: 1_000_000 })
+    for (let k = 0; k < 60; k++) bars.push({ date: `d${90 + k}`, close: 98, high: 98, low: 98, volume: 1_000_000 })
+    const priceIndex = buildPriceIndex([{ ticker: 'NOSTOPX', dataSufficient: true, series: bars }])
+    const record = { date: bars[89].date, ticker: 'NOSTOPX', strategyKey: 'trend', basis: 'top5', regime: null }
+
+    const variants = evaluateExitVariants([record], [], priceIndex)
+    const structural = variants.find((v) => v.name === 'exit_structural')
+    expect(structural.outDetail.stopHitRate).toBe(0)
+    expect(structural.outDetail.avgHoldingDays).toBe(60)
+  })
+
+  it('entryType 배선은 exit_structural 외 다른 청산 규칙의 결과를 바이트 단위로 그대로 유지한다(회귀 없음)', () => {
+    const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
+    const dataset = loadDataset(FIXTURE_PATH)
+    const priceIndex = buildPriceIndex(dataset.tickers)
+    const evaluationDates = buildEvaluationDates(raw, { holdingBufferDays: 120 })
+    const records = runSignalLoop(raw, evaluationDates)
+    const splitIndex = Math.floor(evaluationDates.length / 2)
+    const splitDate = evaluationDates[splitIndex] ?? null
+    const outTrendTop5 = records.filter((r) => r.date >= splitDate && r.strategyKey === 'trend' && r.basis === 'top5')
+
+    for (const [name, rule] of Object.entries(EXIT_RULES)) {
+      if (name === 'exit_structural') continue // entryType을 실제로 쓰는 유일한 규칙 — 이 테스트 대상 아님
+      const without = aggregateExitPerformance(outTrendTop5, priceIndex, rule, {})
+      const withBreakout = aggregateExitPerformance(outTrendTop5, priceIndex, rule, { entryType: 'breakout' })
+      expect(withBreakout).toEqual(without)
+    }
   })
 })
 

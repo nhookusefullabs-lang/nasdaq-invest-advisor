@@ -546,3 +546,82 @@ describe('validateBacktest — pullbackFunnel (v11.1 US-1)', () => {
     expect(errors.some((e) => e.includes('pullbackFunnel[0].signals'))).toBe(true)
   })
 })
+
+describe('validateBacktest — regimeDetail (v11.1 US-4, variants[]/combos[] 공유 필드)', () => {
+  const regimeDetailItem = (regime) => ({
+    regime,
+    signals: 10,
+    winRate: 0.5,
+    avgExcess: 0.01,
+    medianExcess: 0.005,
+    mdd: 0.02,
+    stopHitRate: 0.3,
+    avgHoldingDays: 40,
+    baseline: { signals: 10, winRate: 0.45, avgExcess: 0.008, medianExcess: 0.002, mdd: 0.03 },
+  })
+
+  it('variants[].regimeDetail 필드 자체가 없어도(v11.1 이전 산출물) 통과한다 (하위 호환)', () => {
+    const data = { ...loadFixture('backtest.valid.json') }
+    data.variants = [{ name: 'x', adopted: false, outVsBaseline: { avgExcessDelta: 0, winRateDelta: 0 }, note: '' }]
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('유효한 variants[].regimeDetail은 통과한다', () => {
+    const data = { ...loadFixture('backtest.valid.json') }
+    data.variants = [
+      {
+        name: 'x',
+        adopted: false,
+        outVsBaseline: { avgExcessDelta: 0, winRateDelta: 0 },
+        note: '',
+        regimeDetail: [regimeDetailItem('up'), regimeDetailItem('neutral'), regimeDetailItem('down')],
+      },
+    ]
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('regime enum 오류를 거부한다', () => {
+    const data = { ...loadFixture('backtest.valid.json') }
+    data.variants = [
+      { name: 'x', adopted: false, outVsBaseline: { avgExcessDelta: 0, winRateDelta: 0 }, note: '', regimeDetail: [regimeDetailItem('sideways')] },
+    ]
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('variants[0].regimeDetail[0].regime'))).toBe(true)
+  })
+
+  it('baseline 누락을 거부한다', () => {
+    const data = { ...loadFixture('backtest.valid.json') }
+    const item = regimeDetailItem('up')
+    delete item.baseline
+    data.variants = [{ name: 'x', adopted: false, outVsBaseline: { avgExcessDelta: 0, winRateDelta: 0 }, note: '', regimeDetail: [item] }]
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('variants[0].regimeDetail[0].baseline'))).toBe(true)
+  })
+
+  it('combos[].regimeDetail도 동일한 규칙으로 검증된다 (없으면 통과, 유효하면 통과, regime enum 오류는 거부)', () => {
+    const withoutData = { ...loadFixture('backtest.valid.json') }
+    withoutData.combos = [{ name: 'c', adopted: false, signals: 5, fillRate: 1, winRate: 0.5, avgExcess: 0.01, medianExcess: 0.005, avgReturn: 0.02, mdd: 0.03, avgHoldingDays: 30 }]
+    expect(validateBacktest(withoutData).valid).toBe(true)
+
+    const withData = { ...loadFixture('backtest.valid.json') }
+    withData.combos = [
+      {
+        ...withoutData.combos[0],
+        regimeDetail: [regimeDetailItem('up'), regimeDetailItem('neutral'), regimeDetailItem('down')],
+      },
+    ]
+    expect(validateBacktest(withData).valid).toBe(true)
+
+    const invalidData = { ...loadFixture('backtest.valid.json') }
+    invalidData.combos = [{ ...withoutData.combos[0], regimeDetail: [regimeDetailItem('bogus')] }]
+    const { valid, errors } = validateBacktest(invalidData)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('combos[0].regimeDetail[0].regime'))).toBe(true)
+  })
+})

@@ -108,9 +108,12 @@ export const EXIT_RULES = {
     },
   },
   // --- v11 US-8: 청산 변형 C(구조 기반 손절) ---
-  // entryType(context, 조합 실험 전용 — computeComboPerformance가 entryVariant.type을 그대로
-  // 넘긴다)이 없는 일반 사용(evaluateExitVariants가 원 신호일 종가 체결로 단독 적용하는 경우)은
-  // 안전 기본값으로 손절이 걸리지 않고 60거래일 시간 청산만 적용된다(승인 기준 1).
+  // entryType(context)이 없으면(직접 walkExit 호출 등) 안전 기본값으로 손절이 걸리지 않고
+  // 60거래일 시간 청산만 적용된다(v11 US-8 승인 기준 1, exits.test.js "유형 불명" 테스트가
+  // 그대로 보증). 조합 실험(computeComboPerformance)은 entryVariant.type을 그대로 넘기고,
+  // 단독 측정(backtest.mjs의 evaluateExitVariants, v11.1 US-2)은 신호일 종가 체결(entry_close
+  // 가정)이므로 entryType:'breakout'을 명시한다 — 이전에는 이 경로가 비어 있어 exit_structural의
+  // 유일한 일반 측정 채널이 항상 안전 기본값(발동 0%)으로만 빠졌다.
   exit_structural: {
     name: 'exit_structural',
     description: '진입 유형별 구조 기반 손절 — 돌파형: 피벗×0.97 / 눌림목형: 눌림 저점×0.98, 이탈 시 당일 청산, 미이탈 시 60거래일 시간 청산 (유형 불명 시 안전 기본값: 손절 미가동)',
@@ -325,25 +328,32 @@ export function computeClimaxPartialPerformance(record, priceIndex) {
   const perf = computePartialPositionPerformance(record, priceIndex, exitEvents, MAX_HOLDING_DAYS)
   if (!perf) return null
 
-  return { ...perf, climaxTriggered: climaxIdx != null }
+  // v11.1 US-3: 가중 평균 보유일 — 발동 시 50%×(클라이맥스일까지의 일수)+50%×60, 미발동
+  // 시 100%×60(레그가 정확히 이 두 형태뿐이라는 것은 findFirstClimaxIdx/exitEvents 구성에서
+  // 이미 보증된다 — computePartialPositionPerformance를 다시 열어보지 않아도 안전).
+  const holdingDaysActual = climaxIdx != null ? 0.5 * (climaxIdx - point.idx) + 0.5 * MAX_HOLDING_DAYS : MAX_HOLDING_DAYS
+
+  return { ...perf, climaxTriggered: climaxIdx != null, holdingDaysActual }
 }
 
 /**
  * records 전체를 클라이맥스 부분 청산으로 집계한다. climaxTriggerRate(발동률)를 1급 재료로
- * 포함한다(v10 "83.7% 교훈" — 판정 이전에 항상 실측할 것).
- * 반환: { signals, winRate, avgExcess, medianExcess, avgReturn, mdd, climaxTriggerRate }
- * (표본 0이면 전부 null — NaN 금지).
+ * 포함한다(v10 "83.7% 교훈" — 판정 이전에 항상 실측할 것). avgHoldingDays(v11.1 US-3)는
+ * variants[]의 다른 청산 후보들과 같은 필드명으로 노출해 그대로 비교할 수 있게 한다.
+ * 반환: { signals, winRate, avgExcess, medianExcess, avgReturn, mdd, climaxTriggerRate,
+ * avgHoldingDays } (표본 0이면 전부 null — NaN 금지).
  */
 export function aggregateClimaxPartialPerformance(records, priceIndex) {
   const items = records.map((r) => computeClimaxPartialPerformance(r, priceIndex)).filter(Boolean)
 
   if (!items.length) {
-    return { signals: 0, winRate: null, avgExcess: null, medianExcess: null, avgReturn: null, mdd: null, climaxTriggerRate: null }
+    return { signals: 0, winRate: null, avgExcess: null, medianExcess: null, avgReturn: null, mdd: null, climaxTriggerRate: null, avgHoldingDays: null }
   }
 
   const excess = items.map((i) => i.excessReturn)
   const rets = items.map((i) => i.returnPct)
   const mdds = items.map((i) => i.mdd)
+  const holdingDays = items.map((i) => i.holdingDaysActual)
   const wins = excess.filter((e) => e > 0).length
   const triggered = items.filter((i) => i.climaxTriggered).length
 
@@ -355,5 +365,6 @@ export function aggregateClimaxPartialPerformance(records, priceIndex) {
     avgReturn: round4(average(rets)),
     mdd: round4(average(mdds)),
     climaxTriggerRate: round4(triggered / items.length),
+    avgHoldingDays: round4(average(holdingDays)),
   }
 }

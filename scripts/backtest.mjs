@@ -389,6 +389,8 @@ export function runBacktest(
     name: combo.name,
     adopted: false,
     ...aggregateComboPerformance(outTrendTop5, priceIndex, combo.entryVariant, combo.exitRule),
+    // v11.1 US-4: 조합도 청산 변형과 동일한 국면별 분해를 갖는다.
+    regimeDetail: buildRegimeDetail(outTrendTop5, priceIndex, (bucket) => aggregateComboPerformance(bucket, priceIndex, combo.entryVariant, combo.exitRule)),
   }))
 
   // v10 US-10: 진입 상태별 분해 + 소프트 정책 변형 3종
@@ -405,7 +407,7 @@ export function runBacktest(
   const pullbackFunnel = buildPullbackFunnel(inRecords, outRecords, priceIndex)
 
   // v11 US-9: 청산 변형 E(클라이맥스 부분 청산) — 3자 비교(무청산/전량/부분)
-  const climaxPartial = buildClimaxPartial(outTrendTop5, priceIndex, strategies, exitVariants)
+  const { climaxPartial, climaxPartialVariant } = buildClimaxPartial(outTrendTop5, priceIndex, strategies, exitVariants)
 
   // v11 US-10: 허들 교집합 축(양 유니버스) — ★★∩펀더멘털 판정 × sample × 국면
   const hurdleIntersection = buildHurdleIntersection(fundamentalsData, inRecords, outRecords, priceIndex, holdingDays)
@@ -428,7 +430,7 @@ export function runBacktest(
     },
     strategies,
     fundamentalAxis,
-    variants: [...variants, ...exitVariants, ...policyVariants],
+    variants: [...variants, ...exitVariants, ...policyVariants, climaxPartialVariant],
     freshnessCohorts,
     regimeAxis,
     entryVariants,
@@ -599,20 +601,50 @@ function buildPullbackFunnel(inRecords, outRecords, priceIndex) {
  * 이미 계산된 'exit_climax'(v10 US-9) 항목을 그대로 참조(재계산 없음 — "v10 결과 참조").
  * outTrendTop5(entryVariants/combos와 동일 스코프)에 대해서만 부분 청산을 새로 계산한다.
  */
+// v11.1 US-3: 3자 비교 수치를 사람이 읽을 note 문장으로 만든다(퍼센트, %p 표기 — 다른
+// 청산 후보들의 note 관례와 동일). 표본 없는 축은 "측정 불가"로 명시(NaN/undefined 노출 금지).
+function formatClimaxComparisonNote(comparison) {
+  const pct = (h) => (h && h.avgExcess != null ? `${(h.avgExcess * 100).toFixed(2)}%p(표본 ${h.signals})` : '측정 불가')
+  return `3자 비교(평균 초과수익, Out·trend·top5): 무청산 ${pct(comparison.noExit)} / 전량 클라이맥스 청산 ${pct(comparison.fullClimaxExit)} / 부분 청산(50%+잔여) ${pct(comparison.partialClimaxExit)}`
+}
+
 function buildClimaxPartial(outTrendTop5, priceIndex, strategies, exitVariants) {
   const baseline = strategies.find((s) => s.key === 'trend' && s.basis === 'top5' && s.sample === 'out' && s.signalQuality === 'all')
   const baseline60 = baseline?.byHolding?.find((h) => h.days === 60) ?? null
   const fullClimax = exitVariants.find((v) => v.name === 'exit_climax')
   const outDetail = aggregateClimaxPartialPerformance(outTrendTop5, priceIndex)
+  const comparison = {
+    noExit: baseline60 ? { signals: baseline60.signals, avgExcess: baseline60.avgExcess, medianExcess: baseline60.medianExcess } : null,
+    fullClimaxExit: fullClimax ? { signals: fullClimax.outDetail.signals, avgExcess: fullClimax.outDetail.avgExcess, medianExcess: fullClimax.outDetail.medianExcess } : null,
+    partialClimaxExit: { signals: outDetail.signals, avgExcess: outDetail.avgExcess, medianExcess: outDetail.medianExcess },
+  }
+  // outVsBaseline은 다른 모든 variants[] 항목이 공유하는 필수 필드다(validateVariant) —
+  // evaluateExitVariants와 동일한 무청산(60거래일 고정 보유) 기준 델타 계산을 그대로 재사용.
+  const bothMeasurable = outDetail.avgExcess != null && outDetail.winRate != null && baseline60?.avgExcess != null && baseline60?.winRate != null
+  const outVsBaseline = {
+    avgExcessDelta: bothMeasurable ? round4(outDetail.avgExcess - baseline60.avgExcess) : null,
+    winRateDelta: bothMeasurable ? round4(outDetail.winRate - baseline60.winRate) : null,
+  }
 
   return {
-    name: 'exit_climax_partial',
-    adopted: false,
-    outDetail,
-    comparison: {
-      noExit: baseline60 ? { signals: baseline60.signals, avgExcess: baseline60.avgExcess, medianExcess: baseline60.medianExcess } : null,
-      fullClimaxExit: fullClimax ? { signals: fullClimax.outDetail.signals, avgExcess: fullClimax.outDetail.avgExcess, medianExcess: fullClimax.outDetail.medianExcess } : null,
-      partialClimaxExit: { signals: outDetail.signals, avgExcess: outDetail.avgExcess, medianExcess: outDetail.medianExcess },
+    climaxPartial: { name: 'exit_climax_partial', adopted: false, outDetail, comparison },
+    // v11.1 US-3: variants[]에도 같은 결과를 등록 — exit_structural 등 다른 청산 후보들과
+    // 동일한 채널(outVsBaseline·outDetail.발동률·평균보유일 + note)로 조회·비교할 수 있게
+    // 한다. climaxPartial 위 필드(comparison 등 구조화된 3자 비교)는 계속 유지 — 이 등록은
+    // 추가일 뿐 대체가 아니다. validateVariant()의 outDetail.stopHitRate는 다른 청산
+    // 변형들과 공유하는 필수 필드라, "50% 부분 청산이 발동했는가"라는 동일 개념인
+    // climaxTriggerRate를 그대로 별칭한다(재계산 없음).
+    climaxPartialVariant: {
+      name: 'exit_climax_partial',
+      adopted: false,
+      outVsBaseline,
+      outDetail: { ...outDetail, stopHitRate: outDetail.climaxTriggerRate },
+      note: formatClimaxComparisonNote(comparison),
+      // v11.1 US-4: 국면별 분해도 다른 청산 변형과 동일하게 병기.
+      regimeDetail: buildRegimeDetail(outTrendTop5, priceIndex, (bucket) => {
+        const d = aggregateClimaxPartialPerformance(bucket, priceIndex)
+        return { ...d, stopHitRate: d.climaxTriggerRate }
+      }),
     },
   }
 }
@@ -719,16 +751,56 @@ function buildPolicyVariants(outRecords, priceIndex) {
   return [relaxOffInDownturn, twostarOnlyInDownturn, actionableOnlyTop5]
 }
 
+/**
+ * 청산 변형·조합의 국면별 분해(v11.1 US-4) — 신호일 국면(상승/중립/하락)별로 computeOutDetail
+ * (이미 존재하는 aggregateExitPerformance/aggregateComboPerformance/
+ * aggregateClimaxPartialPerformance 중 하나를 그대로 넘겨받아 재사용, 재구현 없음)을 다시
+ * 호출하고, 같은 국면 구간의 기준선(60거래일 고정 보유)도 함께 병기한다 — 청산 A의
+ * "중립·하락 국면에서 MDD 개선" 같은 선커밋 판정 기준을 진단 스크립트 없이 backtest.json
+ * 자체에서 바로 대조할 수 있게 하는 것이 목적이다.
+ */
+function buildRegimeDetail(outTrendTop5, priceIndex, computeOutDetail) {
+  return REGIME_VALUES.map((regime) => {
+    const bucket = outTrendTop5.filter((r) => r.regime === regime)
+    const detail = computeOutDetail(bucket)
+    const baselineGroups = aggregatePerformance(bucket, priceIndex, [60], { strategyKeys: ['trend'], bases: ['top5'] })
+    const baselineRow = baselineGroups.find((g) => g.days === 60) ?? null
+    return {
+      regime,
+      signals: detail.signals,
+      winRate: detail.winRate ?? null,
+      avgExcess: detail.avgExcess ?? null,
+      medianExcess: detail.medianExcess ?? null,
+      mdd: detail.mdd ?? null,
+      stopHitRate: detail.stopHitRate ?? null,
+      avgHoldingDays: detail.avgHoldingDays ?? null,
+      baseline: {
+        signals: baselineRow?.signals ?? 0,
+        winRate: baselineRow?.winRate ?? null,
+        avgExcess: baselineRow?.avgExcess ?? null,
+        medianExcess: baselineRow?.medianExcess ?? null,
+        mdd: baselineRow?.mdd ?? null,
+      },
+    }
+  })
+}
+
 // v9.1 US-2 가설 ②: trend/top5 Out 신호에 경로 의존 청산(변형 D) 2종을 적용해, 현행
 // 60거래일 고정 보유(all·signalQuality) 대비 성과 델타를 계산한다. 채택 결정은 하지 않는다
 // (adopted 항상 false — 손절·트레일링 채택은 운영자 몫).
-function evaluateExitVariants(outRecords, strategies, priceIndex, regimeByDate = new Map()) {
+// v11.1 US-2: outTrendTop5는 신호일 종가 체결(entry_close와 동일 가정)로 측정하는 모집단이라
+// entryType='breakout'로 명시한다 — entry_close.type도 'breakout'이라 기존 가정과 일치할 뿐,
+// 새 후보를 추가하는 것은 아니다. exit_structural 외의 규칙은 entryType을 읽지 않으므로
+// 무해하다. 이전에는 entryType이 비어 있어 exit_structural이 "유형 불명 → 안전 기본값(손절
+// 미가동)" 경로로만 빠져 발동률이 항상 0%였다(v11 US-8의 의도된 단독-호출 기본값이었으나,
+// 실측 결과 이 경로가 exit_structural의 유일한 일반 측정 채널이라 무의미했다 — v11.1 수리).
+export function evaluateExitVariants(outRecords, strategies, priceIndex, regimeByDate = new Map()) {
   const outTrendTop5 = outRecords.filter((r) => r.strategyKey === 'trend' && r.basis === 'top5')
   const baseline = strategies.find((s) => s.key === 'trend' && s.basis === 'top5' && s.sample === 'out' && s.signalQuality === 'all')
   const baseline60 = baseline?.byHolding?.find((h) => h.days === 60) ?? null
 
   return Object.values(EXIT_RULES).map((rule) => {
-    const outDetail = aggregateExitPerformance(outTrendTop5, priceIndex, rule, { regimeByDate })
+    const outDetail = aggregateExitPerformance(outTrendTop5, priceIndex, rule, { regimeByDate, entryType: 'breakout' })
     const bothMeasurable = outDetail.avgExcess != null && outDetail.winRate != null && baseline60?.avgExcess != null && baseline60?.winRate != null
     const outVsBaseline = {
       avgExcessDelta: bothMeasurable ? round4(outDetail.avgExcess - baseline60.avgExcess) : null,
@@ -738,7 +810,8 @@ function evaluateExitVariants(outRecords, strategies, priceIndex, regimeByDate =
       `Out 표본 ${outDetail.signals}건 (trend·top5 기준) vs 현행 60거래일 고정 보유(표본 ${baseline60?.signals ?? 0}건)`,
       EXIT_LIMITATION_NOTE,
     ].join(' / ')
-    return { name: rule.name, adopted: false, outVsBaseline, outDetail, note }
+    const regimeDetail = buildRegimeDetail(outTrendTop5, priceIndex, (bucket) => aggregateExitPerformance(bucket, priceIndex, rule, { regimeByDate, entryType: 'breakout' }))
+    return { name: rule.name, adopted: false, outVsBaseline, outDetail, note, regimeDetail }
   })
 }
 
