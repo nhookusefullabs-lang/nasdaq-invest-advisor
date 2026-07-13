@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { loadDataset, runSmoke, toMinerviniInput, evaluateAsOf, buildSignalRecords, runSignalLoop, runBacktest, parseArgs, validateCliArgs, formatOverlapFactorNote, formatFreshnessCohortSummary, formatRegimeReinterpretation } from './backtest.mjs'
+import { loadDataset, runSmoke, toMinerviniInput, evaluateAsOf, buildSignalRecords, runSignalLoop, runBacktest, parseArgs, validateCliArgs, formatOverlapFactorNote, formatFreshnessCohortSummary, formatRegimeReinterpretation, formatPullbackFunnel } from './backtest.mjs'
 import { buildDataset } from '../src/lib/buildDataset.js'
 import { recommend } from '../src/lib/recommend.js'
 import { runMinerviniRecommend } from '../src/lib/minervini.js'
@@ -920,6 +920,75 @@ describe('runBacktest — v11 US-6 눌림목 진입 변형 3종 + pullbackAxis (
 
   it('pullbackAxis 전 항목이 adopted:false다 (측정 전용 — 채택 결정은 운영자 몫)', () => {
     expect(backtest.pullbackAxis.every((p) => p.adopted === false)).toBe(true)
+  })
+})
+
+describe('runBacktest — v11.1 US-1 눌림목 관찰 조건(P1~P4) 퍼널', () => {
+  const raw = JSON.parse(readFileSync(FIXTURE_PATH, 'utf-8'))
+  const backtest = runBacktest(raw)
+
+  it('pullbackFunnel이 스키마를 통과하고 sample×basis×국면 전체 셀(12개)이 존재한다', () => {
+    expect(Array.isArray(backtest.pullbackFunnel)).toBe(true)
+    expect(validateBacktest(backtest).valid).toBe(true)
+    let checked = 0
+    for (const sample of ['in', 'out']) {
+      for (const basis of ['top5', 'allSignals']) {
+        for (const regime of ['up', 'neutral', 'down']) {
+          const entry = backtest.pullbackFunnel.find((f) => f.sample === sample && f.basis === basis && f.regime === regime)
+          expect(entry).toBeDefined()
+          checked++
+        }
+      }
+    }
+    expect(checked).toBe(2 * 2 * 3)
+  })
+
+  it('AC2: 단조 감소(P1 ⊇ ∩P2 ⊇ ∩P3 ⊇ ∩P4) + 합산 정합성(signals = insufficientData + 판정 가능 표본)', () => {
+    for (const entry of backtest.pullbackFunnel) {
+      const { steps } = entry
+      expect(steps.p1).toBeGreaterThanOrEqual(steps.p1p2)
+      expect(steps.p1p2).toBeGreaterThanOrEqual(steps.p1p2p3)
+      expect(steps.p1p2p3).toBeGreaterThanOrEqual(steps.observed)
+      expect(steps.p1).toBeLessThanOrEqual(entry.signals - entry.insufficientData)
+      expect(entry.insufficientData).toBeGreaterThanOrEqual(0)
+    }
+  })
+
+  it('signals가 pullbackAxis 항목들과 동일한 모집단이다(같은 사용·같은 사용 population — 재구현 없음 교차 검증)', () => {
+    for (const sample of ['in', 'out']) {
+      for (const basis of ['top5', 'allSignals']) {
+        for (const regime of ['up', 'neutral', 'down']) {
+          const funnelEntry = backtest.pullbackFunnel.find((f) => f.sample === sample && f.basis === basis && f.regime === regime)
+          const axisEntry = backtest.pullbackAxis.find(
+            (p) => p.name === 'pullback_immediate' && p.sample === sample && p.basis === basis && p.regime === regime
+          )
+          expect(funnelEntry.signals).toBe(axisEntry.signals)
+        }
+      }
+    }
+  })
+
+  it('observed 수 = pullback_immediate의 체결 수(fillRate×signals, 반올림) — 즉시 진입은 관찰 충족과 정확히 같은 조건이다', () => {
+    for (const sample of ['in', 'out']) {
+      for (const basis of ['top5', 'allSignals']) {
+        for (const regime of ['up', 'neutral', 'down']) {
+          const funnelEntry = backtest.pullbackFunnel.find((f) => f.sample === sample && f.basis === basis && f.regime === regime)
+          const axisEntry = backtest.pullbackAxis.find(
+            (p) => p.name === 'pullback_immediate' && p.sample === sample && p.basis === basis && p.regime === regime
+          )
+          const filledCount = axisEntry.fillRate == null ? 0 : Math.round(axisEntry.fillRate * axisEntry.signals)
+          expect(funnelEntry.steps.observed).toBe(filledCount)
+        }
+      }
+    }
+  })
+
+  it('formatPullbackFunnel이 국면 3종 라인을 포함한 콘솔 표를 만든다', () => {
+    const text = formatPullbackFunnel(backtest)
+    expect(text).toContain('up')
+    expect(text).toContain('neutral')
+    expect(text).toContain('down')
+    expect(text).toContain('∩P4(관찰)')
   })
 })
 

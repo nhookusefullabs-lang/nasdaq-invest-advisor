@@ -85,15 +85,23 @@ function simulateConfirm2Entry(series, entryIdx) {
 }
 
 /**
- * pullback_immediate: 신호일까지의 데이터(asOfSeries)로 관찰 조건(P1~P4)을 판정한다
- * (judgePullback() 재사용, 재구현 없음 — 미래 참조 없음). rsPercentileValue(P1의 T8 판정에
- * 필요 — 유니버스 단위 RS 백분위)는 호출부(backtest.mjs의 buildSignalRecords)가 신호
- * 레코드에 미리 계산해 둔 값을 그대로 전달한다(exitSignals.js의 X3와 동일한 위임 패턴).
- * 미충족이면 미체결. 충족이면 신호일 종가로 즉시 체결(재개 확인 없는 기준선).
+ * 신호일까지의 데이터(asOfSeries)로 관찰 조건(P1~P4)을 판정한다(judgePullback() 재사용,
+ * 재구현 없음 — 미래 참조 없음). pullback_immediate/pullback_resume[_vol]과 퍼널 진단
+ * (v11.1 US-1, judgePullbackObservationForRecord)이 전부 이 하나의 asOfSeries 구성을
+ * 공유한다 — 슬라이싱 로직이 여러 곳에 흩어지면 한쪽만 고쳤을 때 어긋날 수 있어서다.
+ */
+function pullbackJudgementAsOf(series, entryIdx, rsPercentileValue) {
+  return judgePullback(series.slice(0, entryIdx + 1), { rsPercentileValue })
+}
+
+/**
+ * pullback_immediate: 관찰 조건(P1~P4) 판정 결과가 미충족이면 미체결. 충족이면 신호일
+ * 종가로 즉시 체결(재개 확인 없는 기준선). rsPercentileValue(P1의 T8 판정에 필요 —
+ * 유니버스 단위 RS 백분위)는 호출부(backtest.mjs의 buildSignalRecords)가 신호 레코드에
+ * 미리 계산해 둔 값을 그대로 전달한다(exitSignals.js의 X3와 동일한 위임 패턴).
  */
 function simulatePullbackImmediate(series, entryIdx, rsPercentileValue) {
-  const asOfSeries = series.slice(0, entryIdx + 1)
-  const judgement = judgePullback(asOfSeries, { rsPercentileValue })
+  const judgement = pullbackJudgementAsOf(series, entryIdx, rsPercentileValue)
   if (judgement.insufficientData || !judgement.observed) {
     return { filled: false, reason: '관찰 조건(P1~P4) 미충족', judgement }
   }
@@ -108,8 +116,7 @@ function simulatePullbackImmediate(series, entryIdx, rsPercentileValue) {
  * requireVolume=true면 그날 거래량이 PULLBACK_RESUME_VOL_MULT×50일평균 이상도 함께 요구한다.
  */
 function simulatePullbackResume(series, entryIdx, rsPercentileValue, { requireVolume }) {
-  const asOfSeries = series.slice(0, entryIdx + 1)
-  const judgement = judgePullback(asOfSeries, { rsPercentileValue })
+  const judgement = pullbackJudgementAsOf(series, entryIdx, rsPercentileValue)
   if (judgement.insufficientData || !judgement.observed) {
     return { filled: false, reason: '관찰 조건(P1~P4) 미충족', judgement }
   }
@@ -140,6 +147,18 @@ function simulatePullbackResume(series, entryIdx, rsPercentileValue, { requireVo
 // type(v11 US-8): 청산 변형 C(exit_structural)가 손절선 계산 방식을 "진입 유형"으로
 // 분기해야 해서 추가한 태그 — breakout(피벗 기준)/pullback(눌림 저점 기준). 기존 필드
 // (name/description/simulate)는 변경 없음, 순수 추가.
+/**
+ * 눌림목 퍼널 진단(v11.1 US-1): 신호 레코드 하나에 대해 관찰 조건 P1~P4 판정 그대로를
+ * 반환한다 — pullback_immediate/resume이 체결 시뮬레이션에 쓰는 것과 정확히 같은
+ * pullbackJudgementAsOf()를 그대로 재사용(재구현 없음)하되, 체결 여부가 아니라 4개
+ * 조건 각각의 pass/fail을 backtest.mjs의 퍼널 집계가 직접 볼 수 있게 노출한다.
+ */
+export function judgePullbackObservationForRecord(record, priceIndex) {
+  const point = priceEntryPoint(priceIndex, record.ticker, record.date)
+  if (!point) return null
+  return pullbackJudgementAsOf(point.series, point.idx, record.rsPercentileValue ?? null)
+}
+
 export const PULLBACK_ENTRY_VARIANTS = {
   pullback_immediate: {
     name: 'pullback_immediate',

@@ -2067,3 +2067,48 @@
   **모든 채택은 운영자 승인 필요(자동 적용 금지, PRD §5 원칙)** — 이 세션에서는 코드
   변경 없이 판정 결과만 기록. 재수집한 데이터/백테스트 결과 커밋·푸시 여부와 청산
   E/NDX 허들 교집합 v12 채택 여부는 사용자 승인 대기.
+
+## v11.1 수리 릴리스 (prd-v11.1-repairs.md, 직접 순차 구현)
+
+### Iteration 1 — US-1. 눌림목 관찰 조건 퍼널 진단 + 버그 수리
+- 완료 스토리: US-1
+- 변경 파일:
+  - scripts/lib/entries.mjs: `pullbackJudgementAsOf(series, entryIdx, rsPercentileValue)`로
+    asOfSeries 슬라이싱 로직을 단일화(기존 simulatePullbackImmediate/simulatePullbackResume가
+    각자 중복 구현하던 것을 통합) + `judgePullbackObservationForRecord(record, priceIndex)`
+    신규 export(퍼널 집계 전용, 체결 시뮬레이션과 동일한 asOfSeries 구성 재사용).
+  - scripts/backtest.mjs: `buildPullbackFunnel()` 신규(pullbackAxis와 동일한
+    sample×basis×국면 모집단에서 P1→∩P2→∩P3→∩P4 단계별 카운트 집계) + runBacktest() 반환
+    객체에 `pullbackFunnel` 추가 + `formatPullbackFunnel()` 콘솔 출력 함수 추가·배선.
+  - src/lib/backtestSchema.js: `pullbackFunnel` 선택 필드 검증 추가(하위 호환 패턴 동일).
+- **버그 조사 결과: 코드 결함 없음.** `judgePullback()`/`pullback_immediate`는 이미 기존
+  테스트(pullback.test.js "관찰 조건 통합", entries.test.js "US-6 기준선")가 "건강한 눌림"
+  합성 픽스처로 observed=true + fillRate=100%를 검증하고 있었다 — 이번 세션에서 재확인만
+  했고 로직 자체는 그대로.
+- **실데이터 퍼널 진단(스펙 수준 결박, 조건 변경 안 함)**: 이미 수집돼 있던 실데이터
+  (nasdaq100.json/ngx100.json, generatedAt 2026-07-10)로 진단 전용 재생(공식
+  backtest.json 재발행 아님 — "실데이터 실행"은 Out of Scope라 데이터 파일은 건드리지
+  않음)한 결과:
+    NDX up(Out): P1 205/507 → ∩P2 3 → ∩P3 3 → ∩P4(관찰) 1
+    NDX neutral(Out): P1 115/205 → ∩P2 2 → ∩P3 2 → ∩P4(관찰) 0
+    NGX up(Out): P1 205/479 → ∩P2 8 → ∩P3 8 → ∩P4(관찰) 3
+  **병목은 명백히 P2(피벗 대비 −10%~−25%)다** — P1(트렌드 템플릿)은 40% 안팎이 통과하고
+  P2→P3 전이는 거의 손실이 없는데, P1→P2에서 98% 이상이 탈락한다. 구조적 이유: trend
+  모드의 1단계 신호(RSI≥50대·MACD>0·골든크로스) 자체가 "모멘텀 강세" 상태를 고르는
+  조건이라, 신호 발생 시점의 티커는 대부분 피벗 근처/그 위에 있지 사실 −10~−25% 눌림
+  구간에 있지 않다 — 두 조건이 정의상 서로 거의 배타적인 모집단을 겨냥한다. 이는 P1~P4
+  판정 로직의 결함이 아니라 "trend/top5 모집단 × 눌림 관찰 조건"의 스펙 수준 교집합
+  협소함이므로, PRD 지시대로 조건을 완화하지 않고 이 진단만 기록한다.
+- 승인 기준 확인: 1(합성 픽스처 관찰 발화 + immediate fillRate=100%) 기존 테스트로 이미
+  충족 확인, 2(단조 감소·합산 정합성 테스트) 신규 테스트 3종 통과, 3(스키마 검증 +
+  콘솔 표 출력) 통과, 4(진단 기록) 위 문단.
+- 테스트 수 변화: 789 → 799 (+10: backtest.test.js 5개 신규 + backtestSchema.test.js 5개
+  신규). npm run test(전체 54개 파일) + npm run build 둘 다 통과.
+- 다음 스토리 메모: US-2 exit_structural 발동 0% 수리. 코드 조사 결과 미리 확인—
+  `structuralStopPrice()`는 entryType이 'breakout'/'pullback' 둘 다 아니면 항상
+  null(안전 기본값, v11 US-8에서 이미 의도된 설계)을 반환하는데, `COMBOS`(exits.mjs)에는
+  **눌림목형(pullback_resume_vol_x_exit_structural, 체결률 자체가 0%에 가까움) 조합만
+  있고 돌파형(breakout) 진입 × exit_structural 조합이 아예 없다.** 즉 발동률 0%는 부호나
+  손절선 계산 자체의 버그가 아니라 "돌파형 진입에서 구조 손절을 실측할 조합이 애초에
+  안 만들어져 있었다"는 배선 공백일 가능성이 높음 — US-2에서 이탈 경로 픽스처로 손절선
+  계산 자체를 먼저 검증하고, 필요하면 breakout×exit_structural 조합 추가를 검토한다.

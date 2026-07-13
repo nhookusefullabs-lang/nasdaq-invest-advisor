@@ -16,7 +16,7 @@ import { buildPriceIndex, aggregatePerformance } from './lib/performance.mjs'
 import { buildFundamentalAxis, classifyRecordsByFundamentalVerdict, FUNDAMENTAL_AXIS_NOTE } from './lib/fundamentalHistory.mjs'
 import { VARIANTS, evaluateVariant, evaluatePolicyVariant } from './lib/variants.mjs'
 import { EXIT_RULES, aggregateExitPerformance, EXIT_LIMITATION_NOTE, COMBOS, aggregateComboPerformance, aggregateClimaxPartialPerformance } from './lib/exits.mjs'
-import { ENTRY_VARIANTS, PULLBACK_ENTRY_VARIANTS, aggregateEntryVariant } from './lib/entries.mjs'
+import { ENTRY_VARIANTS, PULLBACK_ENTRY_VARIANTS, aggregateEntryVariant, judgePullbackObservationForRecord } from './lib/entries.mjs'
 import { goldenCrossFreshnessDays, pivotBreakoutFreshnessDays, freshnessCohort, aggregateFreshnessCohorts } from './lib/freshness.mjs'
 import { atomicWriteBacktest } from './validate-backtest.mjs'
 
@@ -401,6 +401,9 @@ export function runBacktest(
   // v11 US-6: 눌림목 진입 변형 3종 × sample × basis × 국면
   const pullbackAxis = buildPullbackAxis(inRecords, outRecords, priceIndex, holdingDays)
 
+  // v11.1 US-1: 눌림목 관찰 조건(P1~P4) 퍼널 — 어느 단계에서 신호가 고사하는지 진단
+  const pullbackFunnel = buildPullbackFunnel(inRecords, outRecords, priceIndex)
+
   // v11 US-9: 청산 변형 E(클라이맥스 부분 청산) — 3자 비교(무청산/전량/부분)
   const climaxPartial = buildClimaxPartial(outTrendTop5, priceIndex, strategies, exitVariants)
 
@@ -433,6 +436,7 @@ export function runBacktest(
     stateAxis,
     stateRegimeAxis,
     pullbackAxis,
+    pullbackFunnel,
     climaxPartial,
     hurdleIntersection,
   }
@@ -544,6 +548,48 @@ function buildPullbackAxis(inRecords, outRecords, priceIndex, holdingDays) {
     }
   }
   return axis
+}
+
+/**
+ * 눌림목 관찰 조건 퍼널(v11.1 US-1) — P1 → ∩P2 → ∩P3 → ∩P4(observed) 단계별 통과 수를
+ * pullbackAxis와 동일한 sample×basis×국면 모집단에서 집계한다. judgePullback()의 checks가
+ * 4개 조건을 서로 독립적으로 반환하므로(entries.mjs의 judgePullbackObservationForRecord
+ * 재사용, 재구현 없음), 여기서는 그 결과를 누적 교집합으로 필터링만 한다 — 판정 로직
+ * 자체는 건드리지 않는다. 목적은 "P1~P4 중 어느 단계에서 신호가 고사하는지" 진단이지
+ * 조건 완화가 아니다(Out of Scope).
+ */
+function buildPullbackFunnel(inRecords, outRecords, priceIndex) {
+  const funnel = []
+  for (const [sample, records] of [
+    ['in', inRecords],
+    ['out', outRecords],
+  ]) {
+    const trendRecords = records.filter((r) => r.strategyKey === 'trend')
+    for (const basis of BASES) {
+      const basisRecords = trendRecords.filter((r) => r.basis === basis)
+      for (const regime of REGIME_VALUES) {
+        const regimeRecords = basisRecords.filter((r) => r.regime === regime)
+        // signals = 가격 인덱스에서 실제로 조회 가능한 레코드 수 — aggregateEntryVariant()의
+        // fillResults.length(pullbackAxis의 signals 필드)와 정확히 같은 모집단이라 두 축을
+        // 직접 대조할 수 있다(backtest.test.js에서 교차 검증).
+        const judgements = regimeRecords.map((r) => judgePullbackObservationForRecord(r, priceIndex)).filter(Boolean)
+        const measurable = judgements.filter((j) => !j.insufficientData)
+        const p1 = measurable.filter((j) => j.checks.P1)
+        const p1p2 = p1.filter((j) => j.checks.P2)
+        const p1p2p3 = p1p2.filter((j) => j.checks.P3)
+        const observed = p1p2p3.filter((j) => j.checks.P4)
+        funnel.push({
+          sample,
+          basis,
+          regime,
+          signals: judgements.length,
+          insufficientData: judgements.length - measurable.length,
+          steps: { p1: p1.length, p1p2: p1p2.length, p1p2p3: p1p2p3.length, observed: observed.length },
+        })
+      }
+    }
+  }
+  return funnel
 }
 
 /**
@@ -817,6 +863,26 @@ export function formatPullbackComparison(backtest) {
   return lines.join('\n')
 }
 
+// v11.1 US-1: 눌림목 관찰 조건 퍼널표 — P1 → ∩P2 → ∩P3 → ∩P4(observed) 단계별 통과 수를
+// sample=out·basis=allSignals·국면별로 나열한다(pullbackAxis 판정에 실제로 쓰이는 모집단과
+// 동일 스코프). 어느 단계에서 신호가 고사하는지 한눈에 보이도록 하는 진단용 — 조건 자체를
+// 바꾸는 도구가 아니다.
+export function formatPullbackFunnel(backtest) {
+  const lines = []
+  for (const regime of REGIME_VALUES) {
+    const entry = backtest.pullbackFunnel?.find((f) => f.sample === 'out' && f.basis === 'allSignals' && f.regime === regime)
+    if (!entry) {
+      lines.push(`  ${regime}: 데이터 없음`)
+      continue
+    }
+    const { steps } = entry
+    lines.push(
+      `  ${regime} (평가 대상 ${entry.signals}건, 산정불가 ${entry.insufficientData}건): P1 ${steps.p1} → ∩P2 ${steps.p1p2} → ∩P3 ${steps.p1p2p3} → ∩P4(관찰) ${steps.observed}`
+    )
+  }
+  return lines.join('\n')
+}
+
 function loadFundamentalsIfPresent(dataPath, fundamentalsFileName = NDX_FUNDAMENTALS_FILENAME) {
   // nasdaq100.json과 같은 디렉터리의 fundamentals(_ngx).json을 선택적으로 사용한다(US-6/US-11) —
   // 없으면 조용히 null(엔진은 fundamentalAxis:null로 정상 완주, graceful degradation).
@@ -939,6 +1005,8 @@ function main() {
   console.log(formatRegimeReinterpretation(backtest))
   console.log('상태0 × 국면 (v10 발견 #6의 구조 몫 vs 국면 몫 분리, v11 US-4, trend·Out·20거래일):')
   console.log(formatState0RegimeTable(backtest))
+  console.log('눌림목 관찰 조건(P1~P4) 퍼널 (v11.1 US-1, allSignals·Out):')
+  console.log(formatPullbackFunnel(backtest))
   console.log('눌림목 진입 변형 3종 × 국면 비교 (v11 US-6, allSignals·Out·20거래일):')
   console.log(formatPullbackComparison(backtest))
   console.log(backtest.fundamentalAxis ? `펀더멘털 축: coveredFrom=${backtest.fundamentalAxis.coveredFrom}` : '펀더멘털 축: fundamentals.json 없음(생략)')

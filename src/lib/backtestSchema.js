@@ -316,6 +316,29 @@ function validatePullbackAxisItem(item, path, errors) {
   }
 }
 
+// pullbackFunnel(v11.1 US-1): { sample, basis, regime, signals, insufficientData,
+// steps:{p1,p1p2,p1p2p3,observed} } — P1~P4 관찰 조건 단계별 통과 수 진단. signals는
+// pullbackAxis 항목들의 signals 필드와 동일한 모집단(가격 인덱스 조회 가능 레코드 수)이라
+// 서로 대조할 수 있다. 선택 필드(하위 호환 패턴 동일) — 없으면(v4 이전 산출물) 검증 생략.
+function validatePullbackFunnelItem(item, path, errors) {
+  if (typeof item !== 'object' || item === null) {
+    errors.push(`${path}: 객체여야 합니다`)
+    return
+  }
+  if (!SAMPLE_VALUES.includes(item.sample)) errors.push(`${path}.sample: ${SAMPLE_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!BASIS_VALUES.includes(item.basis)) errors.push(`${path}.basis: ${BASIS_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!REGIME_VALUES.includes(item.regime)) errors.push(`${path}.regime: ${REGIME_VALUES.join('/')} 중 하나여야 합니다`)
+  if (!isNumber(item.signals)) errors.push(`${path}.signals: 숫자여야 합니다`)
+  if (!isNumber(item.insufficientData)) errors.push(`${path}.insufficientData: 숫자여야 합니다`)
+  if (typeof item.steps !== 'object' || item.steps === null) {
+    errors.push(`${path}.steps: 객체여야 합니다`)
+  } else {
+    for (const key of ['p1', 'p1p2', 'p1p2p3', 'observed']) {
+      if (!isNumber(item.steps[key])) errors.push(`${path}.steps.${key}: 숫자여야 합니다`)
+    }
+  }
+}
+
 // stateRegimeAxis(v11 US-4): { strategyKey, sample, state, regime, byHolding[] } — stateAxis와
 // regimeAxis의 2D 교집합. 선택 필드(하위 호환 패턴 동일) — 없으면(v1~v3 산출물) 검증 생략.
 function validateStateRegimeAxisItem(item, path, errors) {
@@ -484,6 +507,14 @@ export function validateBacktest(data) {
       errors.push('pullbackAxis: 배열이어야 합니다')
     } else {
       data.pullbackAxis.forEach((p, i) => validatePullbackAxisItem(p, `pullbackAxis[${i}]`, errors))
+    }
+  }
+
+  if (data.pullbackFunnel !== undefined) {
+    if (!Array.isArray(data.pullbackFunnel)) {
+      errors.push('pullbackFunnel: 배열이어야 합니다')
+    } else {
+      data.pullbackFunnel.forEach((p, i) => validatePullbackFunnelItem(p, `pullbackFunnel[${i}]`, errors))
     }
   }
 

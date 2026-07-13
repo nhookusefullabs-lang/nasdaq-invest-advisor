@@ -495,3 +495,54 @@ describe('validateBacktest — pullbackAxis (v11 US-6)', () => {
     expect(errors.some((e) => e.includes('pullbackAxis[0].byHolding[0].conditional'))).toBe(true)
   })
 })
+
+describe('validateBacktest — pullbackFunnel (v11.1 US-1)', () => {
+  it('pullbackFunnel 필드 자체가 없어도(v4 이전 산출물) 통과한다 (하위 호환)', () => {
+    const { valid, errors } = validateBacktest(loadFixture('backtest.valid.json'))
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('유효한 pullbackFunnel 항목은 통과한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      pullbackFunnel: [
+        { sample: 'out', basis: 'allSignals', regime: 'up', signals: 47, insufficientData: 19, steps: { p1: 11, p1p2: 3, p1p2p3: 1, observed: 1 } },
+      ],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(true)
+    expect(errors).toEqual([])
+  })
+
+  it('regime enum 오류를 거부한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      pullbackFunnel: [{ sample: 'out', basis: 'allSignals', regime: 'sideways', signals: 1, insufficientData: 0, steps: { p1: 1, p1p2: 1, p1p2p3: 1, observed: 1 } }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('pullbackFunnel[0].regime'))).toBe(true)
+  })
+
+  it('steps 필드 누락을 거부한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      pullbackFunnel: [{ sample: 'out', basis: 'allSignals', regime: 'up', signals: 1, insufficientData: 0, steps: { p1: 1, p1p2: 1 } }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('pullbackFunnel[0].steps.p1p2p3'))).toBe(true)
+    expect(errors.some((e) => e.includes('pullbackFunnel[0].steps.observed'))).toBe(true)
+  })
+
+  it('signals가 숫자가 아니면 거부한다', () => {
+    const data = {
+      ...loadFixture('backtest.valid.json'),
+      pullbackFunnel: [{ sample: 'out', basis: 'allSignals', regime: 'up', signals: '47', insufficientData: 0, steps: { p1: 1, p1p2: 1, p1p2p3: 1, observed: 1 } }],
+    }
+    const { valid, errors } = validateBacktest(data)
+    expect(valid).toBe(false)
+    expect(errors.some((e) => e.includes('pullbackFunnel[0].signals'))).toBe(true)
+  })
+})
