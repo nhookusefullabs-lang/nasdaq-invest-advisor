@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-11",
+  "generatedAt": "2026-07-13",
   "tickers": [
     {
       "ticker": "AAPL",
@@ -2599,7 +2599,7 @@
       "epsAccelerating": true,
       "revenueGrowthQoQ_yoy": 6.4,
       "marginImproving": true,
-      "roe": 0.4388,
+      "roe": 0.5151,
       "quarters": [
         {
           "period": "2026-Q2",
