@@ -258,3 +258,42 @@ v11부터 데이터 수집 기점이 2021-01-01(약 5.5년)로 확장되어 2022
 미충족 항목 없음(1건 부분 충족 — 실데이터 재수집은 애초에 이 루프의 범위 밖). 남은 것은
 운영자가 위 "v11 실데이터 순서"를 실제로 실행하고, 그 결과를 판정 기준표와 대조해
 채택/보류를 결정하는 일뿐이다.
+
+## v11.1 수리 릴리스 재실행 절차 (prd-v11.1-repairs.md)
+
+v11 실데이터 검증(2026-07)에서 측정 인프라 결함·공백 4건이 확인돼(눌림목 표본 고사
+원인 불명 / exit_structural 발동 0% / exit_climax_partial 미배선 / 청산 변형 국면별
+분해 부재) v11.1이 이를 전부 수리했다. **조건·상수는 하나도 바뀌지 않았다** — 이미
+NDX/NGX에 있는 실데이터(`nasdaq100.json`/`ngx100.json`)로 백테스트만 다시 실행하면
+아래 4가지가 backtest.json에 새로 나타난다(재수집 불필요):
+
+1. `node scripts/backtest.mjs --universe=ndx` + `--universe=ngx` 재실행 (step=5 공식,
+   데이터 재수집 없이 이미 있는 파일 그대로 사용)
+2. 콘솔에 "눌림목 관찰 조건(P1~P4) 퍼널" 표가 국면 3종과 함께 출력되는지 확인 (US-1) —
+   실데이터에서는 병목이 P2(피벗 대비 −10~−25%)에 있음을 확인할 수 있다(구조적 협소함,
+   조건 변경 없음 — progress.txt Iteration 1 참고)
+3. `backtest.json`의 `variants[]`에서 `exit_structural` 항목의 `outDetail.stopHitRate`가
+   0보다 큰지 확인 (US-2) — 수리 전 상시 0%였던 것이 실측 70%대로 나타난다(발동률 자체는
+   README 위쪽 "청산 C 채택 검토" 판정 기준 <40%를 벗어나므로 그대로 채택 근거는 아님)
+4. `variants[]`에 `exit_climax_partial` 항목이 존재하고 `climaxPartial` 단일 객체와
+   signals·avgExcess가 일치하는지 확인 (US-3)
+5. `exit_structural` 등 청산 변형·조합 항목에 `regimeDetail`(국면 3종 + 기준선 병기)이
+   존재하는지 확인 (US-4) — 청산 A의 "중립·하락 국면 MDD −5%p 이상 개선" 같은 판정
+   기준을 이 필드에서 바로 대조할 수 있다(스크래치 스크립트 불필요)
+
+이 5가지가 전부 확인되면 수리는 정상 반영된 것이다. 이어서 README 상단의 "v11 실데이터
+순서"/"v11 해석 지침" 판정 기준표를 이번에 갱신된 수치(특히 exit_structural 실측
+발동률, 청산 A의 regimeDetail)로 다시 대조해 채택/보류를 재판정한다 — 이는 v11.1
+루프의 범위 밖(Out of Scope: "채택 결정... 실데이터 실행은 운영자 별도")이라 운영자가
+별도 해석 세션에서 진행한다.
+
+### prd-v11.1-repairs.md 수리 4건 요약 (원인·조치)
+
+| 문제 | 원인 | 조치 |
+|---|---|---|
+| 눌림목 표본 고사 | 버그 없음 — trend/top5 신호(모멘텀 강세)와 눌림 관찰 조건(피벗 대비 −10~−25%)이 정의상 거의 배타적인 모집단(스펙 수준 협소함) | `pullbackFunnel`로 P1→∩P2→∩P3→∩P4 단계별 통과 수 진단 추가, 조건은 변경하지 않음 |
+| exit_structural 발동 0% | `evaluateExitVariants()`가 entryType을 넘긴 적이 없어 안전 기본값(손절 미가동) 경로로만 빠짐 | `entryType:'breakout'` 명시(entry_close와 동일 가정) |
+| exit_climax_partial 미배선 | 계산 자체는 존재했으나 `climaxPartial` 단일 객체에만 있고 다른 청산 후보들의 공용 채널인 `variants[]`엔 없었음 | `climaxPartialVariant`를 `variants[]`에 추가 등록(기존 `climaxPartial`은 유지) |
+| 청산 변형 국면별 분해 부재 | 처음부터 미구현 | `buildRegimeDetail()`로 청산 변형·조합 전체에 국면별 성과+기준선 병기 |
+
+자세한 과정은 progress.txt의 "v11.1 수리 릴리스" 섹션(Iteration 1~5)을 참고.
